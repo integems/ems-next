@@ -1,103 +1,106 @@
-import Image from "next/image";
+import NavComponent from "@/components/NavComponent";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <>
+      <NavComponent />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-1">
+          <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-primary text-primary-foreground">
+            <div className="container px-4 md:px-6">
+              <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
+                <div className="flex flex-col justify-center space-y-4">
+                  <div className="space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+                      Environmental Monitoring System
+                    </h1>
+                    <p className="max-w-[600px] md:text-xl">
+                      Monitor, analyze, and visualize environmental data with
+                      ease.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 min-[400px]:flex-row">
+                    <Button asChild>
+                      <a href="/dashboard">Get Started</a>
+                    </Button>
+                  </div>
+                </div>
+                <div className="w-full h-64 bg-gray-300 rounded-xl"></div>
+              </div>
+            </div>
+          </section>
+          <section id="features" className="w-full py-12 md:py-24 lg:py-32">
+            <div className="container px-4 md:px-6">
+              <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                  <h3 className="text-xl font-bold">Air Quality</h3>
+                  <p className="text-center text-muted-foreground">
+                    Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                  <h3 className="text-xl font-bold">Water Quality</h3>
+                  <p className="text-center text-muted-foreground">
+                    Track water parameters such as pH, turbidity, and dissolved
+                    oxygen.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                  <h3 className="text-xl font-bold">Soil Health</h3>
+                  <p className="text-center text-muted-foreground">
+                    Analyze soil composition, moisture, and nutrient levels.
+                  </p>
+                </div>
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                  <h3 className="text-xl font-bold">Biodiversity</h3>
+                  <p className="text-center text-muted-foreground">
+                    Record and monitor the variety of life in a particular
+                    habitat.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section
+            id="contact"
+            className="w-full py-12 md:py-24 lg:py-32 bg-muted"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <div className="container grid items-center justify-center gap-4 px-4 text-center md:px-6">
+              <div className="space-y-3">
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">
+                  Contact Us
+                </h2>
+                <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Have questions or want to get in touch? Fill out the form
+                  below.
+                </p>
+              </div>
+              <div className="mx-auto w-full max-w-sm space-y-2">
+                <form className="flex flex-col space-y-2">
+                  <Input placeholder="Name" />
+                  <Input type="email" placeholder="Email" />
+                  <Textarea placeholder="Message" />
+                  <Button type="submit">Submit</Button>
+                </form>
+              </div>
+            </div>
+          </section>
+        </main>
+        <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
+          <p className="text-xs text-muted-foreground">
+            &copy; 2025 EMS. All rights reserved.
+          </p>
+        </footer>
+      </div>
+    </>
   );
 }
