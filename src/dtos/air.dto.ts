@@ -1,9 +1,12 @@
 import { number, z } from "zod";
+import { TimeOfDay, LocationType } from "../types/common.types";
 
 export const singleAirData = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   pm25: z.number().optional(),
   pm10: z.number().optional(),
   no2: z.number().optional(),
@@ -22,6 +25,8 @@ export const updateAirDataDto = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   pm25: z.number().optional(),
   pm10: z.number().optional(),
   no2: z.number().optional(),
@@ -41,6 +46,8 @@ export const airDataFilterDto = z.object({
   locationId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
 });
 
 export type CreateAirDataDto = z.infer<typeof createAirDataDto>;

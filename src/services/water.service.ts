@@ -49,10 +49,10 @@ export class WaterService {
    * @returns A paginated list of water data.
    */
   async findAllWaterData(filter: WaterDataFilterDto) {
-    const { page, limit, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId,waterSource, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -60,28 +60,34 @@ export class WaterService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.waterData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.waterData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(schema.waterData.locationId, locationId);
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.waterData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      const dateCondition = and(
-        sql`${schema.waterData.measurementTime} >= ${startDate}`,
-        sql`${schema.waterData.measurementTime} <= ${endDate}`,
-      );
-      whereClause = whereClause
-        ? and(whereClause, dateCondition)
-        : dateCondition;
+    if (startDate) {
+      conditions.push(sql`${schema.waterData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.waterData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.waterData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.waterData.locationType, locationType));
+    }
+
+    if (waterSource) {
+      conditions.push(eq(schema.waterData.waterSource, waterSource));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [waterData, count] = await Promise.all([
       db.query.waterData.findMany({
@@ -89,8 +95,13 @@ export class WaterService {
         limit,
         offset,
         orderBy: [desc(schema.waterData.createdAt)],
-        with: {
-          location: true,
+            with: {
+          location: {
+            columns: {
+              geom: false,
+              pointGeom: false,
+            },
+          },
         },
       }),
       db
@@ -141,6 +152,14 @@ export class WaterService {
       ...dto,
       measurementTime: new Date(dto.measurementTime),
       ph: dto.ph?.toString(),
+      phMv: dto.phMv?.toString(),
+      orp: dto.orp?.toString(),
+      ec: dto.ec?.toString(),
+      ecAbs: dto.ecAbs?.toString(),
+      resistivity: dto.resistivity?.toString(),
+      salinity: dto.salinity?.toString(),
+      pressure: dto.pressure?.toString(),
+      doPercent: dto.doPercent?.toString(),
       dissolvedOxygen: dto.dissolvedOxygen?.toString(),
       turbidity: dto.turbidity?.toString(),
       bod: dto.bod?.toString(),
@@ -148,6 +167,7 @@ export class WaterService {
       totalDissolvedSolids: dto.totalDissolvedSolids?.toString(),
       temperature: dto.temperature?.toString(),
       pointGeom: dto.pointGeom,
+      waterSource: dto.waterSource,
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy,
@@ -186,7 +206,17 @@ export class WaterService {
         measurementTime: waterDataDto.measurementTime
           ? new Date(waterDataDto.measurementTime)
           : undefined,
+        timeOfDay: waterDataDto.timeOfDay,
+        locationType: waterDataDto.locationType,
         ph: waterDataDto.ph?.toString(),
+        phMv: waterDataDto.phMv?.toString(),
+        orp: waterDataDto.orp?.toString(),
+        ec: waterDataDto.ec?.toString(),
+        ecAbs: waterDataDto.ecAbs?.toString(),
+        resistivity: waterDataDto.resistivity?.toString(),
+        salinity: waterDataDto.salinity?.toString(),
+        pressure: waterDataDto.pressure?.toString(),
+        doPercent: waterDataDto.doPercent?.toString(),
         dissolvedOxygen: waterDataDto.dissolvedOxygen?.toString(),
         turbidity: waterDataDto.turbidity?.toString(),
         bod: waterDataDto.bod?.toString(),
@@ -194,6 +224,7 @@ export class WaterService {
         totalDissolvedSolids: waterDataDto.totalDissolvedSolids?.toString(),
         temperature: waterDataDto.temperature?.toString(),
         pointGeom: waterDataDto.pointGeom,
+        waterSource: waterDataDto.waterSource,
         updatedAt: new Date(),
         updatedBy,
       })

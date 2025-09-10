@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { TimeOfDay, LocationType } from "../types/common.types";
 
 export const singleSoilData = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   ph: z.number().optional(),
   nitrogen: z.number().optional(),
   phosphorus: z.number().optional(),
@@ -20,6 +23,8 @@ export const updateSoilDataDto = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   ph: z.number().optional(),
   nitrogen: z.number().optional(),
   phosphorus: z.number().optional(),
@@ -37,6 +42,8 @@ export const soilDataFilterDto = z.object({
   locationId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
 });
 
 export type CreateSoilDataDto = z.infer<typeof createSoilDataDto>;

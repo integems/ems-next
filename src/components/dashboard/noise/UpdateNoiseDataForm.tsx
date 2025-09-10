@@ -1,18 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
-import { NoiseData } from "@/types/common.types";
-import { updateNoiseDataDto, UpdateNoiseDataDto } from "@/dtos/noise.dto";
+import { NoiseData, TimeOfDay, LocationType } from "@/types/common.types";
+import { updateNoiseDataDto } from "@/dtos/noise.dto";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { z } from "zod";
 
 const noiseService = new FrontendNoiseService();
@@ -33,18 +34,25 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
   useEffect(() => {
     if (data) {
       setFormData({
-        measurementTime: new Date(data.measurementTime),
-        dbA: data.dbA as number || undefined,
-        dbC: data.dbC as number || undefined,
-        peak: data.peak as number || undefined,
+        locationId: data.locationId || undefined,
+        pointGeom: data.pointGeom || undefined,
+        measurementTime: data.measurementTime ? new Date(data.measurementTime) : undefined,
+        timeOfDay: data.timeOfDay || undefined,
+        locationType: data.locationType || undefined,
+        duration: data.duration || undefined,
+        laeq: data.laeq as number || undefined,
+        lafMax: data.lafMax as number || undefined,
         frequency: data.frequency as number || undefined,
+        la10: data.la10 as number || undefined,
+        la90: data.la90 as number || undefined,
+        lafMin: data.lafMin as number || undefined,
         notes: data.notes || undefined,
       });
     }
   }, [data]);
 
   const mutation = useMutation({
-    mutationFn: (updatedData: UpdateNoiseDataDto) => {
+    mutationFn: (updatedData: UpdateNoiseDataFormData) => {
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
@@ -56,7 +64,7 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update noise data")
+      toast.error("Failed to update noise data");
       setErrors({ server: "Failed to update noise data" });
     },
   });
@@ -74,9 +82,25 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
 
+  const handleTimeOfDayChange = (value: TimeOfDay) => {
+    setFormData((prev) => ({ ...prev, timeOfDay: value }));
+  };
+
+  const handleLocationTypeChange = (value: LocationType) => {
+    setFormData((prev) => ({ ...prev, locationType: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
+
+    const result = updateNoiseDataDto.safeParse(formData);
+    if (!result.success) {
+      setErrors(result.error.flatten().fieldErrors);
+      toast.error("Please correct errors in the form.");
+      return;
+    }
+
     mutation.mutate(formData);
   };
 
@@ -97,51 +121,126 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
         <div></div>
       </div>
       <div className="space-y-4">
-        <Label className="text-base font-medium">Primary Measurements</Label>
+        <Label className="text-base font-medium">Noise Measurements</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label className="text-sm">dbA</Label>
+            <Label className="text-sm">LAeq (dB)</Label>
             <Input
               type="number"
-              name="dbA"
-              value={formData.dbA as number || 0}
+              name="laeq"
+              value={formData.laeq || ""}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.dbA && <p className="text-xs text-red-500">{Array.isArray(errors.dbA) ? errors.dbA[0] : errors.dbA}</p>}
+            {errors.laeq && <p className="text-xs text-red-500">{Array.isArray(errors.laeq) ? errors.laeq[0] : errors.laeq}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-sm">dbC</Label>
+            <Label className="text-sm">LAFMax (dB)</Label>
             <Input
               type="number"
-              name="dbC"
-              value={formData.dbC as number || 0}
+              name="lafMax"
+              value={formData.lafMax || ""}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.dbC && <p className="text-xs text-red-500">{Array.isArray(errors.dbC) ? errors.dbC[0] : errors.dbC}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label className="text-sm">Peak</Label>
-            <Input
-              type="number"
-              name="peak"
-              value={formData.peak as number || 0}
-              onChange={handleChange}
-              placeholder="0"
-            />
-            {errors.peak && <p className="text-xs text-red-500">{Array.isArray(errors.peak) ? errors.peak[0] : errors.peak}</p>}
+            {errors.lafMax && <p className="text-xs text-red-500">{Array.isArray(errors.lafMax) ? errors.lafMax[0] : errors.lafMax}</p>}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Frequency (Hz)</Label>
             <Input
               type="number"
               name="frequency"
-              value={formData.frequency as number || 0}
+              value={formData.frequency || ""}
               onChange={handleChange}
               placeholder="0"
             />
             {errors.frequency && <p className="text-xs text-red-500">{Array.isArray(errors.frequency) ? errors.frequency[0] : errors.frequency}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">LA10 (dB)</Label>
+            <Input
+              type="number"
+              name="la10"
+              value={formData.la10 || ""}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.la10 && <p className="text-xs text-red-500">{Array.isArray(errors.la10) ? errors.la10[0] : errors.la10}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">LA90 (dB)</Label>
+            <Input
+              type="number"
+              name="la90"
+              value={formData.la90 || ""}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.la90 && <p className="text-xs text-red-500">{Array.isArray(errors.la90) ? errors.la90[0] : errors.la90}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">LAFMin (dB)</Label>
+            <Input
+              type="number"
+              name="lafMin"
+              value={formData.lafMin || ""}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.lafMin && <p className="text-xs text-red-500">{Array.isArray(errors.lafMin) ? errors.lafMin[0] : errors.lafMin}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Duration</Label>
+            <Input
+              type="text"
+              name="duration"
+              value={formData.duration || ""}
+              onChange={handleChange}
+              placeholder="e.g., 2 hours"
+            />
+            {errors.duration && <p className="text-xs text-red-500">{Array.isArray(errors.duration) ? errors.duration[0] : errors.duration}</p>}
+          </div>
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <Label className="text-sm">Time of Day</Label>
+            <Select
+              value={formData.timeOfDay || ""}
+              onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Time of Day" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(TimeOfDay).map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Location Type</Label>
+            <Select
+              value={formData.locationType || ""}
+              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Location Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(LocationType).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
           </div>
         </div>
       </div>

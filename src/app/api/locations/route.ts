@@ -18,16 +18,11 @@ export async function GET(request: NextRequest) {
       );
     }
     const { searchParams } = new URL(request.url);
-
-    const page = searchParams.get("page");
-    const limit = searchParams.get("limit");
-    const search = searchParams.get("search");
-    const category = searchParams.get("category");
     const filter = locationFilterDto.parse({
-      page: page ? page : 1,
-      limit: limit ? limit : 10,
-      search: search ? search : undefined,
-      category: category ? (category as Category) : undefined,
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      search: searchParams.get("search") || undefined,
+      category: searchParams.get("category") || undefined,
     });
     const locations = await locationService.findAllLocations(filter);
     return NextResponse.json(locations);

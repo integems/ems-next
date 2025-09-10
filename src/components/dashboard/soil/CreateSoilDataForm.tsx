@@ -21,7 +21,7 @@ import {
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Location } from "@/types/common.types";
+import { Category, Location } from "@/types/common.types";
 import { createSoilDataDto, CreateSoilDataDto, singleSoilData as soilDto } from "@/dtos/soil.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
@@ -84,7 +84,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
-    category: "soil",
+    category: Category.Soil,
     pointGeom: [0.0, 0.0],
   });
   const [soilDataFormData, setSoilDataFormData] = useState<SoilDataFormData[]>([
@@ -104,7 +104,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token, {
+      const response = await locationService.findAllLocations(currentUser.token || "", {
         page: 1,
         limit: 1000,
       });
@@ -117,7 +117,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
 
   const createSoilDataMutation = useMutation({
     mutationFn: (newSoilData: CreateSoilDataDto) =>
-      soilService.createSoilData(currentUser!.token, newSoilData),
+      soilService.createSoilData(currentUser!.token || "", newSoilData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["soil-data"] });
       toast.success("Soil data updated successfully!");
@@ -130,7 +130,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
 
   const createLocationMutation = useMutation({
     mutationFn: (newLocation: CreateLocationDto) =>
-      locationService.createLocation(currentUser!.token, newLocation),
+      locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
       console.log({"Created Location":data})
       queryClient.invalidateQueries({ queryKey: ["locations"] });
@@ -482,6 +482,25 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                         placeholder="Optional description"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newLocationType">Location Type</Label>
+                      <Select
+                        name="locationType"
+                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        value={locationFormData.locationType || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Location Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="industrial">Industrial</SelectItem>
+                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="commercial">Commercial</SelectItem>
+                          <SelectItem value="rural">Rural</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
@@ -540,7 +559,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
           {/* Spreadsheet Section */}
           <div className="space-y-2">
             <Label>Soil Quality Data Entries</Label>
-            <div className="max-w-4xl overflow-auto rounded">
+            <div className="max-w-[60rem] overflow-auto rounded">
               <Spreadsheet
                 data={spreadsheetData}
                 columnLabels={[

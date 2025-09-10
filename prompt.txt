@@ -1,69 +1,35 @@
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- ○ Compiling /_error ...
- ✓ Compiled /_error in 1625ms
- GET /api/air?page=1&limit=10&search= 404 in 8ms
- GET /api/locations?page=1&limit=1000 404 in 10ms
- ○ Compiling /_not-found/page ...
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- GET /api/air?page=1&limit=10&search= 404 in 4ms
- GET /api/locations?page=1&limit=1000 404 in 5ms
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- ⨯ Error: The edge runtime does not support Node.js 'crypto' module.
-Learn More: https://nextjs.org/docs/messages/node-module-in-edge-runtime
-    at Object.get (.next\server\edge\chunks\_82ad035c._.js:60:41)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
-    at instantiateModule (.next\server\edge\chunks\edge-wrapper_eca328ac.js:764:9)
-    at getOrInstantiateModuleFromParent (.next\server\edge\chunks\edge-wrapper_eca328ac.js:696:12)
-    at commonJsRequire (.next\server\edge\chunks\edge-wrapper_eca328ac.js:188:20)
-    at <unknown> (.next\server\edge\chunks\edge-wrapper_eca328ac.js:766:13)
-    at runModuleExecutionHooks (.next\server\edge\chunks\edge-wrapper_eca328ac.js:824:9)
- GET /api/air?page=1&limit=10&search= 404 in 25ms
- GET /api/locations?page=1&limit=1000 404 in 3ms
+ GET /api/locations?page=1&limit=1000 400 in 196ms
+ GET /api/soil?page=1&limit=5&search= 500 in 126ms
+Error [ZodError]: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "search"
+    ],
+    "message": "Invalid input: expected string, received null"
+  },
+  {
+    "code": "invalid_value",
+    "values": [
+      "air",
+      "water",
+      "soil",
+      "noise",
+      "biodiversity",
+      "waste"
+    ],
+    "path": [
+      "category"
+    ],
+    "message": "Invalid option: expected one of \"air\"|\"water\"|\"soil\"|\"noise\"|\"biodiversity\"|\"waste\""
+  }
+]
+    at GET (src\app\api\locations\route.ts:21:37)
+  19 |     }
+  20 |     const { searchParams } = new URL(request.url);
+> 21 |     const filter = locationFilterDto.parse({
+     |                                     ^
+  22 |       page: searchParams.get("page"),
+  23 |       limit: searchParams.get("limit"),
+  24 |       search: searchParams.get("search"),

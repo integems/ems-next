@@ -1,14 +1,22 @@
 import { z } from "zod";
+import { TimeOfDay, LocationType } from "../types/common.types";
 
 export const singleWasteData = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   solidWasteKg: z.number().optional(),
   hazardousWasteKg: z.number().optional(),
   recycledWasteKg: z.number().optional(),
   organicWasteKg: z.number().optional(),
   plasticWasteKg: z.number().optional(),
+  paperWasteKg: z.number().optional(),
+  cansWasteKg: z.number().optional(),
+  bottlesWasteKg: z.number().optional(),
+  eWasteKg: z.number().optional(),
+  scrapMetalKg: z.number().optional(),
   notes: z.string().optional(),
   photos: z.array(z.string()).optional(),
 });
@@ -19,11 +27,18 @@ export const updateWasteDataDto = z.object({
   locationId: z.string().optional(),
   pointGeom: z.tuple([z.number(),z.number()]).optional(),
   measurementTime: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
   solidWasteKg: z.number().optional(),
   hazardousWasteKg: z.number().optional(),
   recycledWasteKg: z.number().optional(),
   organicWasteKg: z.number().optional(),
   plasticWasteKg: z.number().optional(),
+  paperWasteKg: z.number().optional(),
+  cansWasteKg: z.number().optional(),
+  bottlesWasteKg: z.number().optional(),
+  eWasteKg: z.number().optional(),
+  scrapMetalKg: z.number().optional(),
   notes: z.string().optional(),
   photos: z.array(z.string()).optional(),
 });
@@ -35,6 +50,8 @@ export const wasteDataFilterDto = z.object({
   locationId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
 });
 
 export type CreateWasteDataDto = z.infer<typeof createWasteDataDto>;

@@ -31,7 +31,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { AirData, Location } from "@/types/common.types";
+import { AirData, Location, TimeOfDay, LocationType } from "@/types/common.types";
+import { ExportButton } from "@/components/ExportButton";
 import { AirDataFilterDto } from "@/dtos/air.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -39,10 +40,7 @@ import { useAuth } from "@/hooks/use-auth";
 import {
   Loader2,
   Search,
-  PlusCircle,
   MapPin,
-  Plus,
-  FileSpreadsheet,
   ChevronDown,
   ChevronUp,
   ArrowRight,
@@ -54,6 +52,26 @@ import AirDataTableRow from "./AirDataTableRow";
 
 const airService = new FrontendAirService();
 const locationService = new FrontendLocationService();
+
+const airDataColumns = [
+  { header: "Location", accessor: "location" },
+  { header: "Time of Day", accessor: "timeOfDay" },
+  { header: "Location Type", accessor: "locationType" },
+  { header: "Temp (°C)", accessor: "temperature" },
+  { header: "RH (%)", accessor: "humidity" },
+  { header: "Measurement Time", accessor: "measurementTime" },
+  { header: "PM2.5 (µg/m³)", accessor: "pm25" },
+  { header: "PM10 (µg/m³)", accessor: "pm10" },
+  { header: "NO₂ (µg/m³)", accessor: "no2" },
+  { header: "O₃ (µg/m³)", accessor: "o3" },
+  { header: "CO (µg/m³)", accessor: "co" },
+  { header: "SO₂ (µg/m³)", accessor: "so2" },
+  { header: "Notes", accessor: "notes" },
+  { header: "Created At", accessor: "createdAt" },
+  { header: "Updated At", accessor: "updatedAt" },
+  { header: "Created By", accessor: "createdBy" },
+  { header: "Updated By", accessor: "updatedBy" },
+];
 
 export default function AirManagementPage({ setActiveView }: { setActiveView: (view: string) => void }) {
   const { currentUser } = useAuth();
@@ -79,6 +97,10 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
   const [activeEndDateFilter, setActiveEndDateFilter] = useState<
     Date | undefined
   >(undefined);
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
+  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<LocationType | undefined>(undefined);
+  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<LocationType | undefined>(undefined);
 
   const limit = 5;
 
@@ -118,6 +140,8 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
       activeLocationIdFilter,
       activeStartDateFilter,
       activeEndDateFilter,
+      activeTimeOfDayFilter,
+      activeLocationTypeFilter,
       currentUser?.token,
     ],
     queryFn: async ({ pageParam = 1 }) => {
@@ -135,6 +159,8 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
         endDate: activeEndDateFilter
           ? new Date(activeEndDateFilter)
           : undefined,
+        timeOfDay: activeTimeOfDayFilter,
+        locationType: activeLocationTypeFilter,
       };
 
       const airData = await airService.findAllAirData(
@@ -168,17 +194,17 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
     setActiveLocationIdFilter(locationIdFilter);
     setActiveStartDateFilter(startDateFilter);
     setActiveEndDateFilter(endDateFilter);
+    setActiveTimeOfDayFilter(timeOfDayFilter);
+    setActiveLocationTypeFilter(locationTypeFilter);
     refetch();
-  }, [searchQuery, locationIdFilter, startDateFilter, endDateFilter, refetch]);
-
-  const handleExportCSV = useCallback(async () => {
-    // ... (implementation unchanged)
   }, [
-    currentUser?.token,
     searchQuery,
     locationIdFilter,
     startDateFilter,
     endDateFilter,
+    timeOfDayFilter,
+    locationTypeFilter,
+    refetch,
   ]);
 
   const handleNextPage = () => {
@@ -194,59 +220,169 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
   };
 
   return (
-    <div className="mx-auto px-6 h-full">
+    <div className="w-full max-w-[60rem] mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">
           Air Data Overview
         </h2>
-        <Button
-            size="sm"
-            onClick={() => setActiveView("create")}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            New <ArrowRight className="h-4 w-4" />
-          </Button>
+        <div className="flex gap-2">
+          <ExportButton
+            service={{ findAll: airService.findAllAirData }}
+            filters={{
+              search: activeSearchQuery,
+              locationId: activeLocationIdFilter,
+              startDate: activeStartDateFilter,
+              endDate: activeEndDateFilter,
+              timeOfDay: activeTimeOfDayFilter,
+              locationType: activeLocationTypeFilter,
+            }}
+            fileName="AirData"
+            token={currentUser?.token || ""}
+            columns={airDataColumns}
+          />
+          <Button
+              size="sm"
+              onClick={() => setActiveView("create")}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              New <ArrowRight className="h-4 w-4" />
+            </Button>
+        </div>
       </div>
-      <div className="flex-1 max-w-xs mb-4">
-        <label
-          htmlFor="location"
-          className="block text-sm font-medium mb-2 text-foreground"
-        >
-          Filter by Location
-        </label>
-        <Select
-          value={locationIdFilter}
-          onValueChange={(value) =>
-            setLocationIdFilter(value === "all" ? "" : value)
-          }
-        >
-          <SelectTrigger
-            id="location"
-            className={cn(
-              "bg-background border-border",
-              locationIdFilter && "text-primary",
-            )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+        <DateTimePicker
+          value={startDateFilter}
+          onChange={setStartDateFilter}
+          label="Start Date"
+        />
+        <DateTimePicker
+          value={endDateFilter}
+          onChange={setEndDateFilter}
+          label="End Date"
+        />
+        <div className="flex-1">
+          <label
+            htmlFor="timeOfDay"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
-            <SelectValue placeholder="Select location" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            {locations.map((loc: any) => (
-              <SelectItem key={loc.locationId} value={loc.locationId}>
-                <div className="flex flex-row gap-1 items-center justify-start">
-                  <MapPin size={15} />
-                  <div>{loc.name}</div>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+            Time of Day
+          </label>
+          <Select
+            value={timeOfDayFilter || ""}
+            onValueChange={(value:any) =>
+              setTimeOfDayFilter(value === "all" ? undefined : value)
+            }
+          >
+            <SelectTrigger
+              id="timeOfDay"
+              className="bg-background border-border"
+            >
+              <SelectValue placeholder="Select Time of Day" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Times</SelectItem>
+              <SelectItem value="day">Day</SelectItem>
+              <SelectItem value="evening">Evening</SelectItem>
+              <SelectItem value="night">Night</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex-1">
+          <label
+            htmlFor="locationType"
+            className="block text-sm font-medium mb-2 text-foreground"
+          >
+            Location Type
+          </label>
+          <Select
+            value={locationTypeFilter || ""}
+            onValueChange={(value: any) =>
+              setLocationTypeFilter(value === "all" ? undefined : value)
+            }
+          >
+            <SelectTrigger
+              id="locationType"
+              className="bg-background border-border"
+            >
+              <SelectValue placeholder="Select Location Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="industrial">Industrial</SelectItem>
+              <SelectItem value="residential">Residential</SelectItem>
+              <SelectItem value="commercial">Commercial</SelectItem>
+              <SelectItem value="rural">Rural</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+        <div className="flex-1">
+          <label
+            htmlFor="search"
+            className="block text-sm font-medium mb-2 text-foreground"
+          >
+            Search
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="search"
+              type="text"
+              placeholder="Search air data..."
+              value={searchQuery || ""}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-3 py-2 border w-full  border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
+            />
+          </div>
+        </div>
+        <div className="flex-1">
+          <label
+            htmlFor="location"
+            className="block text-sm font-medium mb-2 text-foreground"
+          >
+            Filter by Location
+          </label>
+          <Select
+            value={locationIdFilter}
+            onValueChange={(value) =>
+              setLocationIdFilter(value === "all" ? "" : value)
+            }
+          >
+            <SelectTrigger
+              id="location"
+              className={cn(
+                "bg-background border-border",
+                locationIdFilter && "text-primary",
+              )}
+            >
+              <SelectValue placeholder="Select location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locations.map((loc: any) => (
+                <SelectItem key={loc.locationId} value={loc.locationId}>
+                  <div className="flex flex-row gap-1 items-center justify-start">
+                    <MapPin size={15} />
+                    <div>{loc.name}</div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          onClick={handleApplyFilters}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 self-end"
+        >
+          Apply Filters
+        </Button>
       </div>
 
       <Collapsible
         open={isMapOpen}
         onOpenChange={setIsMapOpen}
-        className="mb-6 max-w-4xl"
+        className="mb-6"
       >
         <CollapsibleTrigger asChild>
           <Button
@@ -269,53 +405,6 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
         </CollapsibleContent>
       </Collapsible>
 
-      <div className="flex items-end gap-4 mb-6 flex-wrap max-w-4xl">
-        {/* Date Range Filters */}
-        <div className="flex-1 max-w-xs">
-          <DateTimePicker
-            value={startDateFilter}
-            onChange={setStartDateFilter}
-            label="Start Date"
-          />
-        </div>
-        <div className="flex-1 max-w-xs">
-          <DateTimePicker
-            value={endDateFilter}
-            onChange={setEndDateFilter}
-            label="End Date"
-          />
-        </div>
-        <div className="flex-1 max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search"
-              placeholder="Search notes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-background border-border"
-            />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleApplyFilters}
-            disabled={isLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            Apply
-          </Button>
-          <Button
-            onClick={handleExportCSV}
-            disabled={isLoading}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <FileSpreadsheet className="h-4 w-4 text-green-600" />
-            Export CSV
-          </Button>
-        </div>
-      </div>
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -333,7 +422,7 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border shadow-sm max-w-4xl">
+          <div className="overflow-x-auto rounded-lg border border-border shadow-sm">
             <Table className="w-full min-w-max">
               <TableHeader>
                 <TableRow className="bg-muted/50">
@@ -341,7 +430,13 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
                     Location
                   </TableHead>
                   <TableHead className="text-foreground font-semibold">
-                    Temp (&deg;C)
+                    Time of Day
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Location Type
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Temp (°C)
                   </TableHead>
                   <TableHead className="text-foreground font-semibold">
                     RH (%)
@@ -370,6 +465,18 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
                   <TableHead className="text-foreground font-semibold">
                     Notes
                   </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created By
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated By
+                  </TableHead>
                   <TableHead className="w-[50px] text-foreground font-semibold">
                     Action
                   </TableHead>
@@ -386,7 +493,7 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={12}
+                      colSpan={18}
                       className="h-24 text-center text-muted-foreground"
                     >
                       No air data found.
@@ -426,6 +533,6 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
           </div>
         </>
       )}
-    </div>
+      </div>
   );
 }

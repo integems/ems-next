@@ -50,10 +50,12 @@ export class BiodiversityService {
    * @returns A paginated list of biodiversity data.
    */
   async findAllBiodiversityData(filter: BiodiversityDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    console.log({page,offset})
+
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -61,31 +63,30 @@ export class BiodiversityService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.biodiversityData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.biodiversityData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(
-        schema.biodiversityData.locationId,
-        locationId,
-      );
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.biodiversityData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      const dateCondition = and(
-        sql`${schema.biodiversityData.measurementTime} >= ${startDate}`,
-        sql`${schema.biodiversityData.measurementTime} <= ${endDate}`,
-      );
-      whereClause = whereClause
-        ? and(whereClause, dateCondition)
-        : dateCondition;
+    if (startDate) {
+      conditions.push(sql`${schema.biodiversityData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.biodiversityData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.biodiversityData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.biodiversityData.locationType, locationType));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [biodiversityData, count] = await Promise.all([
       db.query.biodiversityData.findMany({
@@ -94,7 +95,12 @@ export class BiodiversityService {
         offset,
         orderBy: [desc(schema.biodiversityData.createdAt)],
         with: {
-          location: true,
+          location: {
+            columns: {
+              geom: false,
+              pointGeom: false,
+            },
+          },
         },
       }),
       db
@@ -146,6 +152,7 @@ export class BiodiversityService {
       measurementTime: new Date(dto.measurementTime),
       speciesCount: dto.speciesCount,
       shannonIndex: dto.shannonIndex?.toString(),
+      observations: dto.observations,
       pointGeom: dto.pointGeom,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -185,8 +192,11 @@ export class BiodiversityService {
         measurementTime: biodiversityDataDto.measurementTime
           ? new Date(biodiversityDataDto.measurementTime)
           : undefined,
+        timeOfDay: biodiversityDataDto.timeOfDay,
+        locationType: biodiversityDataDto.locationType,
         speciesCount: biodiversityDataDto.speciesCount,
         shannonIndex: biodiversityDataDto.shannonIndex?.toString(),
+        observations: biodiversityDataDto.observations,
         pointGeom: biodiversityDataDto.pointGeom,
         updatedAt: new Date(),
         updatedBy,

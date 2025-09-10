@@ -50,10 +50,10 @@ export class WasteService {
    * @returns A paginated list of waste data.
    */
   async findAllWasteData(filter: WasteDataFilterDto) {
-    const { page, limit, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -61,28 +61,30 @@ export class WasteService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.wasteData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.wasteData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(schema.wasteData.locationId, locationId);
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.wasteData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      const dateCondition = and(
-        sql`${schema.wasteData.measurementTime} >= ${startDate}`,
-        sql`${schema.wasteData.measurementTime} <= ${endDate}`,
-      );
-      whereClause = whereClause
-        ? and(whereClause, dateCondition)
-        : dateCondition;
+    if (startDate) {
+      conditions.push(sql`${schema.wasteData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.wasteData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.wasteData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.wasteData.locationType, locationType));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [wasteData, count] = await Promise.all([
       db.query.wasteData.findMany({
@@ -90,8 +92,13 @@ export class WasteService {
         limit,
         offset,
         orderBy: [desc(schema.wasteData.createdAt)],
-        with: {
-          location: true,
+            with: {
+          location: {
+            columns: {
+              geom: false,
+              pointGeom: false,
+            },
+          },
         },
       }),
       db
@@ -144,8 +151,14 @@ export class WasteService {
       solidWasteKg: dto.solidWasteKg?.toString(),
       hazardousWasteKg: dto.hazardousWasteKg?.toString(),
       recycledWasteKg: dto.recycledWasteKg?.toString(),
+      bottlesWasteKg: dto.bottlesWasteKg?.toString(),
       organicWasteKg: dto.organicWasteKg?.toString(),
+      scrapWasteKg: dto.solidWasteKg?.toString(),
+      scrapMetalKg: dto.scrapMetalKg?.toString(),
+      cansWasteKg:dto.cansWasteKg?.toString(),
+      eWasteKg:dto.eWasteKg?.toString(),
       plasticWasteKg: dto.plasticWasteKg?.toString(),
+      paperWasteKg: dto.paperWasteKg?.toString(),
       pointGeom: dto.pointGeom,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -185,11 +198,18 @@ export class WasteService {
         measurementTime: wasteDataDto.measurementTime
           ? new Date(wasteDataDto.measurementTime)
           : undefined,
+        timeOfDay: wasteDataDto.timeOfDay,
+        locationType: wasteDataDto.locationType,
         solidWasteKg: wasteDataDto.solidWasteKg?.toString(),
         hazardousWasteKg: wasteDataDto.hazardousWasteKg?.toString(),
         recycledWasteKg: wasteDataDto.recycledWasteKg?.toString(),
         organicWasteKg: wasteDataDto.organicWasteKg?.toString(),
         plasticWasteKg: wasteDataDto.plasticWasteKg?.toString(),
+        paperWasteKg: wasteDataDto.paperWasteKg?.toString(),
+        cansWasteKg: wasteDataDto.cansWasteKg?.toString(),
+        bottlesWasteKg: wasteDataDto.bottlesWasteKg?.toString(),
+        eWasteKg: wasteDataDto.eWasteKg?.toString(),
+        scrapMetalKg: wasteDataDto.scrapMetalKg?.toString(),
         pointGeom: wasteDataDto.pointGeom,
         updatedAt: new Date(),
         updatedBy,

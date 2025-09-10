@@ -52,10 +52,11 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
 
   const mutation = useMutation({
     mutationFn: (userData: UpdateUserDto) => {
-      if (!currentUser?.token) {
+      const token = currentUser?.token;
+      if (!token) {
         throw new Error("User not authenticated");
       }
-      return userService.updateUser(currentUser.token, user.userId, userData);
+      return userService.updateUser(token, user.userId, userData);
     },
     onSuccess: () => {
       toast.success("User updated successfully");

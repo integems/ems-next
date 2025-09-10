@@ -21,18 +21,21 @@ export async function GET(request: NextRequest) {
     }
     const { searchParams } = new URL(request.url);
     const filter = biodiversityDataFilterDto.parse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      search: searchParams.get("search"),
-      locationId: searchParams.get("locationId"),
-      startDate: searchParams.get("startDate"),
-      endDate: searchParams.get("endDate"),
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      search: searchParams.get("search") || undefined,
+      locationId: searchParams.get("locationId") || undefined,
+      startDate: searchParams.get("startDate") ? new Date(searchParams.get("startDate") as string) : undefined,
+      endDate: searchParams.get("endDate") ? new Date(searchParams.get("endDate") as string) : undefined,
+      timeOfDay: searchParams.get("timeOfDay") || undefined,
+      locationType: searchParams.get("locationType") || undefined,
     });
 
     const biodiversityData =
       await biodiversityService.findAllBiodiversityData(filter);
     return NextResponse.json(biodiversityData);
   } catch (error: any) {
+    console.log(error)
     if (error.name === "ZodError") {
       return NextResponse.json(
         { message: "Invalid filter parameters", errors: error.errors },

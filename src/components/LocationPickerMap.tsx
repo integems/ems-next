@@ -15,7 +15,7 @@ const LocationPickerMap: React.FC<LocationPickerMapProps> = ({ onLocationSelect 
   const [marker, setMarker] = useState<[number, number] | null>(null);
   const [latInput, setLatInput] = useState<string>("");
   const [lngInput, setLngInput] = useState<string>("");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); 
 
   const handleMapClick = ({ latLng }: { latLng: [number, number] }) => {
     const [lat, lng] = latLng;

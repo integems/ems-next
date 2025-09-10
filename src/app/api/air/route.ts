@@ -21,14 +21,18 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
     const locationId = searchParams.get("locationId");
     const search = searchParams.get("search");
+    const timeOfDay = searchParams.get("timeOfDay");
+    const locationType = searchParams.get("locationType");
 
     const filter = airDataFilterDto.parse({
-      page: searchParams.get("page"),
-      limit: searchParams.get("limit"),
-      search: search ? search : undefined,
-      locationId: locationId ? locationId : undefined,
+      page: searchParams.get("page") || undefined,
+      limit: searchParams.get("limit") || undefined,
+      search: search || undefined,
+      locationId: locationId || undefined,
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined,
+      timeOfDay: timeOfDay || undefined,
+      locationType: locationType || undefined,
     });
 
     const airData = await airService.findAllAirData(filter);

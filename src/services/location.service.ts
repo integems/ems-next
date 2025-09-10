@@ -138,11 +138,12 @@ export class LocationService {
         locationId,
         ...locationDto,
         category: locationDto.category as Category,
+        locationType: locationDto.locationType,
         geom: locationDto.geom
           ? sql`ST_GeomFromText(${locationDto.geom}, 4326)`
           : undefined,
         pointGeom: locationDto.pointGeom,
-        altitude: locationDto.altitude?.toString(), // Convert to string as per previous request
+        altitude: locationDto.altitude?.toString(),
         createdAt: new Date(),
         updatedAt: new Date(),
         createdBy,
@@ -174,11 +175,12 @@ export class LocationService {
       .update(schema.locations)
       .set({
         ...locationDto,
+        locationType: locationDto.locationType,
         geom: locationDto.geom
           ? sql`ST_GeomFromText(${locationDto.geom}, 4326)`
           : undefined,
         pointGeom: locationDto.pointGeom,
-        altitude: locationDto.altitude?.toString(), // Convert to string as per previous request
+        altitude: locationDto.altitude?.toString(),
         updatedAt: new Date(),
         updatedBy,
       })

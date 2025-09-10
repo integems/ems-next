@@ -63,29 +63,52 @@ const AirDataTableRow: React.FC<AirDataTableRowProps> = ({ data }) => {
   return (
     <>
       <TableRow>
-        <TableCell>{data.location?.name}</TableCell>
-        <TableCell>{data.temperature}</TableCell>
-        <TableCell>{data.humidity}</TableCell>
+        <TableCell>{data.location?.name ?? "N/A"}</TableCell>
+        <TableCell>{data.timeOfDay ?? "N/A"}</TableCell>
+        <TableCell>{data.locationType ?? "N/A"}</TableCell>
+        <TableCell>{data.temperature ?? "N/A"}</TableCell>
+        <TableCell>{data.humidity ?? "N/A"}</TableCell>
         <TableCell>
-          {new Date(data.measurementTime).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}{" "}
-          {new Date(data.measurementTime).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          {data.measurementTime
+            ? `${new Date(data.measurementTime).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} ${new Date(data.measurementTime).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })}`
+            : "N/A"}
         </TableCell>
-        <TableCell>{data.pm25}</TableCell>
-        <TableCell>{data.pm10}</TableCell>
-        <TableCell>{data.no2}</TableCell>
-        <TableCell>{data.o3}</TableCell>
-        <TableCell>{data.co}</TableCell>
-        <TableCell>{data.so2}</TableCell>
-        <TableCell className="text-wrap">{data.notes}</TableCell>
+        <TableCell>{data.pm25 ?? "N/A"}</TableCell>
+        <TableCell>{data.pm10 ?? "N/A"}</TableCell>
+        <TableCell>{data.no2 ?? "N/A"}</TableCell>
+        <TableCell>{data.o3 ?? "N/A"}</TableCell>
+        <TableCell>{data.co ?? "N/A"}</TableCell>
+        <TableCell>{data.so2 ?? "N/A"}</TableCell>
+        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell>
+          {data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>
+          {data.updatedAt
+            ? new Date(data.updatedAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>{data.createdBy ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

@@ -12,7 +12,7 @@ export default function DashboardLayout({
       <SidebarProvider>
         <div className="flex h-screen overflow-y-auto">
           <AppSidebar />
-          <main className="p-4 pb-20 sm:p-6 lg:p-8">
+          <main className="w-full md:min-w-[65rem] p-4 pb-20 sm:p-6 lg:p-8">
             <SidebarTrigger />
             {children}
           </main>

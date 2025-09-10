@@ -48,10 +48,11 @@ export default function CreateUserForm({
 
   const mutation = useMutation({
     mutationFn: (userData: CreateUserDto) => {
-      if (!currentUser?.token) {
+      const token = currentUser?.token;
+      if (!token) {
         throw new Error("User not authenticated");
       }
-      return userService.createUser(currentUser.token, userData);
+      return userService.createUser(token, userData);
     },
     onSuccess: () => {
       toast.success("User created successfully");

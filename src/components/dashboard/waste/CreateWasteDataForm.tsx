@@ -21,7 +21,7 @@ import {
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Location } from "@/types/common.types";
+import { Category, Location, LocationType, TimeOfDay } from "@/types/common.types";
 import { createWasteDataDto, CreateWasteDataDto, singleWasteData as wasteDto } from "@/dtos/waste.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
@@ -43,15 +43,25 @@ const updatedWasteDto = wasteDto.extend({
   recycledWasteKg: z.number().optional(),
   organicWasteKg: z.number().optional(),
   plasticWasteKg: z.number().optional(),
+  paperWasteKg: z.number().optional(),
+  cansWasteKg: z.number().optional(),
+  bottlesWasteKg: z.number().optional(),
+  eWasteKg: z.number().optional(),
+  scrapMetalKg: z.number().optional(),
 }).refine(
   (data) =>
     data.solidWasteKg != null ||
     data.hazardousWasteKg != null ||
     data.recycledWasteKg != null ||
     data.organicWasteKg != null ||
-    data.plasticWasteKg != null,
+    data.plasticWasteKg != null ||
+    data.paperWasteKg != null ||
+    data.cansWasteKg != null ||
+    data.bottlesWasteKg != null ||
+    data.eWasteKg != null ||
+    data.scrapMetalKg != null,
   {
-    message: "At least one measurement (Solid Waste, Hazardous Waste, Recycled Waste, Organic Waste, or Plastic Waste) is required",
+    message: "At least one measurement (Solid Waste, Hazardous Waste, Recycled Waste, Organic Waste, Plastic Waste, Paper Waste, Cans Waste, Bottles Waste, E-Waste, or Scrap Metal) is required",
     path: ["measurements"],
   }
 );
@@ -68,6 +78,13 @@ const parameterMappings: { [key: string]: keyof WasteDataFormData } = {
   recycledwastekg: "recycledWasteKg",
   organicwastekg: "organicWasteKg",
   plasticwastekg: "plasticWasteKg",
+  paperwastekg: "paperWasteKg",
+  canswastekg: "cansWasteKg",
+  bottleswastekg: "bottlesWasteKg",
+  ewastekg: "eWasteKg",
+  scrapmetalkg: "scrapMetalKg",
+  timeofday: "timeOfDay",
+  locationtype: "locationType",
   notes: "notes",
   measurementtime: "measurementTime",
 };
@@ -81,7 +98,7 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
-    category: "waste",
+    category: Category.Waste,
     pointGeom: [0.0, 0.0],
   });
   const [wasteDataFormData, setWasteDataFormData] = useState<WasteDataFormData[]>([
@@ -101,7 +118,7 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token, {
+      const response = await locationService.findAllLocations(currentUser.token || "", {
         page: 1,
         limit: 1000,
       });
@@ -114,7 +131,7 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
 
   const createWasteDataMutation = useMutation({
     mutationFn: (newWasteData: CreateWasteDataDto) =>
-      wasteService.createWasteData(currentUser!.token, newWasteData),
+      wasteService.createWasteData(currentUser!.token || "", newWasteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["waste-data"] });
       toast.success("Waste data updated successfully!");
@@ -127,7 +144,7 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
 
   const createLocationMutation = useMutation({
     mutationFn: (newLocation: CreateLocationDto) =>
-      locationService.createLocation(currentUser!.token, newLocation),
+      locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
       console.log({"Created Location":data})
       queryClient.invalidateQueries({ queryKey: ["locations"] });
@@ -184,6 +201,13 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
       "recycledWasteKg",
       "organicWasteKg",
       "plasticWasteKg",
+      "paperWasteKg",
+      "cansWasteKg",
+      "bottlesWasteKg",
+      "eWasteKg",
+      "scrapMetalKg",
+      "timeOfDay",
+      "locationType",
       "notes",
     ];
 
@@ -200,8 +224,13 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
           } else if (
-            ["solidWasteKg", "hazardousWasteKg", "recycledWasteKg", "organicWasteKg", "plasticWasteKg"].includes(header)
+            ["solidWasteKg", "hazardousWasteKg", "recycledWasteKg", "organicWasteKg", "plasticWasteKg", "paperWasteKg", "cansWasteKg", "bottlesWasteKg", "eWasteKg", "scrapMetalKg"].includes(header)
           ) {
+            rowData[header as keyof WasteDataFormData] = Number(value) as any;
+          } else if (header === "timeOfDay") {
+            rowData.timeOfDay = value as TimeOfDay;
+          } else if (header === "locationType") {
+            rowData.locationType = value as LocationType;
             rowData[header as keyof WasteDataFormData] = Number(value) as any;
           } else {
             rowData[header as keyof WasteDataFormData] = value as any;
@@ -239,6 +268,13 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
     { value: data.recycledWasteKg?.toString() || "" },
     { value: data.organicWasteKg?.toString() || "" },
     { value: data.plasticWasteKg?.toString() || "" },
+    { value: data.paperWasteKg?.toString() || "" },
+    { value: data.cansWasteKg?.toString() || "" },
+    { value: data.bottlesWasteKg?.toString() || "" },
+    { value: data.eWasteKg?.toString() || "" },
+    { value: data.scrapMetalKg?.toString() || "" },
+    { value: data.timeOfDay || "" },
+    { value: data.locationType || "" },
     { value: data.notes || "" },
   ]);
 
@@ -266,6 +302,9 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
           );
+          // Add timeOfDay and locationType to headers if not present
+          if (!headers.includes("timeofday")) headers.push("timeofday");
+          if (!headers.includes("locationtype")) headers.push("locationtype");
           const rows = jsonData.slice(1) as any[][];
 
           const mappedData: WasteDataFormData[] = rows.map((row, index) => {
@@ -283,10 +322,15 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
                       toast.error(`Invalid date format in uploaded file: ${value}`);
                     }
                   } else if (
-                    ["solidWasteKg", "hazardousWasteKg", "recycledWasteKg", "organicWasteKg", "plasticWasteKg"].includes(
+                    ["solidWasteKg", "hazardousWasteKg", "recycledWasteKg", "organicWasteKg", "plasticWasteKg", "paperWasteKg", "cansWasteKg", "bottlesWasteKg", "eWasteKg", "scrapMetalKg"].includes(
                       mappedKey,
                     )
                   ) {
+                    rowData[mappedKey] = Number(value) as any;
+                  } else if (mappedKey === "timeOfDay") {
+                    rowData[mappedKey] = value as TimeOfDay;
+                  } else if (mappedKey === "locationType") {
+                    rowData[mappedKey] = value as LocationType;
                     rowData[mappedKey] = Number(value) as any;
                   } else {
                     rowData[mappedKey] = value as any;
@@ -477,6 +521,25 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
                         placeholder="Optional description"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newLocationType">Location Type</Label>
+                      <Select
+                        name="locationType"
+                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        value={locationFormData.locationType || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Location Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="industrial">Industrial</SelectItem>
+                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="commercial">Commercial</SelectItem>
+                          <SelectItem value="rural">Rural</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
@@ -535,7 +598,7 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
           {/* Spreadsheet Section */}
           <div className="space-y-2">
             <Label>Waste Quality Data Entries</Label>
-            <div className="max-w-4xl overflow-auto rounded">
+            <div className="max-w-[60rem] overflow-auto rounded">
               <Spreadsheet
                 data={spreadsheetData}
                 columnLabels={[
@@ -545,6 +608,13 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
                   "Recycled Waste (kg)",
                   "Organic Waste (kg)",
                   "Plastic Waste (kg)",
+                  "Paper Waste (kg)",
+                  "Cans Waste (kg)",
+                  "Bottles Waste (kg)",
+                  "E-Waste (kg)",
+                  "Scrap Metal (kg)",
+                  "Time of Day",
+                  "Location Type",
                   "Notes",
                 ]}
                 onChange={(data)=>handleSpreadsheetChange(data as any)}
@@ -633,6 +703,154 @@ export default function CreateWasteDataForm({ onClose }: CreateWasteDataFormProp
                     placeholder="0"
                   />
                   {errors.plasticWasteKg && <p className="text-xs text-red-500">{errors.plasticWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Paper Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="paperWasteKg"
+                    value={singleWasteData.paperWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.paperWasteKg && <p className="text-xs text-red-500">{errors.paperWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Cans Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="cansWasteKg"
+                    value={singleWasteData.cansWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.cansWasteKg && <p className="text-xs text-red-500">{errors.cansWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Bottles Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="bottlesWasteKg"
+                    value={singleWasteData.bottlesWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.bottlesWasteKg && <p className="text-xs text-red-500">{errors.bottlesWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">E-Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="eWasteKg"
+                    value={singleWasteData.eWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.eWasteKg && <p className="text-xs text-red-500">{errors.eWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Scrap Metal (kg)</Label>
+                  <Input
+                    type="number"
+                    name="scrapMetalKg"
+                    value={singleWasteData.scrapMetalKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.scrapMetalKg && <p className="text-xs text-red-500">{errors.scrapMetalKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Time of Day</Label>
+                  <Select
+                    value={singleWasteData.timeOfDay || ""}
+                    onValueChange={(value: TimeOfDay) => setSingleWasteData((prev) => ({ ...prev, timeOfDay: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Time of Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(TimeOfDay).map((time) => (
+                        <SelectItem key={time} value={time}>
+                          {time}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Location Type</Label>
+                  <Select
+                    value={singleWasteData.locationType || ""}
+                    onValueChange={(value: LocationType) => setSingleWasteData((prev) => ({ ...prev, locationType: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Location Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(LocationType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Paper Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="paperWasteKg"
+                    value={singleWasteData.paperWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.paperWasteKg && <p className="text-xs text-red-500">{errors.paperWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Cans Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="cansWasteKg"
+                    value={singleWasteData.cansWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.cansWasteKg && <p className="text-xs text-red-500">{errors.cansWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Bottles Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="bottlesWasteKg"
+                    value={singleWasteData.bottlesWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.bottlesWasteKg && <p className="text-xs text-red-500">{errors.bottlesWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">E-Waste (kg)</Label>
+                  <Input
+                    type="number"
+                    name="eWasteKg"
+                    value={singleWasteData.eWasteKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.eWasteKg && <p className="text-xs text-red-500">{errors.eWasteKg[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Scrap Metal (kg)</Label>
+                  <Input
+                    type="number"
+                    name="scrapMetalKg"
+                    value={singleWasteData.scrapMetalKg || ""}
+                    onChange={handleSingleWasteDataChange}
+                    placeholder="0"
+                  />
+                  {errors.scrapMetalKg && <p className="text-xs text-red-500">{errors.scrapMetalKg[0]}</p>}
                 </div>
               </div>
               {errors.measurements && (

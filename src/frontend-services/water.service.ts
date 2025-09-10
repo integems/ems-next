@@ -30,6 +30,8 @@ export class FrontendWaterService {
         locationId: filter?.locationId,
         startDate: filter?.startDate,
         endDate: filter?.endDate,
+        timeOfDay: filter?.timeOfDay,
+        locationType: filter?.locationType,
       };
       const response = await axios.get(API_BASE_URL, {
         params: queryParams,

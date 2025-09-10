@@ -63,26 +63,55 @@ const WasteDataTableRow: React.FC<WasteDataTableRowProps> = ({ data }) => {
   return (
     <>
       <TableRow>
-        <TableCell>{data.location?.name}</TableCell>
-        <TableCell>{data.solidWasteKg}</TableCell>
-        <TableCell>{data.hazardousWasteKg}</TableCell>
-        <TableCell>{data.recycledWasteKg}</TableCell>
-        <TableCell>{data.organicWasteKg}</TableCell>
-        <TableCell>{data.plasticWasteKg}</TableCell>
+        <TableCell>{data.location?.name ?? "N/A"}</TableCell>
+        <TableCell>{data.timeOfDay ?? "N/A"}</TableCell>
+        <TableCell>{data.locationType ?? "N/A"}</TableCell>
+        <TableCell>{data.solidWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.hazardousWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.recycledWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.organicWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.plasticWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.paperWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.cansWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.bottlesWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.eWasteKg ?? "N/A"}</TableCell>
+        <TableCell>{data.scrapMetalKg ?? "N/A"}</TableCell>
         <TableCell>
-          {new Date(data.measurementTime).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}{ " "}
-          {new Date(data.measurementTime).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          {data.measurementTime
+            ? `${new Date(data.measurementTime).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} ${new Date(data.measurementTime).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })}`
+            : "N/A"}
         </TableCell>
-        <TableCell className="text-wrap">{data.notes}</TableCell>
+        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell>{data.photos ? "Yes" : "No"}</TableCell>
+        <TableCell>
+          {data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>
+          {data.updatedAt
+            ? new Date(data.updatedAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>{data.createdBy ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

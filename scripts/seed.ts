@@ -23,10 +23,10 @@ async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, salt);
 }
 
+
 async function seedDatabase() {
   try {
     const now = new Date();
-
     // Seed roles
     const roleNames = ["Authenticated", "IntegemsAdmin", "SuperAdmin", "Admin"];
     const roles: { [key: string]: string } = {};
@@ -158,6 +158,8 @@ async function seedDatabase() {
         baseLat + (Math.random() * offset * 0.5 - offset * 0.25),
       ];
 
+      const locationTypes = ["industrial", "residential", "commercial", "rural"];
+
       await db.insert(schema.locations).values({
         locationId,
         name: `${city.name} Monitoring Station`,
@@ -166,6 +168,7 @@ async function seedDatabase() {
         pointGeom: pointCoords,
         altitude: (Math.random() * 100).toString(), // 0-100m
         category: city.category as any,
+        locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
         createdBy: "system",
         createdAt: now,
         updatedBy: "system",
@@ -206,11 +209,15 @@ async function seedDatabase() {
         ];
 
         if (category === "air") {
+          const timeOfDays = ["day", "evening", "night"];
+          const locationTypes = ["industrial", "residential", "commercial", "rural"];
           await db.insert(schema.airData).values({
             airDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
+            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
             pm25: (Math.random() * 100).toString(), // 0-100 µg/m³
             pm10: (Math.random() * 150).toString(), // 0-150 µg/m³
             no2: (Math.random() * 50).toString(), // 0-50 µg/m³
@@ -227,18 +234,28 @@ async function seedDatabase() {
             updatedAt: now,
           });
         } else if (category === "water") {
+          const waterSources = ["surface", "underground"];
           await db.insert(schema.waterData).values({
             waterDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
             ph: (6 + Math.random() * 2).toString(), // 6-8 pH
+            phMv: (Math.random() * 100).toString(),
+            orp: (Math.random() * 200).toString(),
+            ec: (Math.random() * 1000).toString(),
+            ecAbs: (Math.random() * 1000).toString(),
+            resistivity: (Math.random() * 100).toString(),
+            salinity: (Math.random() * 40).toString(),
+            pressure: (Math.random() * 100).toString(),
+            doPercent: (Math.random() * 100).toString(),
             dissolvedOxygen: (Math.random() * 10).toString(), // 0-10 mg/L
             turbidity: (Math.random() * 50).toString(), // 0-50 NTU
             bod: (Math.random() * 20).toString(), // 0-20 mg/L
             cod: (Math.random() * 50).toString(), // 0-50 mg/L
             totalDissolvedSolids: (Math.random() * 1000).toString(), // 0-1000 mg/L
             temperature: (Math.random() * 30).toString(), // 0-30 °C
+            waterSource: waterSources[Math.floor(Math.random() * waterSources.length)] as any,
             notes: `Water quality measurement ${i + 1} in ${city.name}`,
             photos: ["https://picsum.photos/400/300"],
             createdBy: "system",
@@ -247,11 +264,15 @@ async function seedDatabase() {
             updatedAt: now,
           });
         } else if (category === "soil") {
+          const timeOfDays = ["day", "evening", "night"];
+          const locationTypes = ["industrial", "residential", "commercial", "rural"];
           await db.insert(schema.soilData).values({
             soilDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
+            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
             ph: (5 + Math.random() * 3).toString(), // 5-8 pH
             nitrogen: (Math.random() * 100).toString(), // 0-100 mg/kg
             phosphorus: (Math.random() * 50).toString(), // 0-50 mg/kg
@@ -266,14 +287,19 @@ async function seedDatabase() {
             updatedAt: now,
           });
         } else if (category === "noise") {
+          const timeOfDays = ["day", "evening", "night"];
           await db.insert(schema.noiseData).values({
             noiseDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
-            dbA: (40 + Math.random() * 60).toString(), // 40-100 dB
-            dbC: (50 + Math.random() * 50).toString(), // 50-100 dB
-            peak: (60 + Math.random() * 40).toString(), // 60-100 dB
+            laeq: (40 + Math.random() * 60).toString(), // 40-100 dB
+            lafMax: (50 + Math.random() * 50).toString(), // 50-100 dB
+            la10: (60 + Math.random() * 40).toString(), // 60-100 dB
+            la90: (30 + Math.random() * 40).toString(), // 30-70 dB
+            lafMin: (20 + Math.random() * 30).toString(), // 20-50 dB
+            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            duration: `${Math.floor(Math.random() * 59) + 1} minutes`,
             frequency: (20 + Math.random() * 980).toString(), // 20-1000 Hz
             notes: `Noise measurement ${i + 1} in ${city.name}`,
             photos: ["https://picsum.photos/400/300"],
@@ -283,11 +309,15 @@ async function seedDatabase() {
             updatedAt: now,
           });
         } else if (category === "biodiversity") {
+          const timeOfDays = ["day", "evening", "night"];
+          const locationTypes = ["industrial", "residential", "commercial", "rural"];
           await db.insert(schema.biodiversityData).values({
             biodiversityDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
+            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
             speciesCount: Math.floor(Math.random() * 50) + 10, // 10-60 species (integer)
             shannonIndex: (Math.random() * 4).toString(), // 0-4
             observations: [
@@ -302,16 +332,25 @@ async function seedDatabase() {
             updatedAt: now,
           });
         } else if (category === "waste") {
+          const timeOfDays = ["day", "evening", "night"];
+          const locationTypes = ["industrial", "residential", "commercial", "rural"];
           await db.insert(schema.wasteData).values({
             wasteDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
+            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
             solidWasteKg: (Math.random() * 1000).toString(), // 0-1000 kg
             hazardousWasteKg: (Math.random() * 100).toString(), // 0-100 kg
             recycledWasteKg: (Math.random() * 500).toString(), // 0-500 kg
             organicWasteKg: (Math.random() * 600).toString(), // 0-600 kg
             plasticWasteKg: (Math.random() * 400).toString(), // 0-400 kg
+            paperWasteKg: (Math.random() * 200).toString(),
+            cansWasteKg: (Math.random() * 50).toString(),
+            bottlesWasteKg: (Math.random() * 75).toString(),
+            eWasteKg: (Math.random() * 30).toString(),
+            scrapMetalKg: (Math.random() * 150).toString(),
             notes: `Waste measurement ${i + 1} in ${city.name}`,
             photos: ["https://picsum.photos/400/300"],
             createdBy: "system",

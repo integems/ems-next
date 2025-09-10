@@ -50,10 +50,10 @@ export class SoilService {
    * @returns A paginated list of soil data.
    */
   async findAllSoilData(filter: SoilDataFilterDto) {
-    const { page, limit, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -61,28 +61,30 @@ export class SoilService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.soilData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.soilData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(schema.soilData.locationId, locationId);
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.soilData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      const dateCondition = and(
-        sql`${schema.soilData.measurementTime} >= ${startDate}`,
-        sql`${schema.soilData.measurementTime} <= ${endDate}`,
-      );
-      whereClause = whereClause
-        ? and(whereClause, dateCondition)
-        : dateCondition;
+    if (startDate) {
+      conditions.push(sql`${schema.soilData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.soilData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.soilData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.soilData.locationType, locationType));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [soilData, count] = await Promise.all([
       db.query.soilData.findMany({
@@ -90,8 +92,13 @@ export class SoilService {
         limit,
         offset,
         orderBy: [desc(schema.soilData.createdAt)],
-        with: {
-          location: true,
+            with: {
+          location: {
+            columns: {
+              geom: false,
+              pointGeom: false,
+            },
+          },
         },
       }),
       db
@@ -186,6 +193,8 @@ export class SoilService {
         measurementTime: soilDataDto.measurementTime
           ? new Date(soilDataDto.measurementTime)
           : undefined,
+        timeOfDay: soilDataDto.timeOfDay,
+        locationType: soilDataDto.locationType,
         ph: soilDataDto.ph?.toString(),
         nitrogen: soilDataDto.nitrogen?.toString(),
         phosphorus: soilDataDto.phosphorus?.toString(),

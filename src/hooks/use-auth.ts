@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import { CurrentUser, Role } from "@/common/constants";
+import { CurrentUser } from "@/types/common.types";
 
 const TOKEN_KEY = "jwtToken";
 

@@ -1,3 +1,4 @@
+
 -- Enable PostGIS extension (run once per database)
 CREATE EXTENSION IF NOT EXISTS postgis;
 
@@ -12,6 +13,9 @@ CREATE SCHEMA IF NOT EXISTS public;
 CREATE TYPE public.user_status AS ENUM ('active', 'banned', 'suspended', 'online');
 CREATE TYPE public.role_name AS ENUM ('Authenticated', 'IntegemsAdmin', 'SuperAdmin', 'Admin');
 CREATE TYPE public.category AS ENUM ('air', 'water', 'soil', 'noise', 'biodiversity', 'waste');
+CREATE TYPE public.location_type AS ENUM ('industrial', 'residential', 'commercial', 'rural');
+CREATE TYPE public.time_of_day AS ENUM ('day', 'evening', 'night');
+CREATE TYPE public.water_source AS ENUM ('surface', 'underground');
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS public.users (
@@ -71,7 +75,7 @@ CREATE TABLE IF NOT EXISTS public.user_auths (
     created_by VARCHAR(80) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(80) NOT NULL,
-    updated_at TIMESTAMPTZ
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create locations table
@@ -84,6 +88,7 @@ CREATE TABLE IF NOT EXISTS public.locations (
     point_geom geometry(POINT, 4326),
     altitude NUMERIC(10, 2),
     category public.category NOT NULL,
+    location_type public.location_type,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ,
     created_by VARCHAR(80) NOT NULL,
@@ -97,6 +102,8 @@ CREATE TABLE IF NOT EXISTS public.air_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
+    time_of_day public.time_of_day,
+    location_type public.location_type,
     pm25 NUMERIC(10, 2),
     pm10 NUMERIC(10, 2),
     no2 NUMERIC(10, 2),
@@ -121,7 +128,18 @@ CREATE TABLE IF NOT EXISTS public.water_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
+    time_of_day public.time_of_day,
+    location_type public.location_type,
+    water_source public.water_source,
     ph NUMERIC(5, 2),
+    ph_mv NUMERIC(10, 2),
+    orp NUMERIC(10, 2),
+    ec NUMERIC(10, 2),
+    ec_abs NUMERIC(10, 2),
+    resistivity NUMERIC(10, 2),
+    salinity NUMERIC(10, 2),
+    pressure NUMERIC(10, 2),
+    do_percent NUMERIC(10, 2),
     dissolved_oxygen NUMERIC(10, 2),
     turbidity NUMERIC(10, 2),
     bod NUMERIC(10, 2),
@@ -144,6 +162,8 @@ CREATE TABLE IF NOT EXISTS public.soil_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
+    time_of_day public.time_of_day,
+    location_type public.location_type,
     ph NUMERIC(5, 2),
     nitrogen NUMERIC(10, 2),
     phosphorus NUMERIC(10, 2),
@@ -166,10 +186,15 @@ CREATE TABLE IF NOT EXISTS public.noise_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
-    db_a NUMERIC(10, 2),
-    db_c NUMERIC(10, 2),
-    peak NUMERIC(10, 2),
+    time_of_day public.time_of_day,
+    location_type public.location_type,
+    duration INTERVAL,
+    laeq NUMERIC(10, 2),
+    laf_max NUMERIC(10, 2),
     frequency NUMERIC(10, 2),
+    la10 NUMERIC(10, 2),
+    la90 NUMERIC(10, 2),
+    laf_min NUMERIC(10, 2),
     notes TEXT,
     photos JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -186,6 +211,8 @@ CREATE TABLE IF NOT EXISTS public.biodiversity_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
+    time_of_day public.time_of_day,
+    location_type public.location_type,
     species_count INTEGER,
     shannon_index NUMERIC(5, 2),
     observations JSONB,
@@ -205,11 +232,18 @@ CREATE TABLE IF NOT EXISTS public.waste_data (
     location_id VARCHAR(25),
     point_geom geometry(POINT, 4326),
     measurement_time TIMESTAMPTZ NOT NULL,
+    time_of_day public.time_of_day,
+    location_type public.location_type,
     solid_waste_kg NUMERIC(10, 2),
     hazardous_waste_kg NUMERIC(10, 2),
     recycled_waste_kg NUMERIC(10, 2),
     organic_waste_kg NUMERIC(10, 2),
+    paper_waste_kg NUMERIC(10, 2),
     plastic_waste_kg NUMERIC(10, 2),
+    cans_waste_kg NUMERIC(10, 2),
+    bottles_waste_kg NUMERIC(10, 2),
+    e_waste_kg NUMERIC(10, 2),
+    scrap_metal_kg NUMERIC(10, 2),
     notes TEXT,
     photos JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

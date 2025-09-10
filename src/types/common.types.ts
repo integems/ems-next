@@ -58,6 +58,24 @@ export enum Category {
   Waste = "waste",
 }
 
+export enum LocationType {
+  Industrial = "industrial",
+  Residential = "residential",
+  Commercial = "commercial",
+  Rural = "rural",
+}
+
+export enum TimeOfDay {
+  Day = "day",
+  Evening = "evening",
+  Night = "night",
+}
+
+export enum WaterSource {
+  Surface = "surface",
+  Underground = "underground",
+}
+
 export type GeometryPoint = [number, number];
 
 export interface GeometryPolygon {
@@ -72,7 +90,7 @@ export interface CurrentUser {
   image?: string;
   isAuthenticated: boolean;
   ip?: string;
-  role?: RoleName; // Changed from RoleName to Role for consistency
+  role?: RoleName;
   token?: string;
 }
 
@@ -86,6 +104,7 @@ export interface User {
   profileImage: string | null;
   phoneNumber: string | null;
   status: UserStatus;
+  password: string; // Added from schema
   gender: string | null;
   email: string;
   verified: boolean;
@@ -156,6 +175,7 @@ export interface Location {
   pointGeom: GeometryPoint | null;
   altitude: number | null;
   category: Category;
+  locationType: LocationType | null;
   createdAt: string;
   updatedAt: string | null;
   createdBy: string;
@@ -175,6 +195,8 @@ export interface AirData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
   pm25: number | null;
   pm10: number | null;
   no2: number | null;
@@ -199,7 +221,18 @@ export interface WaterData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
+  waterSource: WaterSource | null;
   ph: number | null;
+  phMv: number | null;
+  orp: number | null;
+  ec: number | null;
+  ecAbs: number | null;
+  resistivity: number | null;
+  salinity: number | null;
+  pressure: number | null;
+  doPercent: number | null;
   dissolvedOxygen: number | null;
   turbidity: number | null;
   bod: number | null;
@@ -222,6 +255,8 @@ export interface SoilData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
   ph: number | null;
   nitrogen: number | null;
   phosphorus: number | null;
@@ -244,10 +279,15 @@ export interface NoiseData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
-  dbA: number | null;
-  dbC: number | null;
-  peak: number | null;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
+  duration: string | null; // Interval in schema, represented as string
+  laeq: number | null;
+  lafMax: number | null;
   frequency: number | null;
+  la10: number | null;
+  la90: number | null;
+  lafMin: number | null;
   notes: string | null;
   photos: unknown | null; // JSONB
   createdAt: string;
@@ -264,6 +304,8 @@ export interface BiodiversityData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
   speciesCount: number | null;
   shannonIndex: number | null;
   observations: unknown | null; // JSONB
@@ -283,11 +325,18 @@ export interface WasteData {
   locationId: string | null;
   pointGeom: GeometryPoint | null;
   measurementTime: string;
+  timeOfDay: TimeOfDay | null; // Updated to use TimeOfDay enum
+  locationType: LocationType | null; // Updated to use LocationType enum
   solidWasteKg: number | null;
   hazardousWasteKg: number | null;
   recycledWasteKg: number | null;
   organicWasteKg: number | null;
+  paperWasteKg: number | null;
   plasticWasteKg: number | null;
+  cansWasteKg: number | null;
+  bottlesWasteKg: number | null;
+  eWasteKg: number | null;
+  scrapMetalKg: number | null;
   notes: string | null;
   photos: unknown | null; // JSONB
   createdAt: string;

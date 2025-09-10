@@ -63,27 +63,50 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
   return (
     <>
       <TableRow>
-        <TableCell>{data.location?.name}</TableCell>
-        <TableCell>{data.ph}</TableCell>
-        <TableCell>{data.moisture}</TableCell>
-        <TableCell>{data.nitrogen}</TableCell>
-        <TableCell>{data.phosphorus}</TableCell>
-        <TableCell>{data.potassium}</TableCell>
-        <TableCell>{data.organicMatter}</TableCell>
+        <TableCell>{data.location?.name ?? "N/A"}</TableCell>
+        <TableCell>{data.timeOfDay ?? "N/A"}</TableCell>
+        <TableCell>{data.locationType ?? "N/A"}</TableCell>
+        <TableCell>{data.ph ?? "N/A"}</TableCell>
+        <TableCell>{data.nitrogen ?? "N/A"}</TableCell>
+        <TableCell>{data.phosphorus ?? "N/A"}</TableCell>
+        <TableCell>{data.potassium ?? "N/A"}</TableCell>
+        <TableCell>{data.organicMatter ?? "N/A"}</TableCell>
+        <TableCell>{data.moisture ?? "N/A"}</TableCell>
         <TableCell>
-          {new Date(data.measurementTime).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}{ " "}
-          {new Date(data.measurementTime).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          {data.measurementTime
+            ? `${new Date(data.measurementTime).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} ${new Date(data.measurementTime).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })}`
+            : "N/A"}
         </TableCell>
-        <TableCell className="text-wrap">{data.notes}</TableCell>
+        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell>
+          {data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>
+          {data.updatedAt
+            ? new Date(data.updatedAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>{data.createdBy ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

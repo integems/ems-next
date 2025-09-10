@@ -21,7 +21,7 @@ import {
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Location } from "@/types/common.types";
+import { Category, Location } from "@/types/common.types";
 import { createBiodiversityDataDto, CreateBiodiversityDataDto, singleBiodiversityData as biodiversityDto } from "@/dtos/biodiversity.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
@@ -40,16 +40,12 @@ const biodiversityService = new FrontendBiodiversityService();
 const updatedBiodiversityDto = biodiversityDto.extend({
   speciesCount: z.number().optional(),
   shannonIndex: z.number().optional(),
-  simpsonIndex: z.number().optional(),
-  abundance: z.number().optional(),
 }).refine(
   (data) =>
     data.speciesCount != null ||
-    data.shannonIndex != null ||
-    data.simpsonIndex != null ||
-    data.abundance != null,
+    data.shannonIndex != null,
   {
-    message: "At least one measurement (Species Count, Shannon Index, Simpson Index, or Abundance) is required",
+    message: "At least one measurement (Species Count or Shannon Index) is required",
     path: ["measurements"],
   }
 );
@@ -61,14 +57,12 @@ interface CreateBiodiversityDataFormProps {
 type BiodiversityDataFormData = z.infer<typeof updatedBiodiversityDto>;
 
 const parameterMappings: { [key: string]: keyof BiodiversityDataFormData } = {
-  species: "species",
-  abundance: "abundance",
-  habitat: "habitat",
   speciescount: "speciesCount",
   shannonindex: "shannonIndex",
-  simpsonindex: "simpsonIndex",
   measurementtime: "measurementTime",
   notes: "notes",
+  timeofday: "timeOfDay",
+  locationtype: "locationType",
 };
 
 export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversityDataFormProps) {
@@ -80,7 +74,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
-    category: "biodiversity",
+    category: Category.Biodiversity,
     pointGeom: [0.0, 0.0],
   });
   const [biodiversityDataFormData, setBiodiversityDataFormData] = useState<BiodiversityDataFormData[]>([
@@ -100,7 +94,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token, {
+      const response = await locationService.findAllLocations(currentUser.token || "", {
         page: 1,
         limit: 1000,
       });
@@ -113,7 +107,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
   const createBiodiversityDataMutation = useMutation({
     mutationFn: (newBiodiversityData: CreateBiodiversityDataDto) =>
-      biodiversityService.createBiodiversityData(currentUser!.token, newBiodiversityData),
+      biodiversityService.createBiodiversityData(currentUser!.token || "", newBiodiversityData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["biodiversity-data"] });
       toast.success("Biodiversity data updated successfully!");
@@ -126,7 +120,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
   const createLocationMutation = useMutation({
     mutationFn: (newLocation: CreateLocationDto) =>
-      locationService.createLocation(currentUser!.token, newLocation),
+      locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
       console.log({"Created Location":data})
       queryClient.invalidateQueries({ queryKey: ["locations"] });
@@ -178,12 +172,11 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
   const handleSpreadsheetChange = (data: { value: string }[][]) => {
     const headers = [
       "measurementTime",
-      "species",
-      "abundance",
-      "habitat",
       "speciesCount",
       "shannonIndex",
-      "simpsonIndex",
+      "timeOfDay",
+      "locationType",
+      "observations",
       "notes",
     ];
 
@@ -200,9 +193,13 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
           } else if (
-            ["speciesCount", "shannonIndex", "simpsonIndex", "abundance"].includes(header)
+            ["speciesCount", "shannonIndex"].includes(header)
           ) {
             rowData[header as keyof BiodiversityDataFormData] = Number(value) as any;
+          } else if (header === "timeOfDay") {
+            rowData.timeOfDay = value as any;
+          } else if (header === "locationType") {
+            rowData.locationType = value as any;
           } else {
             rowData[header as keyof BiodiversityDataFormData] = value as any;
           }
@@ -234,13 +231,13 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
   const spreadsheetData = biodiversityDataFormData.map((data) => [
     { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
-    { value: data.species || "" },
-    { value: data.abundance?.toString() || "" },
-    { value: data.habitat || "" },
     { value: data.speciesCount?.toString() || "" },
     { value: data.shannonIndex?.toString() || "" },
-    { value: data.simpsonIndex?.toString() || "" },
+    { value: data.timeOfDay || "" },
+    { value: data.locationType || "" },
     { value: data.notes || "" },
+    { value: data.timeOfDay || "" },
+    { value: data.locationType || "" },
   ]);
 
   const handleFileUpload = useCallback(
@@ -284,11 +281,15 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                       toast.error(`Invalid date format in uploaded file: ${value}`);
                     }
                   } else if (
-                    ["speciesCount", "shannonIndex", "simpsonIndex", "abundance"].includes(
+                    ["speciesCount", "shannonIndex"].includes(
                       mappedKey,
                     )
                   ) {
                     rowData[mappedKey] = Number(value) as any;
+                  } else if (mappedKey === "timeOfDay") {
+                    rowData[mappedKey] = value as any;
+                  } else if (mappedKey === "locationType") {
+                    rowData[mappedKey] = value as any;
                   } else {
                     rowData[mappedKey] = value as any;
                   }
@@ -478,6 +479,25 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                         placeholder="Optional description"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newLocationType">Location Type</Label>
+                      <Select
+                        name="locationType"
+                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        value={locationFormData.locationType || ""}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Location Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="industrial">Industrial</SelectItem>
+                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="commercial">Commercial</SelectItem>
+                          <SelectItem value="rural">Rural</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
@@ -536,18 +556,19 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
           {/* Spreadsheet Section */}
           <div className="space-y-2">
             <Label>Biodiversity Quality Data Entries</Label>
-            <div className="max-w-4xl overflow-auto rounded">
+            <div className="max-w-[60rem] overflow-auto rounded">
               <Spreadsheet
                 data={spreadsheetData}
-                columnLabels={[
+            
+                  columnLabels={[
                   "Measurement Time",
-                  "Species",
-                  "Abundance",
-                  "Habitat",
                   "Species Count",
                   "Shannon Index",
-                  "Simpson Index",
+                  "Time of Day",
+                  "Location Type",
                   "Notes",
+                  "Time of Day",
+                  "Location Type",
                 ]}
                 onChange={(data)=>handleSpreadsheetChange(data as any)}
               />
@@ -579,48 +600,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
             {/* Primary Measurements */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Primary Measurements</Label>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm">Species</Label>
-                  <Input
-                    type="text"
-                    name="species"
-                    value={singleBiodiversityData.species || ""}
-                    onChange={handleSingleBiodiversityDataChange}
-                    placeholder="e.g. Quercus robur"
-                  />
-                  {errors.species && <p className="text-xs text-red-500">{errors.species[0]}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Abundance</Label>
-                  <Input
-                    type="number"
-                    name="abundance"
-                    value={singleBiodiversityData.abundance || ""}
-                    onChange={handleSingleBiodiversityDataChange}
-                    placeholder="0"
-                  />
-                  {errors.abundance && <p className="text-xs text-red-500">{errors.abundance[0]}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Habitat</Label>
-                  <Input
-                    type="text"
-                    name="habitat"
-                    value={singleBiodiversityData.habitat || ""}
-                    onChange={handleSingleBiodiversityDataChange}
-                    placeholder="e.g. Forest"
-                  />
-                  {errors.habitat && (
-                    <p className="text-xs text-red-500">{errors.habitat[0]}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Parameters */}
-            <div className="space-y-4">
+              <Label className="text-base font-medium">Measurements</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">Species Count</Label>
@@ -645,22 +625,50 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                   {errors.shannonIndex && <p className="text-xs text-red-500">{errors.shannonIndex[0]}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm">Simpson Index</Label>
-                  <Input
-                    type="number"
-                    name="simpsonIndex"
-                    value={singleBiodiversityData.simpsonIndex || ""}
-                    onChange={handleSingleBiodiversityDataChange}
-                    placeholder="0"
-                  />
-                  {errors.simpsonIndex && <p className="text-xs text-red-500">{errors.simpsonIndex[0]}</p>}
+                  <Label className="text-sm">Time of Day</Label>
+                  <Select
+                    name="timeOfDay"
+                    onValueChange={(value) =>
+                      setSingleBiodiversityData((prev) => ({ ...prev, timeOfDay: value as any }))
+                    }
+                    value={singleBiodiversityData.timeOfDay || ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Time of Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="day">Day</SelectItem>
+                      <SelectItem value="evening">Evening</SelectItem>
+                      <SelectItem value="night">Night</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Location Type (Data Specific)</Label>
+                  <Select
+                    name="locationType"
+                    onValueChange={(value) =>
+                      setSingleBiodiversityData((prev) => ({ ...prev, locationType: value as any }))
+                    }
+                    value={singleBiodiversityData.locationType || ""}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Location Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="industrial">Industrial</SelectItem>
+                      <SelectItem value="residential">Residential</SelectItem>
+                      <SelectItem value="commercial">Commercial</SelectItem>
+                      <SelectItem value="rural">Rural</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
                 </div>
               </div>
-              {errors.measurements && (
-                <p className="text-xs text-red-500">{errors.measurements}</p>
-              )}
-         
             </div>
+
+            
 
             {/* Notes */}
             <div className="space-y-2">
@@ -673,6 +681,8 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                 className="h-24"
               />
             </div>
+
+            
 
               {errors.locationId && (
                 <p className="text-xs text-red-500">{errors.locationId}</p>

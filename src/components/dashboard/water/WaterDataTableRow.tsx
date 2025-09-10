@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -51,8 +52,8 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["water-data"] });
       setIsDeleteDialogOpen(false);
     },
-    onError: (error: any) => {
-      toast.error("Failed to delete water data");
+    onError: (error: Error) => {
+      toast.error(`Failed to delete water data: ${error.message}`);
     },
   });
 
@@ -63,29 +64,60 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
   return (
     <>
       <TableRow>
-        <TableCell>{data.location?.name}</TableCell>
-        <TableCell>{data.ph}</TableCell>
-        <TableCell>{data.temperature}</TableCell>
-        <TableCell>{data.turbidity}</TableCell>
-        <TableCell>{data.dissolvedOxygen}</TableCell>
-        <TableCell>{data.bod}</TableCell>
-        <TableCell>{data.cod}</TableCell>
-        <TableCell>{data.totalDissolvedSolids}</TableCell>
-        <TableCell>{data.conductivity}</TableCell>
+        <TableCell>{data.location?.name ?? "N/A"}</TableCell>
+        <TableCell>{data.timeOfDay ?? "N/A"}</TableCell>
+        <TableCell>{data.locationType ?? "N/A"}</TableCell>
+        <TableCell>{data.waterSource ?? "N/A"}</TableCell>
+        <TableCell>{data.ph ?? "N/A"}</TableCell>
+        <TableCell>{data.phMv ?? "N/A"}</TableCell>
+        <TableCell>{data.orp ?? "N/A"}</TableCell>
+        <TableCell>{data.ec ?? "N/A"}</TableCell>
+        <TableCell>{data.ecAbs ?? "N/A"}</TableCell>
+        <TableCell>{data.resistivity ?? "N/A"}</TableCell>
+        <TableCell>{data.salinity ?? "N/A"}</TableCell>
+        <TableCell>{data.pressure ?? "N/A"}</TableCell>
+        <TableCell>{data.doPercent ?? "N/A"}</TableCell>
+        <TableCell>{data.dissolvedOxygen ?? "N/A"}</TableCell>
+        <TableCell>{data.turbidity ?? "N/A"}</TableCell>
+        <TableCell>{data.bod ?? "N/A"}</TableCell>
+        <TableCell>{data.cod ?? "N/A"}</TableCell>
+        <TableCell>{data.totalDissolvedSolids ?? "N/A"}</TableCell>
+        <TableCell>{data.temperature ?? "N/A"}</TableCell>
+        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell>{data.photos ? "Yes" : "No"}</TableCell>
         <TableCell>
-          {new Date(data.measurementTime).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}{ " "}
-          {new Date(data.measurementTime).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          {data.measurementTime
+            ? new Date(data.measurementTime).toLocaleString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })
+            : "N/A"}
         </TableCell>
-        <TableCell className="text-wrap">{data.notes}</TableCell>
+        <TableCell>
+          {data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>
+          {data.updatedAt
+            ? new Date(data.updatedAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
+        </TableCell>
+        <TableCell>{data.createdBy ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -94,13 +126,8 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-background border-border"
-            >
-              <DropdownMenuLabel className="text-foreground">
-                Actions
-              </DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="bg-background border-border">
+              <DropdownMenuLabel className="text-foreground">Actions</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => setIsEditDialogOpen(true)}
                 className="text-foreground hover:bg-accent"
@@ -124,8 +151,7 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the water
-              data record.
+              This action cannot be undone. This will permanently delete the water data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -150,7 +176,10 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Edit Water Data</DialogTitle>
           </DialogHeader>
-          <UpdateWaterDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateWaterDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BiodiversityData, Location } from "@/types/common.types";
+import { BiodiversityData, Location, TimeOfDay, LocationType } from "@/types/common.types";
 import { BiodiversityDataFilterDto } from "@/dtos/biodiversity.dto";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -26,6 +26,9 @@ import {
   Activity,
   Filter,
   RefreshCcw,
+  Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MapComponent from "@/components/MapComponent";
@@ -46,6 +49,8 @@ import {
   ZAxis,
 } from "recharts";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const biodiversityService = new FrontendBiodiversityService();
 const locationService = new FrontendLocationService();
@@ -69,6 +74,9 @@ const calculateStdDev = (data: number[]) => {
 
 export default function BiodiversityAnalysisPage() {
   const { currentUser } = useAuth();
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
+  const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [locationIdFilter, setLocationIdFilter] = useState<string | undefined>(
     undefined,
   );
@@ -78,6 +86,12 @@ export default function BiodiversityAnalysisPage() {
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
     undefined,
   );
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState<
+    "day" | "evening" | "night" | "All" | undefined
+  >(undefined);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<
+    "industrial" | "residential" | "commercial" | "rural" | "All" | undefined
+  >(undefined);
   const [selectedParameter, setSelectedParameter] =
     useState<keyof BiodiversityData>("speciesCount");
   const [selectedParameter2, setSelectedParameter2] =
@@ -107,9 +121,12 @@ export default function BiodiversityAnalysisPage() {
   } = useQuery({
     queryKey: [
       "biodiversity-data-analysis",
+      activeSearchQuery,
       locationIdFilter,
       startDateFilter,
       endDateFilter,
+      timeOfDayFilter,
+      locationTypeFilter,
       currentUser?.token,
     ],
     queryFn: async () => {
@@ -117,9 +134,13 @@ export default function BiodiversityAnalysisPage() {
       const filters: BiodiversityDataFilterDto = {
         page: 1,
         limit: 10000,
+        search: activeSearchQuery,
         locationId: locationIdFilter,
         startDate: startDateFilter,
         endDate: endDateFilter,
+        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        locationType:
+          locationTypeFilter === "All" ? undefined : locationTypeFilter as LocationType,
       };
       const response = await biodiversityService.findAllBiodiversityData(
         currentUser.token,
@@ -131,6 +152,7 @@ export default function BiodiversityAnalysisPage() {
   });
 
   const handleApplyFilters = () => {
+    setActiveSearchQuery(searchQuery || "");
     refetch();
   };
 
@@ -199,7 +221,7 @@ export default function BiodiversityAnalysisPage() {
   );
 
   return (
-    <div className="w-full px-6">
+    <div className="w-full">
       <div className="py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -212,76 +234,174 @@ export default function BiodiversityAnalysisPage() {
           </p>
         </div>
 
-    <div className="flex-1 max-w-xs mb-4">
-         <label
-           htmlFor="location"
-           className="block text-sm font-medium mb-2 text-foreground"
-         >
-           Filter by Location
-         </label>
-         <Select
-           value={locationIdFilter}
-           onValueChange={(value) =>
-             setLocationIdFilter(value === "all" ? "" : value)
-           }
-         >
-           <SelectTrigger id="location" className="bg-background border-border">
-             <SelectValue placeholder="Select location" />
-           </SelectTrigger>
-           <SelectContent>
-             <SelectItem value="all">All Locations</SelectItem>
-             {locations.map((loc: any) => (
-               <SelectItem key={loc.locationId} value={loc.locationId}>
-                 <div className="flex flex-row gap-1 items-center justify-start">
-                   <MapPin size={15} />
-                   <div>{loc.name}</div>
-                 </div>
-               </SelectItem>
-             ))}
-           </SelectContent>
-         </Select>
-       </div>
- 
-       <div className="mb-6">
-         <MapComponent
-           locations={locations}
-           activeLocationId={locationIdFilter}
-         />
-       </div>
-
-        {/* Date Filters */}
-        <div>
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
-              <Filter className="h-5 w-5 text-green-600" />
-              Time Range Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-              <DateTimePicker
-                value={startDateFilter}
-                onChange={setStartDateFilter}
-                label="Start Date"
-              />
-
-              <DateTimePicker
-                value={endDateFilter}
-                onChange={setEndDateFilter}
-                label="End Date"
-              />
-
-              <Button onClick={handleApplyFilters} disabled={isLoading}>
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <RefreshCcw className="h-4 w-4 mr-2" />
-                )}
-                
-              </Button>
-            </div>
-          </CardContent>
+        {/* Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+            <DateTimePicker
+            value={startDateFilter}
+            onChange={setStartDateFilter}
+            label="Start Date"
+            />
+            <DateTimePicker
+            value={endDateFilter}
+            onChange={setEndDateFilter}
+            label="End Date"
+            />
+            <div className="flex-1">
+            <label
+                htmlFor="timeOfDay"
+                className="block text-sm font-medium mb-2 text-foreground"
+            >
+                Filter by Time of Day
+            </label>
+            <Select
+                value={timeOfDayFilter}
+                onValueChange={(value) =>
+                    setTimeOfDayFilter(
+                    value === "All"
+                        ? undefined
+                        : (value as "day" | "evening" | "night"),
+                    )
+                }
+            >
+                <SelectTrigger
+                    id="timeOfDay"
+                    className="bg-background border-border"
+                >
+                    <SelectValue placeholder="Select Time of Day" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem  value={"all"}>
+                        All
+                    </SelectItem>
+                    {Object.values(TimeOfDay).map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label
+                  htmlFor="locationType"
+                  className="block text-sm font-medium mb-2 text-foreground"
+                >
+                  Filter by Location Type
+                </label>
+                <Select
+                  value={locationTypeFilter}
+                  onValueChange={(value) =>
+                    setLocationTypeFilter(
+                      value === "All"
+                        ? undefined
+                        : (value as
+                            | "industrial"
+                            | "residential"
+                            | "commercial"
+                            | "rural"),
+                    )
+                  }
+                >
+                  <SelectTrigger
+                    id="locationType"
+                    className="bg-background border-border"
+                  >
+                    <SelectValue placeholder="Select Location Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(LocationType).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+            <div className="flex-1">
+                <label
+                    htmlFor="search"
+                    className="block text-sm font-medium mb-2 text-foreground"
+                >
+                    Search
+                </label>
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                    id="search"
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery || ""}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
+                    />
+                </div>
+            </div>
+            <div className="flex-1">
+                <label
+                    htmlFor="location"
+                    className="block text-sm font-medium mb-2 text-foreground"
+                >
+                    Filter by Location
+                </label>
+                <Select
+                    value={locationIdFilter}
+                    onValueChange={(value) =>
+                    setLocationIdFilter(value === "all" ? "" : value)
+                    }
+                >
+                    <SelectTrigger id="location" className="bg-background border-border">
+                    <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map((loc: any) => (
+                        <SelectItem key={loc.locationId} value={loc.locationId}>
+                        <div className="flex flex-row gap-1 items-center justify-start">
+                            <MapPin size={15} />
+                            <div>{loc.name}</div>
+                        </div>
+                        </SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <Button onClick={handleApplyFilters} disabled={isLoading} className="self-end">
+                {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                    <RefreshCcw className="h-4 w-4 mr-2" />
+                )}
+                Apply Filters
+            </Button>
+        </div>
+
+        <Collapsible
+          open={isMapOpen}
+          onOpenChange={setIsMapOpen}
+          className="mb-6"
+        >
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 w-full justify-between"
+            >
+              <span>{isMapOpen ? "Hide Map" : "Show Map"}</span>
+              {isMapOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4">
+            <MapComponent
+              locations={locations}
+              activeLocationId={locationIdFilter}
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
 
         {/* Content */}

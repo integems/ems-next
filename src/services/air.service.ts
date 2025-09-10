@@ -50,11 +50,10 @@ export class AirService {
    * @returns A paginated list of air data.
    */
   async findAllAirData(filter: AirDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-
-    let whereClause: any = undefined;
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -62,34 +61,30 @@ export class AirService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.airData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.airData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(schema.airData.locationId, locationId);
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.airData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      try {
-        const startDateTime = new Date(startDate);
-        const endDateTime = new Date(endDate);
-        const dateCondition = and(
-          sql`${schema.airData.measurementTime} >= ${startDateTime.toISOString()}`,
-          sql`${schema.airData.measurementTime} <= ${endDateTime.toISOString()}`,
-        );
-        whereClause = whereClause
-          ? and(whereClause, dateCondition)
-          : dateCondition;
-      } catch (error) {
-        throw new Error("Invalid date format provided");
-      }
+    if (startDate) {
+      conditions.push(sql`${schema.airData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.airData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.airData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.airData.locationType, locationType));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [airData, count] = await Promise.all([
       db.query.airData.findMany({
@@ -197,6 +192,8 @@ export class AirService {
       .set({
         ...airDataDto,
         measurementTime:airDataDto.measurementTime ? new Date(airDataDto.measurementTime):undefined,
+        timeOfDay: airDataDto.timeOfDay,
+        locationType: airDataDto.locationType,
         pm25: airDataDto.pm25?.toString(),
         pm10: airDataDto.pm10?.toString(),
         no2: airDataDto.no2?.toString(),

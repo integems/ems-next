@@ -32,7 +32,7 @@ export class FrontendUserService {
         limit: filter.limit.toString(),
         role: filter.role,
         status: filter.status,
-        Search: filter.search,
+        search: filter.search,
       };
       const response = await axios.get(API_BASE_URL, {
         params: queryParams,

@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { User, UserStatus, RoleName } from "@/types/common.types";
+import { ExportButton } from "@/components/ExportButton";
 import { UserFilterDto } from "@/dtos/user.dto";
 import { FrontendUserService } from "@/frontend-services/user.service";
 import { RoleService } from "@/frontend-services/role.service";
@@ -46,6 +47,15 @@ import { cn } from "@/lib/utils";
 
 const userService = new FrontendUserService();
 const roleService = new RoleService();
+
+const userDataColumns = [
+  { header: "Full Name", accessor: "fullName" },
+  { header: "Email", accessor: "email" },
+  { header: "Status", accessor: "status" },
+  { header: "Role", accessor: "role" },
+  { header: "Created At", accessor: "createdAt" },
+  { header: "Updated At", accessor: "updatedAt" },
+];
 
 export default function UsersManagementPage() {
   const { currentUser } = useAuth();
@@ -136,7 +146,7 @@ export default function UsersManagementPage() {
       refetch();
       return;
     }
-    setActiveSearchQuery(searchQuery as string);
+    setActiveSearchQuery(searchQuery || "");
     console.log({ roleFilter });
     setActiveRoleFilter(roleFilter);
     setActiveStatusFilter(statusFilter);
@@ -166,16 +176,29 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <div className="container mx-auto px-6 w-full max-w-4xl md:w-4xl">
+    <div className="w-full max-w-[60rem] mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">User Overview</h2>
-        <Button
-          size="icon"
-          onClick={handleOpenCreateUserDialog}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          <UserPlus className="h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <ExportButton
+            service={{ findAll: userService.findAllUsers }}
+            filters={{
+              search: activeSearchQuery,
+              role: activeRoleFilter,
+              status: activeStatusFilter || undefined,
+            }}
+            fileName="UsersData"
+            token={currentUser?.token || ""}
+            columns={userDataColumns}
+          />
+          <Button
+            size="icon"
+            onClick={handleOpenCreateUserDialog}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            <UserPlus className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div className="flex items-end gap-4 mb-6 flex-wrap">
         <div className="flex-1 max-w-xs">
@@ -262,7 +285,7 @@ export default function UsersManagementPage() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border shadow-sm w-full max-w-4xl md:w-4xl">
+          <div className="overflow-x-auto rounded-lg border border-border shadow-sm">
             <Table className="w-full min-w-max">
               <TableHeader>
                 <TableRow className="bg-muted/50">

@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { useAuth } from "@/hooks/use-auth";
-import { AirData } from "@/types/common.types";
+import { AirData, TimeOfDay, LocationType } from "@/types/common.types";
 import { updateAirDataDto, UpdateAirDataDto } from "@/dtos/air.dto";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { z } from "zod";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const airService = new FrontendAirService();
 
@@ -43,6 +44,8 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
         temperature: data.temperature as number || undefined,
         humidity: data.humidity as number || undefined,
         notes: data.notes || undefined,
+        timeOfDay: data.timeOfDay || undefined,
+        locationType: data.locationType || undefined,
       });
     }
   }, [data]);
@@ -78,9 +81,18 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
 
+  const handleTimeOfDayChange = (value: TimeOfDay) => {
+    setFormData((prev) => ({ ...prev, timeOfDay: value }));
+  };
+
+  const handleLocationTypeChange = (value: LocationType) => {
+    setFormData((prev) => ({ ...prev, locationType: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
+
     mutation.mutate(formData);
   };
 
@@ -195,13 +207,51 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
             />
             {errors.so2 && <p className="text-xs text-red-500">{Array.isArray(errors.so2) ? errors.so2[0] : errors.so2}</p>}
           </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Time of Day</Label>
+            <Select
+              value={formData.timeOfDay || ""}
+              onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Time of Day" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(TimeOfDay).map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Location Type</Label>
+            <Select
+              value={formData.locationType || ""}
+              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Location Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(LocationType).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
+          </div>
         </div>
       </div>
       <div className="space-y-2">
         <Label>Notes (Optional)</Label>
         <Textarea
           name="notes"
-          value={formData.notes || 0}
+          value={formData.notes || ""}
           onChange={handleChange}
           placeholder="Additional observations or comments..."
           className="h-24"

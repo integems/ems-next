@@ -50,10 +50,10 @@ export class NoiseService {
    * @returns A paginated list of noise data.
    */
   async findAllNoiseData(filter: NoiseDataFilterDto) {
-    const { page, limit, search, locationId, startDate, endDate } = filter;
+    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
     const offset = (page - 1) * limit;
 
-    let whereClause: any = undefined;
+    const conditions = [];
 
     if (search) {
       const searchTerms = search
@@ -61,28 +61,30 @@ export class NoiseService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      const searchConditions = searchTerms.map((term) =>
-        or(ilike(schema.noiseData.notes, `%${term}%`)),
-      );
-      whereClause = and(...searchConditions);
+      conditions.push(or(...searchTerms.map((term) => ilike(schema.noiseData.notes, `%${term}%`))));
     }
 
     if (locationId) {
-      const locationCondition = eq(schema.noiseData.locationId, locationId);
-      whereClause = whereClause
-        ? and(whereClause, locationCondition)
-        : locationCondition;
+      conditions.push(eq(schema.noiseData.locationId, locationId));
     }
 
-    if (startDate && endDate) {
-      const dateCondition = and(
-        sql`${schema.noiseData.measurementTime} >= ${startDate}`,
-        sql`${schema.noiseData.measurementTime} <= ${endDate}`,
-      );
-      whereClause = whereClause
-        ? and(whereClause, dateCondition)
-        : dateCondition;
+    if (startDate) {
+      conditions.push(sql`${schema.noiseData.measurementTime} >= ${startDate.toISOString()}`);
     }
+
+    if (endDate) {
+      conditions.push(sql`${schema.noiseData.measurementTime} <= ${endDate.toISOString()}`);
+    }
+
+    if (timeOfDay) {
+      conditions.push(eq(schema.noiseData.timeOfDay, timeOfDay));
+    }
+
+    if (locationType) {
+      conditions.push(eq(schema.noiseData.locationType, locationType));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [noiseData, count] = await Promise.all([
       db.query.noiseData.findMany({
@@ -90,8 +92,13 @@ export class NoiseService {
         limit,
         offset,
         orderBy: [desc(schema.noiseData.createdAt)],
-        with: {
-          location: true,
+           with: {
+          location: {
+            columns: {
+              geom: false,
+              pointGeom: false,
+            },
+          },
         },
       }),
       db
@@ -141,9 +148,13 @@ export class NoiseService {
       noiseDataId: `${ID_PREFIX}${generateId()}`,
       ...dto,
       measurementTime: new Date(dto.measurementTime),
-      dbA: dto.dbA?.toString(),
-      dbC: dto.dbC?.toString(),
-      peak: dto.peak?.toString(),
+      laeq: dto.laeq?.toString(),
+      lafMax: dto.lafMax?.toString(),
+      la10: dto.la10?.toString(),
+      la90: dto.la90?.toString(),
+      lafMin: dto.lafMin?.toString(),
+      timeOfDay: dto.timeOfDay,
+      duration: dto.duration,
       frequency: dto.frequency?.toString(),
       pointGeom: dto.pointGeom,
       createdAt: new Date(),
@@ -184,9 +195,14 @@ export class NoiseService {
         measurementTime: noiseDataDto.measurementTime
           ? new Date(noiseDataDto.measurementTime)
           : undefined,
-        dbA: noiseDataDto.dbA?.toString(),
-        dbC: noiseDataDto.dbC?.toString(),
-        peak: noiseDataDto.peak?.toString(),
+        timeOfDay: noiseDataDto.timeOfDay,
+        locationType: noiseDataDto.locationType,
+        laeq: noiseDataDto.laeq?.toString(),
+        lafMax: noiseDataDto.lafMax?.toString(),
+        la10: noiseDataDto.la10?.toString(),
+        la90: noiseDataDto.la90?.toString(),
+        lafMin: noiseDataDto.lafMin?.toString(),
+        duration: noiseDataDto.duration,
         frequency: noiseDataDto.frequency?.toString(),
         pointGeom: noiseDataDto.pointGeom,
         updatedAt: new Date(),

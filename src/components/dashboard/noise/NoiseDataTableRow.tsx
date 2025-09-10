@@ -26,6 +26,7 @@ import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import UpdateNoiseDataForm from "./UpdateNoiseDataForm";
+import { format } from "date-fns";
 
 interface NoiseDataTableRowProps {
   data: NoiseData;
@@ -63,25 +64,32 @@ const NoiseDataTableRow: React.FC<NoiseDataTableRowProps> = ({ data }) => {
   return (
     <>
       <TableRow>
-        <TableCell>{data.location?.name}</TableCell>
-        <TableCell>{data.dbA}</TableCell>
-        <TableCell>{data.dbC}</TableCell>
-        <TableCell>{data.peak}</TableCell>
-        <TableCell>{data.frequency}</TableCell>
+        <TableCell>{data.location?.name ?? "N/A"}</TableCell>
+        <TableCell>{data.timeOfDay ?? "N/A"}</TableCell>
+        <TableCell>{data.locationType ?? "N/A"}</TableCell>
+        <TableCell>{data.duration ?? "N/A"}</TableCell>
+        <TableCell>{data.laeq ?? "N/A"}</TableCell>
+        <TableCell>{data.lafMax ?? "N/A"}</TableCell>
+        <TableCell>{data.frequency ?? "N/A"}</TableCell>
+        <TableCell>{data.la10 ?? "N/A"}</TableCell>
+        <TableCell>{data.la90 ?? "N/A"}</TableCell>
+        <TableCell>{data.lafMin ?? "N/A"}</TableCell>
         <TableCell>
-          {new Date(data.measurementTime).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          })}{ " "}
-          {new Date(data.measurementTime).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          {data.measurementTime
+            ? format(new Date(data.measurementTime), "PPP p")
+            : "N/A"}
         </TableCell>
-        <TableCell className="text-wrap">{data.notes}</TableCell>
+        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell>
+          {data.createdAt ? format(new Date(data.createdAt), "PPP p") : "N/A"}
+        </TableCell>
+        <TableCell>
+          {data.updatedAt
+            ? format(new Date(data.updatedAt), "PPP p")
+            : "N/A"}
+        </TableCell>
+        <TableCell>{data.createdBy?.username ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy?.username ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

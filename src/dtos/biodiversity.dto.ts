@@ -1,15 +1,15 @@
 import { z } from "zod";
+import { TimeOfDay, LocationType } from "../types/common.types";
 
 export const singleBiodiversityData = z.object({
   locationId: z.string().optional(),
-  pointGeom: z.tuple([z.number(),z.number()]).optional(),
+  pointGeom: z.tuple([z.number(), z.number()]).optional(),
   measurementTime: z.date(),
-  species: z.string().optional(),
-  abundance: z.number().int().optional(),
-  habitat: z.string().optional(),
-  speciesRichness: z.number().int().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
+  speciesCount: z.number().int().optional(),
   shannonIndex: z.number().optional(),
-  simpsonIndex: z.number().optional(),
+  observations: z.any().optional(),
   notes: z.string().optional(),
   photos: z.array(z.string()).optional(),
 });
@@ -18,14 +18,13 @@ export const createBiodiversityDataDto = z.array(singleBiodiversityData);
 
 export const updateBiodiversityDataDto = z.object({
   locationId: z.string().optional(),
-  pointGeom: z.tuple([z.number(),z.number()]).optional(),
+  pointGeom: z.tuple([z.number(), z.number()]).optional(),
   measurementTime: z.date().optional(),
-  species: z.string().optional(),
-  abundance: z.number().int().optional(),
-  habitat: z.string().optional(),
-  speciesRichness: z.number().int().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
+  speciesCount: z.number().int().optional(),
   shannonIndex: z.number().optional(),
-  simpsonIndex: z.number().optional(),
+  observations: z.any().optional(),
   notes: z.string().optional(),
   photos: z.array(z.string()).optional(),
 });
@@ -37,6 +36,8 @@ export const biodiversityDataFilterDto = z.object({
   locationId: z.string().optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
+  timeOfDay: z.enum(TimeOfDay).optional(),
+  locationType: z.enum(LocationType).optional(),
 });
 
 export type CreateBiodiversityDataDto = z.infer<
