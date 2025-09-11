@@ -50,7 +50,16 @@ export class AirService {
    * @returns A paginated list of air data.
    */
   async findAllAirData(filter: AirDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -61,7 +70,13 @@ export class AirService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.airData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.airData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -69,11 +84,15 @@ export class AirService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.airData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.airData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.airData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.airData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -137,17 +156,14 @@ export class AirService {
    * @param currentUser - The current authenticated user.
    * @returns The newly created air data object.
    */
-  async createAirData(
-    airDataDto: CreateAirDataDto,
-    currentUser?: CurrentUser,
-  ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+  async createAirData(airDataDto: CreateAirDataDto, currentUser?: CurrentUser) {
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = airDataDto.map((dto) => ({
       airDataId: `${ID_PREFIX}${generateId()}`,
       ...dto,
-      measurementTime:new Date(dto.measurementTime),
+      measurementTime: new Date(dto.measurementTime),
       pm25: dto.pm25?.toString(),
       pm10: dto.pm10?.toString(),
       no2: dto.no2?.toString(),
@@ -185,15 +201,19 @@ export class AirService {
     airDataDto: UpdateAirDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedAirData] = await db
       .update(schema.airData)
       .set({
         ...airDataDto,
-        measurementTime:airDataDto.measurementTime ? new Date(airDataDto.measurementTime):undefined,
-        timeOfDay: airDataDto.timeOfDay,
-        locationType: airDataDto.locationType,
+        measurementTime: airDataDto.measurementTime
+          ? new Date(airDataDto.measurementTime)
+          : undefined,
+        timeOfDay: airDataDto.timeOfDay ? airDataDto.timeOfDay : undefined,
+        locationType: airDataDto.locationType
+          ? airDataDto.locationType
+          : undefined,
         pm25: airDataDto.pm25?.toString(),
         pm10: airDataDto.pm10?.toString(),
         no2: airDataDto.no2?.toString(),

@@ -39,7 +39,7 @@ import { UserFilterDto } from "@/dtos/user.dto";
 import { FrontendUserService } from "@/frontend-services/user.service";
 import { RoleService } from "@/frontend-services/role.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Search, UserPlus } from "lucide-react";
+import { LoaderIcon, Search, UserPlus } from "lucide-react";
 import CreateUserForm from "./CreateUserForm";
 import UpdateUserForm from "./UpdateUserForm";
 import UserTableRow from "./UserTableRow";
@@ -270,7 +270,7 @@ export default function UsersManagementPage() {
       </div>
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">

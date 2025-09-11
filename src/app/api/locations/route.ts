@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const locations = await locationService.findAllLocations(filter);
     return NextResponse.json(locations);
   } catch (error: any) {
-    console.error(error);
+    // console.error(error);
     // Zod errors will have a 'name' property of 'ZodError'
     if (error.name === "ZodError") {
       return NextResponse.json(
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     );
     return NextResponse.json(newLocation, { status: 201 });
   } catch (error: any) {
-    console.error("Location Error", error);
+    console.log({ error });
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

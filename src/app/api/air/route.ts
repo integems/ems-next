@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     const newAirData = await airService.createAirData(airDataDto, auth.user);
     return NextResponse.json(newAirData, { status: 201 });
   } catch (error: any) {
-    console.log({error})
+    // console.log({error})
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

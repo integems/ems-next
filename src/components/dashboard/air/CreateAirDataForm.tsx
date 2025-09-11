@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Category, Location, TimeOfDay, LocationType } from "@/types/common.types";
-import { createAirDataDto, CreateAirDataDto, singleAirData as airDto } from "@/dtos/air.dto";
+import {
+  Category,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
+import {
+  createAirDataDto,
+  CreateAirDataDto,
+  singleAirData as airDto,
+} from "@/dtos/air.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
+import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -33,35 +37,37 @@ import * as XLSX from "xlsx";
 import { Spreadsheet } from "react-spreadsheet";
 import { format } from "date-fns";
 
-
 const locationService = new FrontendLocationService();
 const airService = new FrontendAirService();
 
 // Updated airDto schema with validation for at least one measurement
-const updatedAirDto = airDto.extend({
-  pm25: z.number().optional(),
-  pm10: z.number().optional(),
-  no2: z.number().optional(),
-  o3: z.number().optional(),
-  co: z.number().optional(),
-  so2: z.number().optional(),
-  temperature: z.number().optional(),
-  humidity: z.number().optional(),
-}).refine(
-  (data) =>
-    data.pm25 != null ||
-    data.pm10 != null ||
-    data.no2 != null ||
-    data.o3 != null ||
-    data.co != null ||
-    data.so2 != null ||
-    data.temperature != null ||
-    data.humidity != null,
-  {
-    message: "At least one measurement (PM2.5, PM10, NO₂, O₃, CO, SO₂, temperature, or humidity) is required",
-    path: ["measurements"],
-  }
-);
+const updatedAirDto = airDto
+  .extend({
+    pm25: z.number().optional(),
+    pm10: z.number().optional(),
+    no2: z.number().optional(),
+    o3: z.number().optional(),
+    co: z.number().optional(),
+    so2: z.number().optional(),
+    temperature: z.number().optional(),
+    humidity: z.number().optional(),
+  })
+  .refine(
+    (data) =>
+      data.pm25 != null ||
+      data.pm10 != null ||
+      data.no2 != null ||
+      data.o3 != null ||
+      data.co != null ||
+      data.so2 != null ||
+      data.temperature != null ||
+      data.humidity != null,
+    {
+      message:
+        "At least one measurement (PM2.5, PM10, NO₂, O₃, CO, SO₂, temperature, or humidity) is required",
+      path: ["measurements"],
+    },
+  );
 
 interface CreateAirDataFormProps {
   onClose: () => void;
@@ -96,18 +102,18 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
-  const [locationFormData, setLocationFormData] = useState<CreateLocationDto & { locationType?: LocationType }>({
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
+  const [locationFormData, setLocationFormData] = useState<
+    CreateLocationDto & { locationType?: LocationType }
+  >({
     name: "",
     description: "",
     category: Category.Air,
     pointGeom: [0.0, 0.0],
   });
-  const [airDataFormData, setAirDataFormData] = useState<AirDataFormData[]>([
-    {
-      measurementTime: new Date(),
-    },
-  ]);
+  const [airDataFormData, setAirDataFormData] = useState<AirDataFormData[]>([]);
   const [singleAirData, setSingleAirData] = useState<Partial<AirDataFormData>>({
     measurementTime: new Date(),
     timeOfDay: undefined,
@@ -122,10 +128,13 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token || "", {
-        page: 1,
-        limit: 1000,
-      });
+      const response = await locationService.findAllLocations(
+        currentUser.token || "",
+        {
+          page: 1,
+          limit: 1000,
+        },
+      );
       return response.data;
     },
     enabled: !!currentUser?.token,
@@ -150,7 +159,7 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser?.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({"Created Location":data})
+      console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
@@ -168,7 +177,7 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
       }
     },
     onError: (error: any) => {
-      toast.error(`Error creating location: ${error.message}`);
+      toast.error(`Couldn't add location.`);
     },
   });
 
@@ -177,7 +186,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
     setLocationFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSingleAirDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSingleAirDataChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setSingleAirData((prev) => ({
       ...prev,
@@ -222,7 +233,8 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
     ];
 
     const newData = data.map((row, index) => {
-      const rowData: Partial<AirDataFormData> = index < airDataFormData.length ? { ...airDataFormData[index] } : {};
+      const rowData: Partial<AirDataFormData> =
+        index < airDataFormData.length ? { ...airDataFormData[index] } : {};
       headers.forEach((header, colIndex) => {
         const value = row[colIndex]?.value;
         if (value) {
@@ -238,7 +250,16 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
           } else if (header === "locationType") {
             rowData.locationType = value as LocationType;
           } else if (
-            ["pm25", "pm10", "no2", "o3", "co", "so2", "temperature", "humidity"].includes(header)
+            [
+              "pm25",
+              "pm10",
+              "no2",
+              "o3",
+              "co",
+              "so2",
+              "temperature",
+              "humidity",
+            ].includes(header)
           ) {
             rowData[header as keyof AirDataFormData] = Number(value) as any;
           } else {
@@ -271,7 +292,12 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
   };
 
   const spreadsheetData = airDataFormData.map((data) => [
-    { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
+    {
+      value:
+        data.measurementTime instanceof Date
+          ? format(data.measurementTime, "MM/dd/yyyy hh:mm a")
+          : "",
+    },
     { value: data.pm25?.toString() || "" },
     { value: data.pm10?.toString() || "" },
     { value: data.no2?.toString() || "" },
@@ -287,7 +313,11 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
 
   const handleFileUpload = useCallback(
     (file: File) => {
-      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls") && !file.name.endsWith(".csv")) {
+      if (
+        !file.name.endsWith(".xlsx") &&
+        !file.name.endsWith(".xls") &&
+        !file.name.endsWith(".csv")
+      ) {
         toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
         return;
       }
@@ -315,7 +345,10 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
           const rows = jsonData.slice(1) as any[][];
 
           const mappedData: AirDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<AirDataFormData> = index < airDataFormData.length ? { ...airDataFormData[index] } : {};
+            const rowData: Partial<AirDataFormData> =
+              index < airDataFormData.length
+                ? { ...airDataFormData[index] }
+                : {};
             headers.forEach((header, colIndex) => {
               const mappedKey = parameterMappings[header];
               const value = row[colIndex];
@@ -326,16 +359,25 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
                     } else {
-                      toast.error(`Invalid date format in uploaded file: ${value}`);
+                      toast.error(
+                        `Invalid date format in uploaded file: ${value}`,
+                      );
                     }
                   } else if (mappedKey === "timeOfDay") {
                     rowData[mappedKey] = value as TimeOfDay;
                   } else if (mappedKey === "locationType") {
                     rowData[mappedKey] = value as LocationType;
                   } else if (
-                    ["pm25", "pm10", "no2", "o3", "co", "so2", "temperature", "humidity"].includes(
-                      mappedKey,
-                    )
+                    [
+                      "pm25",
+                      "pm10",
+                      "no2",
+                      "o3",
+                      "co",
+                      "so2",
+                      "temperature",
+                      "humidity",
+                    ].includes(mappedKey)
                   ) {
                     rowData[mappedKey] = Number(value) as any;
                   } else {
@@ -423,7 +465,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
         toast.error("Please select a location.");
         return;
       }
-      const selectedLocation = locations.find((loc) => loc.locationId === selectedLocationId);
+      const selectedLocation = locations.find(
+        (loc) => loc.locationId === selectedLocationId,
+      );
       if (!selectedLocation?.pointGeom) {
         setErrors({ locationId: "Selected location has no coordinates." });
         toast.error("Selected location has no coordinates.");
@@ -455,7 +499,10 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
               Location Selection
             </h2>
 
-            <Tabs value={isCreatingLocation ? "create" : "existing"} className="w-full">
+            <Tabs
+              value={isCreatingLocation ? "create" : "existing"}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger
                   value="existing"
@@ -492,14 +539,19 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                         </SelectItem>
                       ) : (
                         locations?.map((location) => (
-                          <SelectItem key={location.locationId} value={location.locationId}>
+                          <SelectItem
+                            key={location.locationId}
+                            value={location.locationId}
+                          >
                             {location.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.locationId && <p className="text-xs text-red-500">{errors.locationId}</p>}
+                  {errors.locationId && (
+                    <p className="text-xs text-red-500">{errors.locationId}</p>
+                  )}
                 </div>
               </TabsContent>
 
@@ -515,10 +567,14 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                         onChange={handleLocationChange}
                         placeholder="Enter location name"
                       />
-                      {errors.name && <p className="text-xs text-red-500">{errors.name[0]}</p>}
+                      {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name[0]}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newLocationDescription">Description</Label>
+                      <Label htmlFor="newLocationDescription">
+                        Description
+                      </Label>
                       <Input
                         id="newLocationDescription"
                         name="description"
@@ -531,7 +587,12 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                       <Label htmlFor="newLocationType">Location Type</Label>
                       <Select
                         name="locationType"
-                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as LocationType }))}
+                        onValueChange={(value) =>
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            locationType: value as LocationType,
+                          }))
+                        }
                         value={locationFormData.locationType || ""}
                       >
                         <SelectTrigger>
@@ -539,12 +600,18 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="industrial">Industrial</SelectItem>
-                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="residential">
+                            Residential
+                          </SelectItem>
                           <SelectItem value="commercial">Commercial</SelectItem>
                           <SelectItem value="rural">Rural</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                      {errors.locationType && (
+                        <p className="text-xs text-red-500">
+                          {errors.locationType[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -552,12 +619,17 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     <div className="h-64 border rounded-lg overflow-hidden">
                       <LocationPickerMap
                         onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({ ...prev, pointGeom: [lat, lng] }))
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            pointGeom: [lat, lng],
+                          }))
                         }
                       />
                     </div>
                     {errors.pointGeom && (
-                      <p className="text-xs text-red-500">{errors.pointGeom[0]}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.pointGeom[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -575,7 +647,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
             <Label>Import from Excel (Optional)</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -602,30 +676,32 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
           </div>
 
           {/* Spreadsheet Section */}
-          <div className="space-y-2">
-            <Label>Air Quality Data Entries</Label>
-            <div className="max-w-[60rem] overflow-auto rounded">
-              <Spreadsheet
-                data={spreadsheetData}
-                columnLabels={[
-                  "Measurement Time",
-                  "PM2.5 (µg/m³)",
-                  "PM10 (µg/m³)",
-                  "NO₂ (µg/m³)",
-                  "O₃ (µg/m³)",
-                  "CO (µg/m³)",
-                  "SO₂ (µg/m³)",
-                  "Temperature (°C)",
-                  "Humidity (%)",
-                  "Notes",
-                  "Time of Day",
-                  "Location Type",
-                ]}
-                onChange={(data)=>handleSpreadsheetChange(data as any)}
-              />
-       
+
+          {!!spreadsheetData.length && (
+            <div className="space-y-2">
+              <Label>Air Quality Data Entries</Label>
+              <div className="max-w-[60rem] overflow-auto rounded">
+                <Spreadsheet
+                  data={spreadsheetData}
+                  columnLabels={[
+                    "Measurement Time",
+                    "PM2.5 (µg/m³)",
+                    "PM10 (µg/m³)",
+                    "NO₂ (µg/m³)",
+                    "O₃ (µg/m³)",
+                    "CO (µg/m³)",
+                    "SO₂ (µg/m³)",
+                    "Temperature (°C)",
+                    "Humidity (%)",
+                    "Notes",
+                    "Time of Day",
+                    "Location Type",
+                  ]}
+                  onChange={(data) => handleSpreadsheetChange(data as any)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Manual Entry Section */}
           <div className="space-y-6">
@@ -643,7 +719,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                   }
                 />
                 {errors.measurementTime && (
-                  <p className="text-xs text-red-500">{errors.measurementTime[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.measurementTime[0]}
+                  </p>
                 )}
               </div>
               <div></div>
@@ -651,7 +729,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
 
             {/* Primary Measurements */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Primary Measurements</Label>
+              <Label className="text-base font-medium">
+                Primary Measurements
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">PM2.5 (µg/m³)</Label>
@@ -662,7 +742,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.pm25 && <p className="text-xs text-red-500">{errors.pm25[0]}</p>}
+                  {errors.pm25 && (
+                    <p className="text-xs text-red-500">{errors.pm25[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">PM10 (µg/m³)</Label>
@@ -673,7 +755,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.pm10 && <p className="text-xs text-red-500">{errors.pm10[0]}</p>}
+                  {errors.pm10 && (
+                    <p className="text-xs text-red-500">{errors.pm10[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Temperature (°C)</Label>
@@ -685,7 +769,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     placeholder="0"
                   />
                   {errors.temperature && (
-                    <p className="text-xs text-red-500">{errors.temperature[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.temperature[0]}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -697,7 +783,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.humidity && <p className="text-xs text-red-500">{errors.humidity[0]}</p>}
+                  {errors.humidity && (
+                    <p className="text-xs text-red-500">{errors.humidity[0]}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -714,7 +802,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.no2 && <p className="text-xs text-red-500">{errors.no2[0]}</p>}
+                  {errors.no2 && (
+                    <p className="text-xs text-red-500">{errors.no2[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">O₃ (µg/m³)</Label>
@@ -725,7 +815,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.o3 && <p className="text-xs text-red-500">{errors.o3[0]}</p>}
+                  {errors.o3 && (
+                    <p className="text-xs text-red-500">{errors.o3[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">CO (µg/m³)</Label>
@@ -736,7 +828,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.co && <p className="text-xs text-red-500">{errors.co[0]}</p>}
+                  {errors.co && (
+                    <p className="text-xs text-red-500">{errors.co[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">SO₂ (µg/m³)</Label>
@@ -747,13 +841,17 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                     onChange={handleSingleAirDataChange}
                     placeholder="0"
                   />
-                  {errors.so2 && <p className="text-xs text-red-500">{errors.so2[0]}</p>}
+                  {errors.so2 && (
+                    <p className="text-xs text-red-500">{errors.so2[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Time of Day</Label>
                   <Select
                     value={singleAirData.timeOfDay || ""}
-                    onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
+                    onValueChange={(value: TimeOfDay) =>
+                      handleTimeOfDayChange(value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Time of Day" />
@@ -766,13 +864,19 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                  {errors.timeOfDay && (
+                    <p className="text-xs text-red-500">
+                      {errors.timeOfDay[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Location Type</Label>
                   <Select
                     value={singleAirData.locationType || ""}
-                    onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+                    onValueChange={(value: LocationType) =>
+                      handleLocationTypeChange(value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Location Type" />
@@ -785,13 +889,16 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                  {errors.locationType && (
+                    <p className="text-xs text-red-500">
+                      {errors.locationType[0]}
+                    </p>
+                  )}
                 </div>
               </div>
               {errors.measurements && (
                 <p className="text-xs text-red-500">{errors.measurements}</p>
               )}
-         
             </div>
 
             {/* Notes */}
@@ -806,9 +913,9 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
               />
             </div>
 
-              {errors.locationId && (
-                <p className="text-xs text-red-500">{errors.locationId}</p>
-              )}
+            {errors.locationId && (
+              <p className="text-xs text-red-500">{errors.locationId}</p>
+            )}
 
             <div className="flex justify-end">
               <Button type="button" size="sm" onClick={handleAddSingleAirData}>
@@ -826,10 +933,14 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
           <Button
             type="submit"
             size="sm"
-            disabled={createLocationMutation.isPending || createAirDataMutation.isPending}
+            disabled={
+              createLocationMutation.isPending ||
+              createAirDataMutation.isPending
+            }
           >
-            {(createLocationMutation.isPending || createAirDataMutation.isPending) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {(createLocationMutation.isPending ||
+              createAirDataMutation.isPending) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit
           </Button>

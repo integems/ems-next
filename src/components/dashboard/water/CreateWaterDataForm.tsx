@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Category, Location, LocationType, TimeOfDay, WaterSource } from "@/types/common.types";
-import { createWaterDataDto, CreateWaterDataDto, singleWaterData as waterDto } from "@/dtos/water.dto";
+import {
+  Category,
+  Location,
+  LocationType,
+  TimeOfDay,
+  WaterSource,
+} from "@/types/common.types";
+import {
+  createWaterDataDto,
+  CreateWaterDataDto,
+  singleWaterData as waterDto,
+} from "@/dtos/water.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
+import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -37,45 +42,48 @@ const locationService = new FrontendLocationService();
 const waterService = new FrontendWaterService();
 
 // Updated waterDto schema with validation for at least one measurement
-const updatedWaterDto = waterDto.extend({
-  ph: z.number().optional(),
-  phMv: z.number().optional(),
-  orp: z.number().optional(),
-  ec: z.number().optional(),
-  ecAbs: z.number().optional(),
-  resistivity: z.number().optional(),
-  salinity: z.number().optional(),
-  pressure: z.number().optional(),
-  doPercent: z.number().optional(),
-  dissolvedOxygen: z.number().optional(),
-  turbidity: z.number().optional(),
-  bod: z.number().optional(),
-  cod: z.number().optional(),
-  totalDissolvedSolids: z.number().optional(),
-  temperature: z.number().optional(),
-  waterSource: z.enum(["surface", "underground"]).optional(),
-}).refine(
-  (data) =>
-    data.ph != null ||
-    data.phMv != null ||
-    data.orp != null ||
-    data.ec != null ||
-    data.ecAbs != null ||
-    data.resistivity != null ||
-    data.salinity != null ||
-    data.pressure != null ||
-    data.doPercent != null ||
-    data.dissolvedOxygen != null ||
-    data.turbidity != null ||
-    data.bod != null ||
-    data.cod != null ||
-    data.totalDissolvedSolids != null ||
-    data.temperature != null,
-  {
-    message: "At least one measurement (pH, pH (mV), ORP, EC, EC Abs., Resistivity, Salinity, Pressure, D.O. (%), D.O. (ppm), Turbidity, BOD, COD, Total Dissolved Solids, or Temperature) is required",
-    path: ["measurements"],
-  }
-);
+const updatedWaterDto = waterDto
+  .extend({
+    ph: z.number().optional(),
+    phMv: z.number().optional(),
+    orp: z.number().optional(),
+    ec: z.number().optional(),
+    ecAbs: z.number().optional(),
+    resistivity: z.number().optional(),
+    salinity: z.number().optional(),
+    pressure: z.number().optional(),
+    doPercent: z.number().optional(),
+    dissolvedOxygen: z.number().optional(),
+    turbidity: z.number().optional(),
+    bod: z.number().optional(),
+    cod: z.number().optional(),
+    totalDissolvedSolids: z.number().optional(),
+    temperature: z.number().optional(),
+    waterSource: z.enum(["surface", "underground"]).optional(),
+  })
+  .refine(
+    (data) =>
+      data.ph != null ||
+      data.phMv != null ||
+      data.orp != null ||
+      data.ec != null ||
+      data.ecAbs != null ||
+      data.resistivity != null ||
+      data.salinity != null ||
+      data.pressure != null ||
+      data.doPercent != null ||
+      data.dissolvedOxygen != null ||
+      data.turbidity != null ||
+      data.bod != null ||
+      data.cod != null ||
+      data.totalDissolvedSolids != null ||
+      data.temperature != null,
+    {
+      message:
+        "At least one measurement (pH, pH (mV), ORP, EC, EC Abs., Resistivity, Salinity, Pressure, D.O. (%), D.O. (ppm), Turbidity, BOD, COD, Total Dissolved Solids, or Temperature) is required",
+      path: ["measurements"],
+    },
+  );
 
 interface CreateWaterDataFormProps {
   onClose: () => void;
@@ -83,7 +91,7 @@ interface CreateWaterDataFormProps {
 
 type WaterDataFormData = z.infer<typeof updatedWaterDto>;
 
-  const parameterMappings: { [key: string]: keyof WaterDataFormData } = {
+const parameterMappings: { [key: string]: keyof WaterDataFormData } = {
   ph: "ph",
   phmv: "phMv",
   orp: "orp",
@@ -106,24 +114,28 @@ type WaterDataFormData = z.infer<typeof updatedWaterDto>;
   locationtype: "locationType",
 };
 
-export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProps) {
+export default function CreateWaterDataForm({
+  onClose,
+}: CreateWaterDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
     category: Category.Water,
     pointGeom: [0.0, 0.0],
   });
-  const [waterDataFormData, setWaterDataFormData] = useState<WaterDataFormData[]>([
-    {
-      measurementTime: new Date(),
-    },
-  ]);
-  const [singleWaterData, setSingleWaterData] = useState<Partial<WaterDataFormData>>({
+  const [waterDataFormData, setWaterDataFormData] = useState<
+    WaterDataFormData[]
+  >([]);
+  const [singleWaterData, setSingleWaterData] = useState<
+    Partial<WaterDataFormData>
+  >({
     measurementTime: new Date(),
   });
   const [errors, setErrors] = useState<any>({});
@@ -135,10 +147,13 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token || "", {
-        page: 1,
-        limit: 1000,
-      });
+      const response = await locationService.findAllLocations(
+        currentUser.token || "",
+        {
+          page: 1,
+          limit: 1000,
+        },
+      );
       return response.data;
     },
     enabled: !!currentUser?.token,
@@ -155,7 +170,7 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
       onClose();
     },
     onError: (error) => {
-      toast.error(`Error updating water data: ${error.message}`);
+      toast.error(`Couldn't add water data.`);
     },
   });
 
@@ -163,7 +178,7 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({"Created Location":data})
+      console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
@@ -181,7 +196,7 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
       }
     },
     onError: (error: any) => {
-      toast.error(`Error creating location: ${error.message}`);
+      toast.error(`Couldn't add location.`);
     },
   });
 
@@ -190,7 +205,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
     setLocationFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSingleWaterDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSingleWaterDataChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setSingleWaterData((prev) => ({
       ...prev,
@@ -234,7 +251,8 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
     ];
 
     const newData = data.map((row, index) => {
-      const rowData: Partial<WaterDataFormData> = index < waterDataFormData.length ? { ...waterDataFormData[index] } : {};
+      const rowData: Partial<WaterDataFormData> =
+        index < waterDataFormData.length ? { ...waterDataFormData[index] } : {};
       headers.forEach((header, colIndex) => {
         const value = row[colIndex]?.value;
         if (value) {
@@ -246,7 +264,23 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
           } else if (
-            ["ph", "phMv", "orp", "ec", "ecAbs", "resistivity", "salinity", "pressure", "doPercent", "dissolvedOxygen", "turbidity", "bod", "cod", "totalDissolvedSolids", "temperature"].includes(header)
+            [
+              "ph",
+              "phMv",
+              "orp",
+              "ec",
+              "ecAbs",
+              "resistivity",
+              "salinity",
+              "pressure",
+              "doPercent",
+              "dissolvedOxygen",
+              "turbidity",
+              "bod",
+              "cod",
+              "totalDissolvedSolids",
+              "temperature",
+            ].includes(header)
           ) {
             rowData[header as keyof WaterDataFormData] = Number(value) as any;
           } else if (header === "waterSource") {
@@ -285,7 +319,12 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
   };
 
   const spreadsheetData = waterDataFormData.map((data) => [
-    { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
+    {
+      value:
+        data.measurementTime instanceof Date
+          ? format(data.measurementTime, "MM/dd/yyyy hh:mm a")
+          : "",
+    },
     { value: data.ph?.toString() || "" },
     { value: data.phMv?.toString() || "" },
     { value: data.orp?.toString() || "" },
@@ -309,7 +348,11 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
 
   const handleFileUpload = useCallback(
     (file: File) => {
-      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls") && !file.name.endsWith(".csv")) {
+      if (
+        !file.name.endsWith(".xlsx") &&
+        !file.name.endsWith(".xls") &&
+        !file.name.endsWith(".csv")
+      ) {
         toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
         return;
       }
@@ -337,7 +380,10 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
           const rows = jsonData.slice(1) as any[][];
 
           const mappedData: WaterDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<WaterDataFormData> = index < waterDataFormData.length ? { ...waterDataFormData[index] } : {};
+            const rowData: Partial<WaterDataFormData> =
+              index < waterDataFormData.length
+                ? { ...waterDataFormData[index] }
+                : {};
             headers.forEach((header, colIndex) => {
               const mappedKey = parameterMappings[header];
               const value = row[colIndex];
@@ -348,7 +394,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
                     } else {
-                      toast.error(`Invalid date format in uploaded file: ${value}`);
+                      toast.error(
+                        `Invalid date format in uploaded file: ${value}`,
+                      );
                     }
                   } else if (mappedKey === "timeOfDay") {
                     rowData[mappedKey] = value as TimeOfDay;
@@ -357,9 +405,23 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                   } else if (mappedKey === "waterSource") {
                     rowData[mappedKey] = value as WaterSource;
                   } else if (
-                    ["ph", "phMv", "orp", "ec", "ecAbs", "resistivity", "salinity", "pressure", "doPercent", "dissolvedOxygen", "turbidity", "bod", "cod", "totalDissolvedSolids", "temperature"].includes(
-                      mappedKey,
-                    )
+                    [
+                      "ph",
+                      "phMv",
+                      "orp",
+                      "ec",
+                      "ecAbs",
+                      "resistivity",
+                      "salinity",
+                      "pressure",
+                      "doPercent",
+                      "dissolvedOxygen",
+                      "turbidity",
+                      "bod",
+                      "cod",
+                      "totalDissolvedSolids",
+                      "temperature",
+                    ].includes(mappedKey)
                   ) {
                     rowData[mappedKey] = Number(value) as any;
                   } else {
@@ -447,7 +509,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
         toast.error("Please select a location.");
         return;
       }
-      const selectedLocation = locations.find((loc) => loc.locationId === selectedLocationId);
+      const selectedLocation = locations.find(
+        (loc) => loc.locationId === selectedLocationId,
+      );
       if (!selectedLocation?.pointGeom) {
         setErrors({ locationId: "Selected location has no coordinates." });
         toast.error("Selected location has no coordinates.");
@@ -458,7 +522,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
         locationId: selectedLocationId,
         pointGeom: selectedLocation.pointGeom,
       }));
-      const waterDataResult = createWaterDataDto.safeParse(waterDataWithLocation);
+      const waterDataResult = createWaterDataDto.safeParse(
+        waterDataWithLocation,
+      );
       if (waterDataResult.success) {
         createWaterDataMutation.mutate(waterDataResult.data);
       } else {
@@ -479,7 +545,10 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
               Location Selection
             </h2>
 
-            <Tabs value={isCreatingLocation ? "create" : "existing"} className="w-full">
+            <Tabs
+              value={isCreatingLocation ? "create" : "existing"}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger
                   value="existing"
@@ -516,14 +585,19 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                         </SelectItem>
                       ) : (
                         locations?.map((location) => (
-                          <SelectItem key={location.locationId} value={location.locationId}>
+                          <SelectItem
+                            key={location.locationId}
+                            value={location.locationId}
+                          >
                             {location.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.locationId && <p className="text-xs text-red-500">{errors.locationId}</p>}
+                  {errors.locationId && (
+                    <p className="text-xs text-red-500">{errors.locationId}</p>
+                  )}
                 </div>
               </TabsContent>
 
@@ -539,10 +613,14 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                         onChange={handleLocationChange}
                         placeholder="Enter location name"
                       />
-                      {errors.name && <p className="text-xs text-red-500">{errors.name[0]}</p>}
+                      {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name[0]}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newLocationDescription">Description</Label>
+                      <Label htmlFor="newLocationDescription">
+                        Description
+                      </Label>
                       <Input
                         id="newLocationDescription"
                         name="description"
@@ -555,7 +633,12 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                       <Label htmlFor="newLocationType">Location Type</Label>
                       <Select
                         name="locationType"
-                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        onValueChange={(value) =>
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            locationType: value as any,
+                          }))
+                        }
                         value={locationFormData.locationType || ""}
                       >
                         <SelectTrigger>
@@ -563,12 +646,18 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="industrial">Industrial</SelectItem>
-                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="residential">
+                            Residential
+                          </SelectItem>
                           <SelectItem value="commercial">Commercial</SelectItem>
                           <SelectItem value="rural">Rural</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                      {errors.locationType && (
+                        <p className="text-xs text-red-500">
+                          {errors.locationType[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -576,12 +665,17 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                     <div className="h-64 border rounded-lg overflow-hidden">
                       <LocationPickerMap
                         onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({ ...prev, pointGeom: [lat, lng] }))
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            pointGeom: [lat, lng],
+                          }))
                         }
                       />
                     </div>
                     {errors.pointGeom && (
-                      <p className="text-xs text-red-500">{errors.pointGeom[0]}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.pointGeom[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -599,7 +693,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
             <Label>Import from Excel (Optional)</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -626,38 +722,39 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
           </div>
 
           {/* Spreadsheet Section */}
-          <div className="space-y-2">
-            <Label>Water Quality Data Entries</Label>
-            <div className="max-w-[60rem] overflow-auto rounded">
-              <Spreadsheet
-                data={spreadsheetData}
-                columnLabels={[
-                  "Measurement Time",
-                  "pH",
-                  "pH (mV)",
-                  "ORP (mV)",
-                  "EC (µS/cm)",
-                  "EC Abs. (µS/cm)",
-                  "Resistivity (Ohm-cm)",
-                  "Salinity (psu)",
-                  "Pressure (psi)",
-                  "D.O. (%)",
-                  "D.O. (ppm)",
-                  "Turbidity (FNU)",
-                  "BOD (mg/L)",
-                  "COD (mg/L)",
-                  "TDS (ppm)",
-                  "Temperature (°C)",
-                  "Water Source",
-                  "Notes",
-                  "Time of Day",
-                  "Location Type",
-                ]}
-                onChange={(data)=>handleSpreadsheetChange(data as any)}
-              />
-       
+          {!!spreadsheetData.length && (
+            <div className="space-y-2">
+              <Label>Water Quality Data Entries</Label>
+              <div className="max-w-[60rem] overflow-auto rounded">
+                <Spreadsheet
+                  data={spreadsheetData}
+                  columnLabels={[
+                    "Measurement Time",
+                    "pH",
+                    "pH (mV)",
+                    "ORP (mV)",
+                    "EC (µS/cm)",
+                    "EC Abs. (µS/cm)",
+                    "Resistivity (Ohm-cm)",
+                    "Salinity (psu)",
+                    "Pressure (psi)",
+                    "D.O. (%)",
+                    "D.O. (ppm)",
+                    "Turbidity (FNU)",
+                    "BOD (mg/L)",
+                    "COD (mg/L)",
+                    "TDS (ppm)",
+                    "Temperature (°C)",
+                    "Water Source",
+                    "Notes",
+                    "Time of Day",
+                    "Location Type",
+                  ]}
+                  onChange={(data) => handleSpreadsheetChange(data as any)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Manual Entry Section */}
           <div className="space-y-6">
@@ -675,7 +772,9 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                   }
                 />
                 {errors.measurementTime && (
-                  <p className="text-xs text-red-500">{errors.measurementTime[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.measurementTime[0]}
+                  </p>
                 )}
               </div>
               <div></div>
@@ -683,86 +782,228 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
 
             {/* Primary Measurements */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Primary Measurements</Label>
+              <Label className="text-base font-medium">
+                Primary Measurements
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">pH</Label>
-                  <Input type="number" name="ph" value={singleWaterData.ph || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.ph && <p className="text-xs text-red-500">{errors.ph[0]}</p>}
+                  <Input
+                    type="number"
+                    name="ph"
+                    value={singleWaterData.ph || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.ph && (
+                    <p className="text-xs text-red-500">{errors.ph[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">pH (mV)</Label>
-                  <Input type="number" name="phMv" value={singleWaterData.phMv || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.phMv && <p className="text-xs text-red-500">{errors.phMv[0]}</p>}
+                  <Input
+                    type="number"
+                    name="phMv"
+                    value={singleWaterData.phMv || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.phMv && (
+                    <p className="text-xs text-red-500">{errors.phMv[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">ORP (mV)</Label>
-                  <Input type="number" name="orp" value={singleWaterData.orp || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.orp && <p className="text-xs text-red-500">{errors.orp[0]}</p>}
+                  <Input
+                    type="number"
+                    name="orp"
+                    value={singleWaterData.orp || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.orp && (
+                    <p className="text-xs text-red-500">{errors.orp[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">EC (µS/cm)</Label>
-                  <Input type="number" name="ec" value={singleWaterData.ec || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.ec && <p className="text-xs text-red-500">{errors.ec[0]}</p>}
+                  <Input
+                    type="number"
+                    name="ec"
+                    value={singleWaterData.ec || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.ec && (
+                    <p className="text-xs text-red-500">{errors.ec[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">EC Abs. (µS/cm)</Label>
-                  <Input type="number" name="ecAbs" value={singleWaterData.ecAbs || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.ecAbs && <p className="text-xs text-red-500">{errors.ecAbs[0]}</p>}
+                  <Input
+                    type="number"
+                    name="ecAbs"
+                    value={singleWaterData.ecAbs || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.ecAbs && (
+                    <p className="text-xs text-red-500">{errors.ecAbs[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Resistivity (Ohm-cm)</Label>
-                  <Input type="number" name="resistivity" value={singleWaterData.resistivity || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.resistivity && <p className="text-xs text-red-500">{errors.resistivity[0]}</p>}
+                  <Input
+                    type="number"
+                    name="resistivity"
+                    value={singleWaterData.resistivity || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.resistivity && (
+                    <p className="text-xs text-red-500">
+                      {errors.resistivity[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Salinity (psu)</Label>
-                  <Input type="number" name="salinity" value={singleWaterData.salinity || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.salinity && <p className="text-xs text-red-500">{errors.salinity[0]}</p>}
+                  <Input
+                    type="number"
+                    name="salinity"
+                    value={singleWaterData.salinity || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.salinity && (
+                    <p className="text-xs text-red-500">{errors.salinity[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Pressure (psi)</Label>
-                  <Input type="number" name="pressure" value={singleWaterData.pressure || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.pressure && <p className="text-xs text-red-500">{errors.pressure[0]}</p>}
+                  <Input
+                    type="number"
+                    name="pressure"
+                    value={singleWaterData.pressure || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.pressure && (
+                    <p className="text-xs text-red-500">{errors.pressure[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">D.O. (%)</Label>
-                  <Input type="number" name="doPercent" value={singleWaterData.doPercent || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.doPercent && <p className="text-xs text-red-500">{errors.doPercent[0]}</p>}
+                  <Input
+                    type="number"
+                    name="doPercent"
+                    value={singleWaterData.doPercent || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.doPercent && (
+                    <p className="text-xs text-red-500">
+                      {errors.doPercent[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">D.O. (ppm)</Label>
-                  <Input type="number" name="dissolvedOxygen" value={singleWaterData.dissolvedOxygen || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.dissolvedOxygen && <p className="text-xs text-red-500">{errors.dissolvedOxygen[0]}</p>}
+                  <Input
+                    type="number"
+                    name="dissolvedOxygen"
+                    value={singleWaterData.dissolvedOxygen || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.dissolvedOxygen && (
+                    <p className="text-xs text-red-500">
+                      {errors.dissolvedOxygen[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Turbidity (FNU)</Label>
-                  <Input type="number" name="turbidity" value={singleWaterData.turbidity || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.turbidity && <p className="text-xs text-red-500">{errors.turbidity[0]}</p>}
+                  <Input
+                    type="number"
+                    name="turbidity"
+                    value={singleWaterData.turbidity || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.turbidity && (
+                    <p className="text-xs text-red-500">
+                      {errors.turbidity[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">BOD (mg/L)</Label>
-                  <Input type="number" name="bod" value={singleWaterData.bod || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.bod && <p className="text-xs text-red-500">{errors.bod[0]}</p>}
+                  <Input
+                    type="number"
+                    name="bod"
+                    value={singleWaterData.bod || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.bod && (
+                    <p className="text-xs text-red-500">{errors.bod[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">COD (mg/L)</Label>
-                  <Input type="number" name="cod" value={singleWaterData.cod || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.cod && <p className="text-xs text-red-500">{errors.cod[0]}</p>}
+                  <Input
+                    type="number"
+                    name="cod"
+                    value={singleWaterData.cod || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.cod && (
+                    <p className="text-xs text-red-500">{errors.cod[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">TDS (ppm)</Label>
-                  <Input type="number" name="totalDissolvedSolids" value={singleWaterData.totalDissolvedSolids || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.totalDissolvedSolids && <p className="text-xs text-red-500">{errors.totalDissolvedSolids[0]}</p>}
+                  <Input
+                    type="number"
+                    name="totalDissolvedSolids"
+                    value={singleWaterData.totalDissolvedSolids || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.totalDissolvedSolids && (
+                    <p className="text-xs text-red-500">
+                      {errors.totalDissolvedSolids[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Temperature (°C)</Label>
-                  <Input type="number" name="temperature" value={singleWaterData.temperature || ""} onChange={handleSingleWaterDataChange} placeholder="0" />
-                  {errors.temperature && <p className="text-xs text-red-500">{errors.temperature[0]}</p>}
+                  <Input
+                    type="number"
+                    name="temperature"
+                    value={singleWaterData.temperature || ""}
+                    onChange={handleSingleWaterDataChange}
+                    placeholder="0"
+                  />
+                  {errors.temperature && (
+                    <p className="text-xs text-red-500">
+                      {errors.temperature[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Water Source</Label>
-                  <Select onValueChange={(value) => setSingleWaterData((prev) => ({ ...prev, waterSource: value as any }))} value={singleWaterData.waterSource || ""}>
+                  <Select
+                    onValueChange={(value) =>
+                      setSingleWaterData((prev) => ({
+                        ...prev,
+                        waterSource: value as any,
+                      }))
+                    }
+                    value={singleWaterData.waterSource || ""}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Source" />
                     </SelectTrigger>
@@ -771,13 +1012,22 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                       <SelectItem value="underground">Underground</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.waterSource && <p className="text-xs text-red-500">{errors.waterSource[0]}</p>}
+                  {errors.waterSource && (
+                    <p className="text-xs text-red-500">
+                      {errors.waterSource[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Time of Day</Label>
                   <Select
                     value={singleWaterData.timeOfDay || ""}
-                    onValueChange={(value: TimeOfDay) => setSingleWaterData((prev) => ({ ...prev, timeOfDay: value }))}
+                    onValueChange={(value: TimeOfDay) =>
+                      setSingleWaterData((prev) => ({
+                        ...prev,
+                        timeOfDay: value,
+                      }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Time of Day" />
@@ -790,13 +1040,22 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                  {errors.timeOfDay && (
+                    <p className="text-xs text-red-500">
+                      {errors.timeOfDay[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Location Type</Label>
                   <Select
                     value={singleWaterData.locationType || ""}
-                    onValueChange={(value: LocationType) => setSingleWaterData((prev) => ({ ...prev, locationType: value }))}
+                    onValueChange={(value: LocationType) =>
+                      setSingleWaterData((prev) => ({
+                        ...prev,
+                        locationType: value,
+                      }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Location Type" />
@@ -809,13 +1068,16 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                  {errors.locationType && (
+                    <p className="text-xs text-red-500">
+                      {errors.locationType[0]}
+                    </p>
+                  )}
                 </div>
               </div>
               {errors.measurements && (
                 <p className="text-xs text-red-500">{errors.measurements}</p>
               )}
-         
             </div>
 
             {/* Notes */}
@@ -830,12 +1092,16 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
               />
             </div>
 
-              {errors.locationId && (
-                <p className="text-xs text-red-500">{errors.locationId}</p>
-              )}
+            {errors.locationId && (
+              <p className="text-xs text-red-500">{errors.locationId}</p>
+            )}
 
             <div className="flex justify-end">
-              <Button type="button" size="sm" onClick={handleAddSingleWaterData}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddSingleWaterData}
+              >
                 Add to list
               </Button>
             </div>
@@ -850,10 +1116,14 @@ export default function CreateWaterDataForm({ onClose }: CreateWaterDataFormProp
           <Button
             type="submit"
             size="sm"
-            disabled={createLocationMutation.isPending || createWaterDataMutation.isPending}
+            disabled={
+              createLocationMutation.isPending ||
+              createWaterDataMutation.isPending
+            }
           >
-            {(createLocationMutation.isPending || createWaterDataMutation.isPending) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {(createLocationMutation.isPending ||
+              createWaterDataMutation.isPending) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit
           </Button>

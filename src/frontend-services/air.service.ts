@@ -4,7 +4,11 @@ import {
   UpdateAirDataDto,
   AirDataFilterDto,
 } from "@/dtos/air.dto";
-import { AirData, DataResponse, PaginationResponse } from "@/types/common.types";
+import {
+  AirData,
+  DataResponse,
+  PaginationResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/air";
 

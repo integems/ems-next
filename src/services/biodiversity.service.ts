@@ -50,10 +50,19 @@ export class BiodiversityService {
    * @returns A paginated list of biodiversity data.
    */
   async findAllBiodiversityData(filter: BiodiversityDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
-    console.log({page,offset})
+    console.log({ page, offset });
 
     const conditions = [];
 
@@ -63,7 +72,13 @@ export class BiodiversityService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.biodiversityData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.biodiversityData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -71,11 +86,15 @@ export class BiodiversityService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.biodiversityData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.biodiversityData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.biodiversityData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.biodiversityData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -143,7 +162,7 @@ export class BiodiversityService {
     biodiversityDataDto: CreateBiodiversityDataDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = biodiversityDataDto.map((dto) => ({
@@ -183,7 +202,7 @@ export class BiodiversityService {
     biodiversityDataDto: UpdateBiodiversityDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedBiodiversityData] = await db
       .update(schema.biodiversityData)
@@ -192,8 +211,12 @@ export class BiodiversityService {
         measurementTime: biodiversityDataDto.measurementTime
           ? new Date(biodiversityDataDto.measurementTime)
           : undefined,
-        timeOfDay: biodiversityDataDto.timeOfDay,
-        locationType: biodiversityDataDto.locationType,
+        timeOfDay: biodiversityDataDto.timeOfDay
+          ? biodiversityDataDto.timeOfDay
+          : undefined,
+        locationType: biodiversityDataDto.locationType
+          ? biodiversityDataDto.locationType
+          : undefined,
         speciesCount: biodiversityDataDto.speciesCount,
         shannonIndex: biodiversityDataDto.shannonIndex?.toString(),
         observations: biodiversityDataDto.observations,

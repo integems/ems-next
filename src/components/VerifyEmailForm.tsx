@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, LoaderIcon } from "lucide-react";
 import {
   InputOTP,
   InputOTPGroup,
@@ -70,7 +70,7 @@ export function VerifyEmailForm({
         disabled={verifyEmailMutation.isPending}
       >
         {verifyEmailMutation.isPending ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           "Verify Email"
         )}
@@ -87,7 +87,7 @@ export function VerifyEmailForm({
             disabled={resendOtpMutation.isPending}
           >
             {resendOtpMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               "Resend OTP"
             )}

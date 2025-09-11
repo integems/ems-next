@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Category, Location, TimeOfDay, LocationType } from "@/types/common.types";
-import { createNoiseDataDto, singleNoiseData as noiseDto } from "@/dtos/noise.dto";
+import {
+  Category,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
+import {
+  createNoiseDataDto,
+  singleNoiseData as noiseDto,
+} from "@/dtos/noise.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
+import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -37,26 +40,29 @@ const locationService = new FrontendLocationService();
 const noiseService = new FrontendNoiseService();
 
 // Updated noiseDto schema with validation for at least one measurement
-const updatedNoiseDto = noiseDto.extend({
-  laeq: z.number().optional(),
-  lafMax: z.number().optional(),
-  frequency: z.number().optional(),
-  la10: z.number().optional(),
-  la90: z.number().optional(),
-  lafMin: z.number().optional(),
-}).refine(
-  (data) =>
-    data.laeq != null ||
-    data.lafMax != null ||
-    data.frequency != null ||
-    data.la10 != null ||
-    data.la90 != null ||
-    data.lafMin != null,
-  {
-    message: "At least one noise measurement (LAeq, LAFMax, Frequency, LA10, LA90, LAFMin) is required",
-    path: ["measurements"],
-  }
-);
+const updatedNoiseDto = noiseDto
+  .extend({
+    laeq: z.number().optional(),
+    lafMax: z.number().optional(),
+    frequency: z.number().optional(),
+    la10: z.number().optional(),
+    la90: z.number().optional(),
+    lafMin: z.number().optional(),
+  })
+  .refine(
+    (data) =>
+      data.laeq != null ||
+      data.lafMax != null ||
+      data.frequency != null ||
+      data.la10 != null ||
+      data.la90 != null ||
+      data.lafMin != null,
+    {
+      message:
+        "At least one noise measurement (LAeq, LAFMax, Frequency, LA10, LA90, LAFMin) is required",
+      path: ["measurements"],
+    },
+  );
 
 interface CreateNoiseDataFormProps {
   onClose: () => void;
@@ -78,24 +84,30 @@ const parameterMappings: { [key: string]: keyof NoiseDataFormData } = {
   locationtype: "locationType",
 };
 
-export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProps) {
+export default function CreateNoiseDataForm({
+  onClose,
+}: CreateNoiseDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
-  const [locationFormData, setLocationFormData] = useState<CreateLocationDto & { locationType?: LocationType }>({ 
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
+  const [locationFormData, setLocationFormData] = useState<
+    CreateLocationDto & { locationType?: LocationType }
+  >({
     name: "",
     description: "",
     category: Category.Noise,
     pointGeom: [0.0, 0.0],
   });
-  const [noiseDataFormData, setNoiseDataFormData] = useState<NoiseDataFormData[]>([
-    {
-      measurementTime: new Date(),
-    },
-  ]);
-  const [singleNoiseData, setSingleNoiseData] = useState<Partial<NoiseDataFormData>>({
+  const [noiseDataFormData, setNoiseDataFormData] = useState<
+    NoiseDataFormData[]
+  >([]);
+  const [singleNoiseData, setSingleNoiseData] = useState<
+    Partial<NoiseDataFormData>
+  >({
     measurementTime: new Date(),
     timeOfDay: undefined,
     locationType: undefined,
@@ -109,10 +121,13 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token || "", {
-        page: 1,
-        limit: 1000,
-      });
+      const response = await locationService.findAllLocations(
+        currentUser.token || "",
+        {
+          page: 1,
+          limit: 1000,
+        },
+      );
       return response.data;
     },
     enabled: !!currentUser?.token,
@@ -129,7 +144,7 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
       onClose();
     },
     onError: (error) => {
-      toast.error(`Error creating noise data: ${error.message}`);
+      toast.error(`Couldn't add noise data.`);
     },
   });
 
@@ -137,7 +152,7 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser?.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({"Created Location":data})
+      console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
@@ -155,7 +170,7 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
       }
     },
     onError: (error: any) => {
-      toast.error(`Error creating location: ${error.message}`);
+      toast.error(`Couldn't add location.`);
     },
   });
 
@@ -164,7 +179,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
     setLocationFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSingleNoiseDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSingleNoiseDataChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setSingleNoiseData((prev) => ({
       ...prev,
@@ -208,7 +225,8 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
     ];
 
     const newData = data.map((row, index) => {
-      const rowData: Partial<NoiseDataFormData> = index < noiseDataFormData.length ? { ...noiseDataFormData[index] } : {};
+      const rowData: Partial<NoiseDataFormData> =
+        index < noiseDataFormData.length ? { ...noiseDataFormData[index] } : {};
       headers.forEach((header, colIndex) => {
         const value = row[colIndex]?.value;
         if (value) {
@@ -224,7 +242,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
           } else if (header === "locationType") {
             rowData.locationType = value as LocationType;
           } else if (
-            ["laeq", "lafMax", "frequency", "la10", "la90", "lafMin"].includes(header)
+            ["laeq", "lafMax", "frequency", "la10", "la90", "lafMin"].includes(
+              header,
+            )
           ) {
             rowData[header as keyof NoiseDataFormData] = Number(value) as any;
           } else {
@@ -257,7 +277,12 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
   };
 
   const spreadsheetData = noiseDataFormData.map((data) => [
-    { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
+    {
+      value:
+        data.measurementTime instanceof Date
+          ? format(data.measurementTime, "MM/dd/yyyy hh:mm a")
+          : "",
+    },
     { value: data.duration?.toString() || "" },
     { value: data.laeq?.toString() || "" },
     { value: data.lafMax?.toString() || "" },
@@ -272,7 +297,11 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
 
   const handleFileUpload = useCallback(
     (file: File) => {
-      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls") && !file.name.endsWith(".csv")) {
+      if (
+        !file.name.endsWith(".xlsx") &&
+        !file.name.endsWith(".xls") &&
+        !file.name.endsWith(".csv")
+      ) {
         toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
         return;
       }
@@ -300,7 +329,10 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
           const rows = jsonData.slice(1) as any[][];
 
           const mappedData: NoiseDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<NoiseDataFormData> = index < noiseDataFormData.length ? { ...noiseDataFormData[index] } : {};
+            const rowData: Partial<NoiseDataFormData> =
+              index < noiseDataFormData.length
+                ? { ...noiseDataFormData[index] }
+                : {};
             headers.forEach((header, colIndex) => {
               const mappedKey = parameterMappings[header];
               const value = row[colIndex];
@@ -311,16 +343,23 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
                     } else {
-                      toast.error(`Invalid date format in uploaded file: ${value}`);
+                      toast.error(
+                        `Invalid date format in uploaded file: ${value}`,
+                      );
                     }
                   } else if (mappedKey === "timeOfDay") {
                     rowData[mappedKey] = value as TimeOfDay;
                   } else if (mappedKey === "locationType") {
                     rowData[mappedKey] = value as LocationType;
                   } else if (
-                    ["laeq", "lafMax", "frequency", "la10", "la90", "lafMin"].includes(
-                      mappedKey,
-                    )
+                    [
+                      "laeq",
+                      "lafMax",
+                      "frequency",
+                      "la10",
+                      "la90",
+                      "lafMin",
+                    ].includes(mappedKey)
                   ) {
                     rowData[mappedKey] = Number(value) as any;
                   } else {
@@ -408,7 +447,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
         toast.error("Please select a location.");
         return;
       }
-      const selectedLocation = locations.find((loc) => loc.locationId === selectedLocationId);
+      const selectedLocation = locations.find(
+        (loc) => loc.locationId === selectedLocationId,
+      );
       if (!selectedLocation?.pointGeom) {
         setErrors({ locationId: "Selected location has no coordinates." });
         toast.error("Selected location has no coordinates.");
@@ -419,7 +460,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
         locationId: selectedLocationId,
         pointGeom: selectedLocation.pointGeom,
       }));
-      const noiseDataResult = createNoiseDataDto.safeParse(noiseDataWithLocation);
+      const noiseDataResult = createNoiseDataDto.safeParse(
+        noiseDataWithLocation,
+      );
       if (noiseDataResult.success) {
         createNoiseDataMutation.mutate(noiseDataResult.data);
       } else {
@@ -440,7 +483,10 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
               Location Selection
             </h2>
 
-            <Tabs value={isCreatingLocation ? "create" : "existing"} className="w-full">
+            <Tabs
+              value={isCreatingLocation ? "create" : "existing"}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger
                   value="existing"
@@ -477,16 +523,19 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                         </SelectItem>
                       ) : (
                         locations?.map((location) => (
-                          <SelectItem key={location.locationId} value={location.locationId!}>
-                        <SelectItem key={location.locationId} value={location.locationId!}>
+                          <SelectItem
+                            key={location.locationId}
+                            value={location.locationId}
+                          >
                             {location.name}
-                          </SelectItem>
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.locationId && <p className="text-xs text-red-500">{errors.locationId}</p>}
+                  {errors.locationId && (
+                    <p className="text-xs text-red-500">{errors.locationId}</p>
+                  )}
                 </div>
               </TabsContent>
 
@@ -502,10 +551,14 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                         onChange={handleLocationChange}
                         placeholder="Enter location name"
                       />
-                      {errors.name && <p className="text-xs text-red-500">{errors.name[0]}</p>}
+                      {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name[0]}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newLocationDescription">Description</Label>
+                      <Label htmlFor="newLocationDescription">
+                        Description
+                      </Label>
                       <Input
                         id="newLocationDescription"
                         name="description"
@@ -518,7 +571,12 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                       <Label htmlFor="newLocationType">Location Type</Label>
                       <Select
                         name="locationType"
-                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as LocationType }))}
+                        onValueChange={(value) =>
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            locationType: value as LocationType,
+                          }))
+                        }
                         value={locationFormData.locationType || ""}
                       >
                         <SelectTrigger>
@@ -526,12 +584,18 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="industrial">Industrial</SelectItem>
-                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="residential">
+                            Residential
+                          </SelectItem>
                           <SelectItem value="commercial">Commercial</SelectItem>
                           <SelectItem value="rural">Rural</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                      {errors.locationType && (
+                        <p className="text-xs text-red-500">
+                          {errors.locationType[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -539,12 +603,17 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     <div className="h-64 border rounded-lg overflow-hidden">
                       <LocationPickerMap
                         onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({ ...prev, pointGeom: [lat, lng] }))
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            pointGeom: [lat, lng],
+                          }))
                         }
                       />
                     </div>
                     {errors.pointGeom && (
-                      <p className="text-xs text-red-500">{errors.pointGeom[0]}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.pointGeom[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -562,7 +631,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
             <Label>Import from Excel (Optional)</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -589,30 +660,31 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
           </div>
 
           {/* Spreadsheet Section */}
-          <div className="space-y-2">
-            <Label>Noise Data Entries</Label>
-            <div className="max-w-[60rem] overflow-auto rounded">
-              <Spreadsheet
-                data={spreadsheetData}
-                columnLabels={[
-                  "Measurement Time",
-                  "Duration",
-                  "LAeq (dB)",
-                  "LAFMax (dB)",
-                  "Frequency (Hz)",
-                  "LA10 (dB)",
-                  "LA90 (dB)",
-                  "LAFMin (dB)",
-                  "Notes",
-                  "Time of Day",
-                  "Location Type",
-                ]}
-                onChange={(data)=>handleSpreadsheetChange(data as any)}
-              />
-       
-            </div>
-          </div>
 
+          {!!spreadsheetData.length && (
+            <div className="space-y-2">
+              <Label>Noise Data Entries</Label>
+              <div className="max-w-[60rem] overflow-auto rounded">
+                <Spreadsheet
+                  data={spreadsheetData}
+                  columnLabels={[
+                    "Measurement Time",
+                    "Duration",
+                    "LAeq (dB)",
+                    "LAFMax (dB)",
+                    "Frequency (Hz)",
+                    "LA10 (dB)",
+                    "LA90 (dB)",
+                    "LAFMin (dB)",
+                    "Notes",
+                    "Time of Day",
+                    "Location Type",
+                  ]}
+                  onChange={(data) => handleSpreadsheetChange(data as any)}
+                />
+              </div>
+            </div>
+          )}
           {/* Manual Entry Section */}
           <div className="space-y-6">
             {/* Measurement Time */}
@@ -629,7 +701,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                   }
                 />
                 {errors.measurementTime && (
-                  <p className="text-xs text-red-500">{errors.measurementTime[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.measurementTime[0]}
+                  </p>
                 )}
               </div>
               <div></div>
@@ -637,7 +711,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
 
             {/* Primary Measurements */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Noise Measurements</Label>
+              <Label className="text-base font-medium">
+                Noise Measurements
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">LAeq (dB)</Label>
@@ -648,7 +724,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="0"
                   />
-                  {errors.laeq && <p className="text-xs text-red-500">{errors.laeq[0]}</p>}
+                  {errors.laeq && (
+                    <p className="text-xs text-red-500">{errors.laeq[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">LAFMax (dB)</Label>
@@ -659,7 +737,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="0"
                   />
-                  {errors.lafMax && <p className="text-xs text-red-500">{errors.lafMax[0]}</p>}
+                  {errors.lafMax && (
+                    <p className="text-xs text-red-500">{errors.lafMax[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Frequency (Hz)</Label>
@@ -671,7 +751,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     placeholder="0"
                   />
                   {errors.frequency && (
-                    <p className="text-xs text-red-500">{errors.frequency[0]}</p>
+                    <p className="text-xs text-red-500">
+                      {errors.frequency[0]}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -683,7 +765,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="0"
                   />
-                  {errors.la10 && <p className="text-xs text-red-500">{errors.la10[0]}</p>}
+                  {errors.la10 && (
+                    <p className="text-xs text-red-500">{errors.la10[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">LA90 (dB)</Label>
@@ -694,7 +778,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="0"
                   />
-                  {errors.la90 && <p className="text-xs text-red-500">{errors.la90[0]}</p>}
+                  {errors.la90 && (
+                    <p className="text-xs text-red-500">{errors.la90[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">LAFMin (dB)</Label>
@@ -705,7 +791,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="0"
                   />
-                  {errors.lafMin && <p className="text-xs text-red-500">{errors.lafMin[0]}</p>}
+                  {errors.lafMin && (
+                    <p className="text-xs text-red-500">{errors.lafMin[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Duration</Label>
@@ -716,7 +804,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                     onChange={handleSingleNoiseDataChange}
                     placeholder="e.g., 2 hours"
                   />
-                  {errors.duration && <p className="text-xs text-red-500">{errors.duration[0]}</p>}
+                  {errors.duration && (
+                    <p className="text-xs text-red-500">{errors.duration[0]}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -728,7 +818,9 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                   <Label className="text-sm">Time of Day</Label>
                   <Select
                     value={singleNoiseData.timeOfDay || ""}
-                    onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
+                    onValueChange={(value: TimeOfDay) =>
+                      handleTimeOfDayChange(value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Time of Day" />
@@ -741,13 +833,19 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                  {errors.timeOfDay && (
+                    <p className="text-xs text-red-500">
+                      {errors.timeOfDay[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Location Type</Label>
                   <Select
                     value={singleNoiseData.locationType || ""}
-                    onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+                    onValueChange={(value: LocationType) =>
+                      handleLocationTypeChange(value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Location Type" />
@@ -760,13 +858,16 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                  {errors.locationType && (
+                    <p className="text-xs text-red-500">
+                      {errors.locationType[0]}
+                    </p>
+                  )}
                 </div>
               </div>
               {errors.measurements && (
                 <p className="text-xs text-red-500">{errors.measurements}</p>
               )}
-         
             </div>
 
             {/* Notes */}
@@ -781,12 +882,16 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
               />
             </div>
 
-              {errors.locationId && (
-                <p className="text-xs text-red-500">{errors.locationId}</p>
-              )}
+            {errors.locationId && (
+              <p className="text-xs text-red-500">{errors.locationId}</p>
+            )}
 
             <div className="flex justify-end">
-              <Button type="button" size="sm" onClick={handleAddSingleNoiseData}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddSingleNoiseData}
+              >
                 Add to list
               </Button>
             </div>
@@ -801,10 +906,14 @@ export default function CreateNoiseDataForm({ onClose }: CreateNoiseDataFormProp
           <Button
             type="submit"
             size="sm"
-            disabled={createLocationMutation.isPending || createNoiseDataMutation.isPending}
+            disabled={
+              createLocationMutation.isPending ||
+              createNoiseDataMutation.isPending
+            }
           >
-            {(createLocationMutation.isPending || createNoiseDataMutation.isPending) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {(createLocationMutation.isPending ||
+              createNoiseDataMutation.isPending) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit
           </Button>

@@ -10,11 +10,17 @@ import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { useAuth } from "@/hooks/use-auth";
 import { WasteData, TimeOfDay, LocationType } from "@/types/common.types";
 import { updateWasteDataDto, UpdateWasteDataDto } from "@/dtos/waste.dto";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const wasteService = new FrontendWasteService();
 
@@ -25,7 +31,10 @@ interface UpdateWasteDataFormProps {
 
 type UpdateWasteDataFormData = z.infer<typeof updateWasteDataDto>;
 
-export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFormProps) {
+export default function UpdateWasteDataForm({
+  onClose,
+  data,
+}: UpdateWasteDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UpdateWasteDataFormData>({});
@@ -35,16 +44,16 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
     if (data) {
       setFormData({
         measurementTime: new Date(data.measurementTime),
-        solidWasteKg: data.solidWasteKg as number || undefined,
-        hazardousWasteKg: data.hazardousWasteKg as number || undefined,
-        recycledWasteKg: data.recycledWasteKg as number || undefined,
-        organicWasteKg: data.organicWasteKg as number || undefined,
-        plasticWasteKg: data.plasticWasteKg as number || undefined,
-        paperWasteKg: data.paperWasteKg as number || undefined,
-        cansWasteKg: data.cansWasteKg as number || undefined,
-        bottlesWasteKg: data.bottlesWasteKg as number || undefined,
-        eWasteKg: data.eWasteKg as number || undefined,
-        scrapMetalKg: data.scrapMetalKg as number || undefined,
+        solidWasteKg: (data.solidWasteKg as number) || undefined,
+        hazardousWasteKg: (data.hazardousWasteKg as number) || undefined,
+        recycledWasteKg: (data.recycledWasteKg as number) || undefined,
+        organicWasteKg: (data.organicWasteKg as number) || undefined,
+        plasticWasteKg: (data.plasticWasteKg as number) || undefined,
+        paperWasteKg: (data.paperWasteKg as number) || undefined,
+        cansWasteKg: (data.cansWasteKg as number) || undefined,
+        bottlesWasteKg: (data.bottlesWasteKg as number) || undefined,
+        eWasteKg: (data.eWasteKg as number) || undefined,
+        scrapMetalKg: (data.scrapMetalKg as number) || undefined,
         notes: data.notes || undefined,
         timeOfDay: data.timeOfDay || undefined,
         locationType: data.locationType || undefined,
@@ -57,7 +66,11 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      return wasteService.updateWasteData(currentUser.token, data.wasteDataId, updatedData);
+      return wasteService.updateWasteData(
+        currentUser.token,
+        data.wasteDataId,
+        updatedData,
+      );
     },
     onSuccess: () => {
       toast.success("Waste data updated successfully");
@@ -65,20 +78,26 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update waste data")
+      toast("Failed to update waste data");
       setErrors({ server: "Failed to update waste data" });
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
-    setErrors((prev:any) => ({ ...prev, [name]: undefined, server: undefined }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: undefined,
+      server: undefined,
+    }));
   };
-  
+
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
@@ -108,7 +127,11 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
             onChange={handleDateChange}
           />
           {errors.measurementTime && (
-            <p className="text-xs text-red-500">{Array.isArray(errors.measurementTime) ? errors.measurementTime[0] : errors.measurementTime}</p>
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.measurementTime)
+                ? errors.measurementTime[0]
+                : errors.measurementTime}
+            </p>
           )}
         </div>
         <div></div>
@@ -117,208 +140,312 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
         <Label className="text-base font-medium">Primary Measurements</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-                  <Label className="text-sm">Solid Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="solidWasteKg"
-                    value={formData.solidWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.solidWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.solidWasteKg) ? errors.solidWasteKg[0] : errors.solidWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Hazardous Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="hazardousWasteKg"
-                    value={formData.hazardousWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.hazardousWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.hazardousWasteKg) ? errors.hazardousWasteKg[0] : errors.hazardousWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Recycled Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="recycledWasteKg"
-                    value={formData.recycledWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.recycledWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.recycledWasteKg) ? errors.recycledWasteKg[0] : errors.recycledWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Organic Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="organicWasteKg"
-                    value={formData.organicWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.organicWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.organicWasteKg) ? errors.organicWasteKg[0] : errors.organicWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Plastic Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="plasticWasteKg"
-                    value={formData.plasticWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.plasticWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.plasticWasteKg) ? errors.plasticWasteKg[0] : errors.plasticWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Paper Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="paperWasteKg"
-                    value={formData.paperWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.paperWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.paperWasteKg) ? errors.paperWasteKg[0] : errors.paperWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Cans Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="cansWasteKg"
-                    value={formData.cansWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.cansWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.cansWasteKg) ? errors.cansWasteKg[0] : errors.cansWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Bottles Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="bottlesWasteKg"
-                    value={formData.bottlesWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.bottlesWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.bottlesWasteKg) ? errors.bottlesWasteKg[0] : errors.bottlesWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">E-Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="eWasteKg"
-                    value={formData.eWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.eWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.eWasteKg) ? errors.eWasteKg[0] : errors.eWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Scrap Metal (kg)</Label>
-                  <Input
-                    type="number"
-                    name="scrapMetalKg"
-                    value={formData.scrapMetalKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.scrapMetalKg && <p className="text-xs text-red-500">{Array.isArray(errors.scrapMetalKg) ? errors.scrapMetalKg[0] : errors.scrapMetalKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Paper Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="paperWasteKg"
-                    value={formData.paperWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.paperWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.paperWasteKg) ? errors.paperWasteKg[0] : errors.paperWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Cans Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="cansWasteKg"
-                    value={formData.cansWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.cansWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.cansWasteKg) ? errors.cansWasteKg[0] : errors.cansWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Bottles Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="bottlesWasteKg"
-                    value={formData.bottlesWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.bottlesWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.bottlesWasteKg) ? errors.bottlesWasteKg[0] : errors.bottlesWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">E-Waste (kg)</Label>
-                  <Input
-                    type="number"
-                    name="eWasteKg"
-                    value={formData.eWasteKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.eWasteKg && <p className="text-xs text-red-500">{Array.isArray(errors.eWasteKg) ? errors.eWasteKg[0] : errors.eWasteKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Scrap Metal (kg)</Label>
-                  <Input
-                    type="number"
-                    name="scrapMetalKg"
-                    value={formData.scrapMetalKg as number || 0}
-                    onChange={handleChange}
-                    placeholder="0"
-                  />
-                  {errors.scrapMetalKg && <p className="text-xs text-red-500">{Array.isArray(errors.scrapMetalKg) ? errors.scrapMetalKg[0] : errors.scrapMetalKg}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Time of Day</Label>
-                  <Select
-                    value={formData.timeOfDay || ""}
-                    onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Time of Day" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(TimeOfDay).map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Location Type</Label>
-                  <Select
-                    value={formData.locationType || ""}
-                    onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Location Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(LocationType).map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
-                </div>
+            <Label className="text-sm">Solid Waste (kg)</Label>
+            <Input
+              type="number"
+              name="solidWasteKg"
+              value={(formData.solidWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.solidWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.solidWasteKg)
+                  ? errors.solidWasteKg[0]
+                  : errors.solidWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Hazardous Waste (kg)</Label>
+            <Input
+              type="number"
+              name="hazardousWasteKg"
+              value={(formData.hazardousWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.hazardousWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.hazardousWasteKg)
+                  ? errors.hazardousWasteKg[0]
+                  : errors.hazardousWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Recycled Waste (kg)</Label>
+            <Input
+              type="number"
+              name="recycledWasteKg"
+              value={(formData.recycledWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.recycledWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.recycledWasteKg)
+                  ? errors.recycledWasteKg[0]
+                  : errors.recycledWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Organic Waste (kg)</Label>
+            <Input
+              type="number"
+              name="organicWasteKg"
+              value={(formData.organicWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.organicWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.organicWasteKg)
+                  ? errors.organicWasteKg[0]
+                  : errors.organicWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Plastic Waste (kg)</Label>
+            <Input
+              type="number"
+              name="plasticWasteKg"
+              value={(formData.plasticWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.plasticWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.plasticWasteKg)
+                  ? errors.plasticWasteKg[0]
+                  : errors.plasticWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Paper Waste (kg)</Label>
+            <Input
+              type="number"
+              name="paperWasteKg"
+              value={(formData.paperWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.paperWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.paperWasteKg)
+                  ? errors.paperWasteKg[0]
+                  : errors.paperWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Cans Waste (kg)</Label>
+            <Input
+              type="number"
+              name="cansWasteKg"
+              value={(formData.cansWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.cansWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.cansWasteKg)
+                  ? errors.cansWasteKg[0]
+                  : errors.cansWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Bottles Waste (kg)</Label>
+            <Input
+              type="number"
+              name="bottlesWasteKg"
+              value={(formData.bottlesWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.bottlesWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.bottlesWasteKg)
+                  ? errors.bottlesWasteKg[0]
+                  : errors.bottlesWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">E-Waste (kg)</Label>
+            <Input
+              type="number"
+              name="eWasteKg"
+              value={(formData.eWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.eWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.eWasteKg)
+                  ? errors.eWasteKg[0]
+                  : errors.eWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Scrap Metal (kg)</Label>
+            <Input
+              type="number"
+              name="scrapMetalKg"
+              value={(formData.scrapMetalKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.scrapMetalKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.scrapMetalKg)
+                  ? errors.scrapMetalKg[0]
+                  : errors.scrapMetalKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Paper Waste (kg)</Label>
+            <Input
+              type="number"
+              name="paperWasteKg"
+              value={(formData.paperWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.paperWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.paperWasteKg)
+                  ? errors.paperWasteKg[0]
+                  : errors.paperWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Cans Waste (kg)</Label>
+            <Input
+              type="number"
+              name="cansWasteKg"
+              value={(formData.cansWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.cansWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.cansWasteKg)
+                  ? errors.cansWasteKg[0]
+                  : errors.cansWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Bottles Waste (kg)</Label>
+            <Input
+              type="number"
+              name="bottlesWasteKg"
+              value={(formData.bottlesWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.bottlesWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.bottlesWasteKg)
+                  ? errors.bottlesWasteKg[0]
+                  : errors.bottlesWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">E-Waste (kg)</Label>
+            <Input
+              type="number"
+              name="eWasteKg"
+              value={(formData.eWasteKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.eWasteKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.eWasteKg)
+                  ? errors.eWasteKg[0]
+                  : errors.eWasteKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Scrap Metal (kg)</Label>
+            <Input
+              type="number"
+              name="scrapMetalKg"
+              value={(formData.scrapMetalKg as number) || 0}
+              onChange={handleChange}
+              placeholder="0"
+            />
+            {errors.scrapMetalKg && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.scrapMetalKg)
+                  ? errors.scrapMetalKg[0]
+                  : errors.scrapMetalKg}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Time of Day</Label>
+            <Select
+              value={formData.timeOfDay || ""}
+              onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Time of Day" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(TimeOfDay).map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.timeOfDay && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.timeOfDay)
+                  ? errors.timeOfDay[0]
+                  : errors.timeOfDay}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm">Location Type</Label>
+            <Select
+              value={formData.locationType || ""}
+              onValueChange={(value: LocationType) =>
+                handleLocationTypeChange(value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Location Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(LocationType).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.locationType && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.locationType)
+                  ? errors.locationType[0]
+                  : errors.locationType}
+              </p>
+            )}
+          </div>
         </div>
       </div>
       <div className="space-y-2">
@@ -337,7 +464,7 @@ export default function UpdateWasteDataForm({ onClose, data }: UpdateWasteDataFo
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>

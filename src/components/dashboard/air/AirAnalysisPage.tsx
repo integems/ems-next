@@ -11,13 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AirData, Location, TimeOfDay, LocationType } from "@/types/common.types";
+import {
+  AirData,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
 import { AirDataFilterDto } from "@/dtos/air.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Loader2,
+  LoaderIcon,
   MapPin,
   LineChart,
   BarChart,
@@ -50,7 +55,11 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const airService = new FrontendAirService();
 const locationService = new FrontendLocationService();
@@ -138,9 +147,14 @@ export default function AirAnalysisPage() {
         locationId: locationIdFilter,
         startDate: startDateFilter,
         endDate: endDateFilter,
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
         locationType:
-          locationTypeFilter === "All" ? undefined : locationTypeFilter as LocationType,
+          locationTypeFilter === "All"
+            ? undefined
+            : (locationTypeFilter as LocationType),
       };
       const response = await airService.findAllAirData(
         currentUser.token,
@@ -242,145 +256,150 @@ export default function AirAnalysisPage() {
 
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end max-w-[60rem]">
-            <DateTimePicker
+          <DateTimePicker
             value={startDateFilter}
             onChange={setStartDateFilter}
             label="Start Date"
-            />
-            <DateTimePicker
+          />
+          <DateTimePicker
             value={endDateFilter}
             onChange={setEndDateFilter}
             label="End Date"
-            />
-            <div className="flex-1">
+          />
+          <div className="flex-1">
             <label
-                htmlFor="timeOfDay"
-                className="block text-sm font-medium mb-2 text-foreground"
+              htmlFor="timeOfDay"
+              className="block text-sm font-medium mb-2 text-foreground"
             >
-                Filter by Time of Day
+              Filter by Time of Day
             </label>
             <Select
-                value={timeOfDayFilter}
-                onValueChange={(value) =>
-                    setTimeOfDayFilter(
-                    value === "All"
-                        ? undefined
-                        : (value as "day" | "evening" | "night"),
-                    )
-                }
+              value={timeOfDayFilter}
+              onValueChange={(value) =>
+                setTimeOfDayFilter(
+                  value === "All"
+                    ? undefined
+                    : (value as "day" | "evening" | "night"),
+                )
+              }
             >
-                <SelectTrigger
-                    id="timeOfDay"
-                    className="bg-background border-border"
-                >
-                    <SelectValue placeholder="Select Time of Day" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem  value={"all"}>
-                        All
-                    </SelectItem>
-                    {Object.values(TimeOfDay).map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="locationType"
-                  className="block text-sm font-medium mb-2 text-foreground"
-                >
-                  Filter by Location Type
-                </label>
-                <Select
-                  value={locationTypeFilter}
-                  onValueChange={(value) =>
-                    setLocationTypeFilter(
-                      value === "All"
-                        ? undefined
-                        : (value as
-                            | "industrial"
-                            | "residential"
-                            | "commercial"
-                            | "rural"),
-                    )
-                  }
-                >
-                  <SelectTrigger
-                    id="locationType"
-                    className="bg-background border-border"
-                  >
-                    <SelectValue placeholder="Select Location Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.values(LocationType).map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <SelectTrigger
+                id="timeOfDay"
+                className="bg-background border-border"
+              >
+                <SelectValue placeholder="Select Time of Day" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={"all"}>All</SelectItem>
+                {Object.values(TimeOfDay).map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {time}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1">
+            <label
+              htmlFor="locationType"
+              className="block text-sm font-medium mb-2 text-foreground"
+            >
+              Filter by Location Type
+            </label>
+            <Select
+              value={locationTypeFilter}
+              onValueChange={(value) =>
+                setLocationTypeFilter(
+                  value === "All"
+                    ? undefined
+                    : (value as
+                        | "industrial"
+                        | "residential"
+                        | "commercial"
+                        | "rural"),
+                )
+              }
+            >
+              <SelectTrigger
+                id="locationType"
+                className="bg-background border-border"
+              >
+                <SelectValue placeholder="Select Location Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(LocationType).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-            <div className="flex-1">
-                <label
-                    htmlFor="search"
-                    className="block text-sm font-medium mb-2 text-foreground"
-                >
-                    Search
-                </label>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                    id="search"
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery || ""}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
-                    />
-                </div>
+          <div className="flex-1">
+            <label
+              htmlFor="search"
+              className="block text-sm font-medium mb-2 text-foreground"
+            >
+              Search
+            </label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search"
+                type="text"
+                placeholder="Search..."
+                value={searchQuery || ""}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
+              />
             </div>
-            <div className="flex-1">
-                <label
-                    htmlFor="location"
-                    className="block text-sm font-medium mb-2 text-foreground"
-                >
-                    Filter by Location
-                </label>
-                <Select
-                    value={locationIdFilter}
-                    onValueChange={(value) =>
-                    setLocationIdFilter(value === "all" ? "" : value)
-                    }
-                >
-                    <SelectTrigger id="location" className="bg-background border-border">
-                    <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {locations.map((loc: any) => (
-                        <SelectItem key={loc.locationId} value={loc.locationId}>
-                        <div className="flex flex-row gap-1 items-center justify-start">
-                            <MapPin size={15} />
-                            <div>{loc.name}</div>
-                        </div>
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <Button onClick={handleApplyFilters} disabled={isLoading} className="self-end">
-                {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                    <RefreshCcw className="h-4 w-4 mr-2" />
-                )}
-                Apply Filters
-            </Button>
+          </div>
+          <div className="flex-1">
+            <label
+              htmlFor="location"
+              className="block text-sm font-medium mb-2 text-foreground"
+            >
+              Filter by Location
+            </label>
+            <Select
+              value={locationIdFilter}
+              onValueChange={(value) =>
+                setLocationIdFilter(value === "all" ? "" : value)
+              }
+            >
+              <SelectTrigger
+                id="location"
+                className="bg-background border-border"
+              >
+                <SelectValue placeholder="Select location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Locations</SelectItem>
+                {locations.map((loc: any) => (
+                  <SelectItem key={loc.locationId} value={loc.locationId}>
+                    <div className="flex flex-row gap-1 items-center justify-start">
+                      <MapPin size={15} />
+                      <div>{loc.name}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={handleApplyFilters}
+            disabled={isLoading}
+            className="self-end"
+          >
+            {isLoading ? (
+              <LoaderIcon className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <RefreshCcw className="h-4 w-4 mr-2" />
+            )}
+            Apply Filters
+          </Button>
         </div>
 
         <Collapsible
@@ -409,13 +428,12 @@ export default function AirAnalysisPage() {
           </CollapsibleContent>
         </Collapsible>
 
-
         {/* Content */}
         {isLoading ? (
           <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
             <CardContent className="flex items-center justify-center h-64">
               <div className="text-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto" />
+                <LoaderIcon className="h-12 w-12 animate-spin text-primary mx-auto" />
                 <p className="text-slate-600 dark:text-slate-400">
                   Loading air quality data...
                 </p>
@@ -423,16 +441,16 @@ export default function AirAnalysisPage() {
             </CardContent>
           </Card>
         ) : isError ? (
-              <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-                  <p>Couldn't connect {error.message}</p>
-                  <Button
-                    onClick={() => refetch()}
-                    variant="outline"
-                    className="mt-2 border-border text-foreground hover:bg-accent"
-                  >
-                    Retry
-                  </Button>
-                </div>
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+            <p>Couldn't connect. Try again</p>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              className="mt-2 border-border text-foreground hover:bg-accent"
+            >
+              Retry
+            </Button>
+          </div>
         ) : (
           <div className="space-y-8">
             {/* Statistical Summary - Enhanced */}
@@ -501,64 +519,63 @@ export default function AirAnalysisPage() {
               </CardContent>
             </Card>
 
-            
-        {/* Parameter Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-slate-800 dark:text-slate-200">
-                Primary Parameter
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={selectedParameter}
-                onValueChange={(value) =>
-                  setSelectedParameter(value as keyof AirData)
-                }
-              >
-                <SelectTrigger  className="bg-background border-border">
-                  <SelectValue placeholder="Select Parameter 1" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parameterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </div>
+            {/* Parameter Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-slate-800 dark:text-slate-200">
+                    Primary Parameter
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select
+                    value={selectedParameter}
+                    onValueChange={(value) =>
+                      setSelectedParameter(value as keyof AirData)
+                    }
+                  >
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select Parameter 1" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {parameterOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </div>
 
-          <div>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-slate-800 dark:text-slate-200">
-                Secondary Parameter
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select
-                value={selectedParameter2}
-                onValueChange={(value) =>
-                  setSelectedParameter2(value as keyof AirData)
-                }
-              >
-                <SelectTrigger  className="bg-background border-border">
-                  <SelectValue placeholder="Select Parameter 2" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parameterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </div>
-        </div>
-     <Card className="lg:col-span-2">
+              <div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-slate-800 dark:text-slate-200">
+                    Secondary Parameter
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select
+                    value={selectedParameter2}
+                    onValueChange={(value) =>
+                      setSelectedParameter2(value as keyof AirData)
+                    }
+                  >
+                    <SelectTrigger className="bg-background border-border">
+                      <SelectValue placeholder="Select Parameter 2" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {parameterOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </div>
+            </div>
+            <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <LineChart className="h-6 w-6  text-green-600" />
@@ -568,7 +585,6 @@ export default function AirAnalysisPage() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={400}>
                   <RechartsLineChart
-                   
                     data={airData?.map((i) => ({
                       ...i,
                       measurementTime: format(
@@ -586,15 +602,14 @@ export default function AirAnalysisPage() {
                       type="monotone"
                       dataKey={selectedParameter}
                       name={selectedParameter.toString()}
-                    
-                           stroke="#82ca9d"
+                      stroke="#82ca9d"
                       activeDot={{ r: 8 }}
                     />
                     <Line
                       type="monotone"
                       dataKey={selectedParameter2}
                       name={selectedParameter2.toString()}
-                   stroke="#8884d8"
+                      stroke="#8884d8"
                     />
                   </RechartsLineChart>
                 </ResponsiveContainer>
@@ -619,7 +634,6 @@ export default function AirAnalysisPage() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-       
 
             {/* Correlation Analysis */}
             <Card className="xl:col-span-2">

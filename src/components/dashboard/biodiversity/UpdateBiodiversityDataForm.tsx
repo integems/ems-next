@@ -8,13 +8,26 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { useAuth } from "@/hooks/use-auth";
-import { BiodiversityData, TimeOfDay, LocationType } from "@/types/common.types";
-import { updateBiodiversityDataDto, UpdateBiodiversityDataDto } from "@/dtos/biodiversity.dto";
-import { Loader2 } from "lucide-react";
+import {
+  BiodiversityData,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
+import {
+  updateBiodiversityDataDto,
+  UpdateBiodiversityDataDto,
+} from "@/dtos/biodiversity.dto";
+import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const biodiversityService = new FrontendBiodiversityService();
 
@@ -25,7 +38,10 @@ interface UpdateBiodiversityDataFormProps {
 
 type UpdateBiodiversityDataFormData = z.infer<typeof updateBiodiversityDataDto>;
 
-export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiodiversityDataFormProps) {
+export default function UpdateBiodiversityDataForm({
+  onClose,
+  data,
+}: UpdateBiodiversityDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UpdateBiodiversityDataFormData>({});
@@ -35,8 +51,8 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
     if (data) {
       setFormData({
         measurementTime: new Date(data.measurementTime),
-        speciesCount: data.speciesCount as number || undefined,
-        shannonIndex: data.shannonIndex as number || undefined,
+        speciesCount: (data.speciesCount as number) || undefined,
+        shannonIndex: (data.shannonIndex as number) || undefined,
         notes: data.notes || undefined,
         timeOfDay: data.timeOfDay || undefined,
         locationType: data.locationType || undefined,
@@ -49,7 +65,11 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      return biodiversityService.updateBiodiversityData(currentUser.token, data.biodiversityDataId, updatedData);
+      return biodiversityService.updateBiodiversityData(
+        currentUser.token,
+        data.biodiversityDataId,
+        updatedData,
+      );
     },
     onSuccess: () => {
       toast.success("Biodiversity data updated successfully");
@@ -57,20 +77,26 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update biodiversity data")
+      toast("Failed to update biodiversity data");
       setErrors({ server: "Failed to update biodiversity data" });
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
-    setErrors((prev:any) => ({ ...prev, [name]: undefined, server: undefined }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: undefined,
+      server: undefined,
+    }));
   };
-  
+
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
@@ -100,7 +126,11 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
             onChange={handleDateChange}
           />
           {errors.measurementTime && (
-            <p className="text-xs text-red-500">{Array.isArray(errors.measurementTime) ? errors.measurementTime[0] : errors.measurementTime}</p>
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.measurementTime)
+                ? errors.measurementTime[0]
+                : errors.measurementTime}
+            </p>
           )}
         </div>
         <div></div>
@@ -113,22 +143,34 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
             <Input
               type="number"
               name="speciesCount"
-              value={formData.speciesCount as number || 0}
+              value={(formData.speciesCount as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.speciesCount && <p className="text-xs text-red-500">{Array.isArray(errors.speciesCount) ? errors.speciesCount[0] : errors.speciesCount}</p>}
+            {errors.speciesCount && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.speciesCount)
+                  ? errors.speciesCount[0]
+                  : errors.speciesCount}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Shannon Index</Label>
             <Input
               type="number"
               name="shannonIndex"
-              value={formData.shannonIndex as number || 0}
+              value={(formData.shannonIndex as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.shannonIndex && <p className="text-xs text-red-500">{Array.isArray(errors.shannonIndex) ? errors.shannonIndex[0] : errors.shannonIndex}</p>}
+            {errors.shannonIndex && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.shannonIndex)
+                  ? errors.shannonIndex[0]
+                  : errors.shannonIndex}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Time of Day</Label>
@@ -147,13 +189,21 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
                 ))}
               </SelectContent>
             </Select>
-            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+            {errors.timeOfDay && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.timeOfDay)
+                  ? errors.timeOfDay[0]
+                  : errors.timeOfDay}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Location Type</Label>
             <Select
               value={formData.locationType || ""}
-              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+              onValueChange={(value: LocationType) =>
+                handleLocationTypeChange(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Location Type" />
@@ -166,11 +216,17 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
                 ))}
               </SelectContent>
             </Select>
-            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
+            {errors.locationType && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.locationType)
+                  ? errors.locationType[0]
+                  : errors.locationType}
+              </p>
+            )}
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Notes (Optional)</Label>
         <Textarea
@@ -181,14 +237,14 @@ export default function UpdateBiodiversityDataForm({ onClose, data }: UpdateBiod
           className="h-24"
         />
       </div>
-      
+
       <div className="flex justify-end gap-2">
         <Button type="button" size="sm" variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>

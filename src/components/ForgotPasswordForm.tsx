@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, LoaderIcon } from "lucide-react";
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -54,7 +54,7 @@ export function ForgotPasswordForm({
         disabled={forgotPasswordMutation.isPending}
       >
         {forgotPasswordMutation.isPending ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           "Continue"
         )}

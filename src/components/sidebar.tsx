@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+
 // Define NavLink interface for type safety
 interface NavLink {
   href?: string;
@@ -172,7 +174,7 @@ const sidebarLinks: NavLink[] = [
     href: "/dashboard/users",
     type: "link",
   },
-    {
+  {
     label: "AI Analysis",
     icon: Bot,
     href: "/dashboard/ai-chat-analysis",
@@ -272,14 +274,23 @@ function SidebarContentUI({ className }: { className?: string }) {
 }
 
 // Main AppSidebar component
+export function Logo() {
+  return (
+    <Link href="/" className="flex items-center gap-1 font-black text-3xl">
+      <span className="text-primary">E</span>
+      <span className="text-xl relative top-[-0.5rem]">M</span>
+      <span className="text-primary">S</span>
+    </Link>
+  );
+}
+
 export function AppSidebar() {
   return (
     <Sidebar variant="sidebar" className="w-64">
       <SidebarHeader>
-        <div className="flex h-14 items-center border-b px-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span>EMS</span>
-          </Link>
+        <div className="flex h-14 items-center border-b px-4 justify-between">
+          <Logo />
+          <ThemeToggle />
         </div>
       </SidebarHeader>
       <SidebarContentUI />

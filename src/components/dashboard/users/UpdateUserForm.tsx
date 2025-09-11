@@ -13,11 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UpdateUserDto, updateUserDto } from "@/dtos/user.dto";
-import { User, UserStatus } from "@/types/common.types";
+import { RoleName, User, UserStatus } from "@/types/common.types";
 import { FrontendUserService } from "@/frontend-services/user.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { z } from "zod";
 
 interface UpdateUserFormProps {
@@ -119,36 +119,40 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
           )}
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Select
-          onValueChange={(value) => handleSelectChange("status", value)}
-          value={formData.status || ""}
-        >
-          <SelectTrigger id="status">
-            <SelectValue placeholder="Select a status" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.values(UserStatus).map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.status && (
-          <p className="text-xs text-red-500">
-            {Array.isArray(errors.status) ? errors.status[0] : errors.status}
-          </p>
-        )}
-      </div>
+      {(currentUser.role === RoleName.SuperAdmin ||
+        currentUser.role === RoleName.IntegemsAdmin) && (
+        <div className="space-y-2">
+          <Label htmlFor="status">Status</Label>
+          <Select
+            onValueChange={(value) => handleSelectChange("status", value)}
+            value={formData.status || ""}
+          >
+            <SelectTrigger id="status">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(UserStatus).map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.status && (
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.status) ? errors.status[0] : errors.status}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="flex justify-end gap-2">
         <Button type="button" size="sm" variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>

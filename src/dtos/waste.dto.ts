@@ -3,7 +3,7 @@ import { TimeOfDay, LocationType } from "../types/common.types";
 
 export const singleWasteData = z.object({
   locationId: z.string().optional(),
-  pointGeom: z.tuple([z.number(),z.number()]).optional(),
+  pointGeom: z.tuple([z.number(), z.number()]).optional(),
   measurementTime: z.date(),
   timeOfDay: z.enum(TimeOfDay).optional(),
   locationType: z.enum(LocationType).optional(),
@@ -25,7 +25,7 @@ export const createWasteDataDto = z.array(singleWasteData);
 
 export const updateWasteDataDto = z.object({
   locationId: z.string().optional(),
-  pointGeom: z.tuple([z.number(),z.number()]).optional(),
+  pointGeom: z.tuple([z.number(), z.number()]).optional(),
   measurementTime: z.date().optional(),
   timeOfDay: z.enum(TimeOfDay).optional(),
   locationType: z.enum(LocationType).optional(),

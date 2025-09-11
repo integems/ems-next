@@ -4,7 +4,11 @@ import {
   UpdateBiodiversityDataDto,
   BiodiversityDataFilterDto,
 } from "@/dtos/biodiversity.dto";
-import { BiodiversityData, DataResponse, PaginationResponse } from "@/types/common.types";
+import {
+  BiodiversityData,
+  DataResponse,
+  PaginationResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/biodiversity";
 

@@ -4,7 +4,11 @@ import {
   UpdateNoiseDataDto,
   NoiseDataFilterDto,
 } from "@/dtos/noise.dto";
-import { DataResponse, NoiseData, PaginationResponse } from "@/types/common.types";
+import {
+  DataResponse,
+  NoiseData,
+  PaginationResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/noise";
 

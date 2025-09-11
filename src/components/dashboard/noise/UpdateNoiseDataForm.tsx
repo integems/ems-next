@@ -10,10 +10,16 @@ import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
 import { NoiseData, TimeOfDay, LocationType } from "@/types/common.types";
 import { updateNoiseDataDto } from "@/dtos/noise.dto";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { z } from "zod";
 
 const noiseService = new FrontendNoiseService();
@@ -25,7 +31,10 @@ interface UpdateNoiseDataFormProps {
 
 type UpdateNoiseDataFormData = z.infer<typeof updateNoiseDataDto>;
 
-export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFormProps) {
+export default function UpdateNoiseDataForm({
+  onClose,
+  data,
+}: UpdateNoiseDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UpdateNoiseDataFormData>({});
@@ -36,16 +45,18 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
       setFormData({
         locationId: data.locationId || undefined,
         pointGeom: data.pointGeom || undefined,
-        measurementTime: data.measurementTime ? new Date(data.measurementTime) : undefined,
+        measurementTime: data.measurementTime
+          ? new Date(data.measurementTime)
+          : undefined,
         timeOfDay: data.timeOfDay || undefined,
         locationType: data.locationType || undefined,
         duration: data.duration || undefined,
-        laeq: data.laeq as number || undefined,
-        lafMax: data.lafMax as number || undefined,
-        frequency: data.frequency as number || undefined,
-        la10: data.la10 as number || undefined,
-        la90: data.la90 as number || undefined,
-        lafMin: data.lafMin as number || undefined,
+        laeq: (data.laeq as number) || undefined,
+        lafMax: (data.lafMax as number) || undefined,
+        frequency: (data.frequency as number) || undefined,
+        la10: (data.la10 as number) || undefined,
+        la90: (data.la90 as number) || undefined,
+        lafMin: (data.lafMin as number) || undefined,
         notes: data.notes || undefined,
       });
     }
@@ -56,7 +67,11 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      return noiseService.updateNoiseData(currentUser.token, data.noiseDataId, updatedData);
+      return noiseService.updateNoiseData(
+        currentUser.token,
+        data.noiseDataId,
+        updatedData,
+      );
     },
     onSuccess: () => {
       toast.success("Noise data updated successfully");
@@ -69,15 +84,21 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
-    setErrors((prev:any) => ({ ...prev, [name]: undefined, server: undefined }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: undefined,
+      server: undefined,
+    }));
   };
-  
+
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
@@ -93,14 +114,6 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
-
-    const result = updateNoiseDataDto.safeParse(formData);
-    if (!result.success) {
-      setErrors(result.error.flatten().fieldErrors);
-      toast.error("Please correct errors in the form.");
-      return;
-    }
-
     mutation.mutate(formData);
   };
 
@@ -115,7 +128,11 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
             onChange={handleDateChange}
           />
           {errors.measurementTime && (
-            <p className="text-xs text-red-500">{Array.isArray(errors.measurementTime) ? errors.measurementTime[0] : errors.measurementTime}</p>
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.measurementTime)
+                ? errors.measurementTime[0]
+                : errors.measurementTime}
+            </p>
           )}
         </div>
         <div></div>
@@ -132,7 +149,11 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.laeq && <p className="text-xs text-red-500">{Array.isArray(errors.laeq) ? errors.laeq[0] : errors.laeq}</p>}
+            {errors.laeq && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.laeq) ? errors.laeq[0] : errors.laeq}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">LAFMax (dB)</Label>
@@ -143,7 +164,13 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.lafMax && <p className="text-xs text-red-500">{Array.isArray(errors.lafMax) ? errors.lafMax[0] : errors.lafMax}</p>}
+            {errors.lafMax && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.lafMax)
+                  ? errors.lafMax[0]
+                  : errors.lafMax}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Frequency (Hz)</Label>
@@ -154,7 +181,13 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.frequency && <p className="text-xs text-red-500">{Array.isArray(errors.frequency) ? errors.frequency[0] : errors.frequency}</p>}
+            {errors.frequency && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.frequency)
+                  ? errors.frequency[0]
+                  : errors.frequency}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">LA10 (dB)</Label>
@@ -165,7 +198,11 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.la10 && <p className="text-xs text-red-500">{Array.isArray(errors.la10) ? errors.la10[0] : errors.la10}</p>}
+            {errors.la10 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.la10) ? errors.la10[0] : errors.la10}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">LA90 (dB)</Label>
@@ -176,7 +213,11 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.la90 && <p className="text-xs text-red-500">{Array.isArray(errors.la90) ? errors.la90[0] : errors.la90}</p>}
+            {errors.la90 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.la90) ? errors.la90[0] : errors.la90}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">LAFMin (dB)</Label>
@@ -187,7 +228,13 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.lafMin && <p className="text-xs text-red-500">{Array.isArray(errors.lafMin) ? errors.lafMin[0] : errors.lafMin}</p>}
+            {errors.lafMin && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.lafMin)
+                  ? errors.lafMin[0]
+                  : errors.lafMin}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Duration</Label>
@@ -198,7 +245,13 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
               onChange={handleChange}
               placeholder="e.g., 2 hours"
             />
-            {errors.duration && <p className="text-xs text-red-500">{Array.isArray(errors.duration) ? errors.duration[0] : errors.duration}</p>}
+            {errors.duration && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.duration)
+                  ? errors.duration[0]
+                  : errors.duration}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -221,13 +274,21 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
                 ))}
               </SelectContent>
             </Select>
-            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+            {errors.timeOfDay && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.timeOfDay)
+                  ? errors.timeOfDay[0]
+                  : errors.timeOfDay}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Location Type</Label>
             <Select
               value={formData.locationType || ""}
-              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+              onValueChange={(value: LocationType) =>
+                handleLocationTypeChange(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Location Type" />
@@ -240,7 +301,13 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
                 ))}
               </SelectContent>
             </Select>
-            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
+            {errors.locationType && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.locationType)
+                  ? errors.locationType[0]
+                  : errors.locationType}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -260,7 +327,7 @@ export default function UpdateNoiseDataForm({ onClose, data }: UpdateNoiseDataFo
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>

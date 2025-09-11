@@ -10,6 +10,8 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "./ui/navigation-menu";
+import { Button } from "./ui/button";
+import { Logo } from "./sidebar";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
@@ -21,14 +23,12 @@ const navigationLinks = [
 export default function NavComponent() {
   const { currentUser } = useAuth();
   return (
-    <header className="fixed top-0 bg-primary p-3 w-full">
+    <header className="fixed top-0 p-3 w-full">
       <div className="flex h-16 items-center justify-between mx-auto gap-4 w-full md:px-20">
         <div className="flex items-center gap-2">
           {/* Main nav */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-primary hover:text-primary/90">
-              <HomeIcon className="text-primary-foreground" />
-            </Link>
+            <Logo />
             {/* Navigation menu */}
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
@@ -36,7 +36,7 @@ export default function NavComponent() {
                   <NavigationMenuItem key={index}>
                     <NavigationMenuLink
                       href={link.href}
-                      className=" py-1.5 font-semibold text-primary-foreground hover:bg-transparent hover:border-b-2 transition-all"
+                      className=" py-1.5 font-semibold hover:opacity-50 hover:border-b-2 transition-all"
                     >
                       {link.label}
                     </NavigationMenuLink>
@@ -47,10 +47,13 @@ export default function NavComponent() {
           </div>
         </div>
         {/* Right side */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-          </div>
+        <div className="flex flex-row items-center gap-4">
+          {!currentUser.isAuthenticated && (
+            <Button asChild size="sm">
+              <Link href={"/signin"}></Link>
+            </Button>
+          )}
+          <ThemeToggle />
           {currentUser.isAuthenticated && <UserMenu />}
         </div>
       </div>

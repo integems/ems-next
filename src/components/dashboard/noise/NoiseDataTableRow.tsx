@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { NoiseData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -76,20 +76,39 @@ const NoiseDataTableRow: React.FC<NoiseDataTableRowProps> = ({ data }) => {
         <TableCell>{data.lafMin ?? "N/A"}</TableCell>
         <TableCell>
           {data.measurementTime
-            ? format(new Date(data.measurementTime), "PPP p")
+            ? `${new Date(data.measurementTime).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} ${new Date(data.measurementTime).toLocaleTimeString("en-GB", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })}`
             : "N/A"}
         </TableCell>
         <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
         <TableCell>
-          {data.createdAt ? format(new Date(data.createdAt), "PPP p") : "N/A"}
+          {data.createdAt
+            ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            : "N/A"}
         </TableCell>
         <TableCell>
           {data.updatedAt
-            ? format(new Date(data.updatedAt), "PPP p")
+            ? new Date(data.updatedAt).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
             : "N/A"}
         </TableCell>
-        <TableCell>{data.createdBy?.username ?? "N/A"}</TableCell>
-        <TableCell>{data.updatedBy?.username ?? "N/A"}</TableCell>
+        <TableCell>{data.createdBy ?? "N/A"}</TableCell>
+        <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
         <TableCell className="text-right">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -128,8 +147,8 @@ const NoiseDataTableRow: React.FC<NoiseDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the noise
-              data record.
+              This action cannot be undone. This will permanently delete the
+              noise data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -142,7 +161,7 @@ const NoiseDataTableRow: React.FC<NoiseDataTableRowProps> = ({ data }) => {
               disabled={deleteNoiseDataMutation.isPending}
             >
               {deleteNoiseDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -150,11 +169,14 @@ const NoiseDataTableRow: React.FC<NoiseDataTableRowProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Noise Data</DialogTitle>
           </DialogHeader>
-          <UpdateNoiseDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateNoiseDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

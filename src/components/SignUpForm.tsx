@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, LoaderIcon } from "lucide-react";
 import { PasswordValidator } from "@/components/PasswordValidator";
 
 export const signUpSchema = z
@@ -189,7 +189,7 @@ export function SignUpForm({
         disabled={signUpMutation.isPending}
       >
         {signUpMutation.isPending ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           "Sign up"
         )}

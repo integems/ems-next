@@ -54,7 +54,7 @@ export class LocationService {
    * @returns A paginated list of locations.
    */
   async findAllLocations(filter: LocationFilterDto) {
-    const { page = 1, limit = 10000000, search,category} = filter;
+    const { page = 1, limit = 10000000, search, category } = filter;
     const offset = (page - 1) * limit;
 
     let whereClause: any = undefined;
@@ -128,7 +128,7 @@ export class LocationService {
     locationDto: CreateLocationDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
     const locationId = `${ID_PREFIX}${generateId()}`;
 
@@ -169,7 +169,7 @@ export class LocationService {
     locationDto: UpdateLocationDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedLocation] = await db
       .update(schema.locations)

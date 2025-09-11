@@ -13,7 +13,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { FrontendAuthService } from "@/frontend-services/auth.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LoaderIcon } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { OAuthDto } from "@/dtos/auth.dto";
@@ -232,7 +232,7 @@ export default function SignInPage() {
             disabled={isGoogleLoading}
           >
             {isGoogleLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <svg
                 className="mr-2 h-4 w-4"

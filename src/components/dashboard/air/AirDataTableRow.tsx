@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { AirData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -161,7 +161,7 @@ const AirDataTableRow: React.FC<AirDataTableRowProps> = ({ data }) => {
               disabled={deleteAirDataMutation.isPending}
             >
               {deleteAirDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -169,11 +169,14 @@ const AirDataTableRow: React.FC<AirDataTableRowProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Air Data</DialogTitle>
           </DialogHeader>
-          <UpdateAirDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateAirDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

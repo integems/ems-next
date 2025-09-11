@@ -4,7 +4,7 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Lock, Eye, EyeOff, LoaderIcon } from "lucide-react";
 import {
   InputOTP,
   InputOTPGroup,
@@ -159,7 +159,7 @@ export function ResetPasswordForm({
         disabled={resetPasswordMutation.isPending}
       >
         {resetPasswordMutation.isPending ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           "Reset Password"
         )}

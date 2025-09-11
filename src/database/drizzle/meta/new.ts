@@ -25,11 +25,7 @@ export const locationTypeEnum = pgEnum("location_type", [
   "rural",
 ]);
 
-export const timeOfDayEnum = pgEnum("time_of_day", [
-  "day",
-  "evening",
-  "night",
-]);
+export const timeOfDayEnum = pgEnum("time_of_day", ["day", "evening", "night"]);
 
 export const userStatusEnum = pgEnum("user_status", [
   "active",

@@ -1,23 +1,27 @@
+import DashboardPage from "@/components/dashboard/DashboardPage";
 import NavComponent from "@/components/NavComponent";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ArrowBigRight, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
     <>
       <NavComponent />
-
-      <div className="flex flex-col min-h-screen">
-        <main className="flex-1">
-          <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-primary text-primary-foreground">
+      <div>
+        <main className="flex-1 max-w-6xl mx-auto">
+          <section className="w-full pt-12 md:pt-24 lg:pt-32 xl:pt-48">
             <div className="container px-4 md:px-6">
               <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
                 <div className="flex flex-col justify-center space-y-4">
                   <div className="space-y-2">
                     <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                      Environmental Monitoring System
+                      <span>Environmental</span>{" "}
+                      <span className="text-primary"> Monitoring </span>{" "}
+                      <span>System </span>
                     </h1>
                     <p className="max-w-[600px] md:text-xl">
                       Monitor, analyze, and visualize environmental data with
@@ -25,8 +29,15 @@ export default function HomePage() {
                     </p>
                   </div>
                   <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                    <Button asChild>
-                      <a href="/dashboard">Get Started</a>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="text-primary outline-primary"
+                    >
+                      <Link href="/dashboard">
+                        <span>Get Started </span>
+                        <ArrowRight className="animate-caret-blink" />{" "}
+                      </Link>
                     </Button>
                   </div>
                 </div>
@@ -34,42 +45,46 @@ export default function HomePage() {
               </div>
             </div>
           </section>
-          <section id="features" className="w-full py-12 md:py-24 lg:py-32">
-            <div className="container px-4 md:px-6">
-              <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                  <h3 className="text-xl font-bold">Air Quality</h3>
-                  <p className="text-center text-muted-foreground">
-                    Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                  <h3 className="text-xl font-bold">Water Quality</h3>
-                  <p className="text-center text-muted-foreground">
-                    Track water parameters such as pH, turbidity, and dissolved
-                    oxygen.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                  <h3 className="text-xl font-bold">Soil Health</h3>
-                  <p className="text-center text-muted-foreground">
-                    Analyze soil composition, moisture, and nutrient levels.
-                  </p>
-                </div>
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                  <h3 className="text-xl font-bold">Biodiversity</h3>
-                  <p className="text-center text-muted-foreground">
-                    Record and monitor the variety of life in a particular
-                    habitat.
-                  </p>
+          <div className="max-w-6xl mx-auto mb-20">
+            <section id="features" className="w-full py-12 md:py-24 lg:py-32">
+              <div className="container px-4 md:px-6">
+                <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                    <h3 className="text-xl font-bold">Air Quality</h3>
+                    <p className="text-center text-muted-foreground">
+                      Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                    <h3 className="text-xl font-bold">Water Quality</h3>
+                    <p className="text-center text-muted-foreground">
+                      Track water parameters such as pH, turbidity, and
+                      dissolved oxygen.
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                    <h3 className="text-xl font-bold">Soil Health</h3>
+                    <p className="text-center text-muted-foreground">
+                      Analyze soil composition, moisture, and nutrient levels.
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
+                    <h3 className="text-xl font-bold">Biodiversity</h3>
+                    <p className="text-center text-muted-foreground">
+                      Record and monitor the variety of life in a particular
+                      habitat.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </section>
+            <DashboardPage />
+          </div>
+
           <section
             id="contact"
             className="w-full py-12 md:py-24 lg:py-32 bg-muted"

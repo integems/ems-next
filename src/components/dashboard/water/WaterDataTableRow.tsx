@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -22,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { WaterData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -84,7 +83,6 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
         <TableCell>{data.totalDissolvedSolids ?? "N/A"}</TableCell>
         <TableCell>{data.temperature ?? "N/A"}</TableCell>
         <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
-        <TableCell>{data.photos ? "Yes" : "No"}</TableCell>
         <TableCell>
           {data.measurementTime
             ? new Date(data.measurementTime).toLocaleString("en-GB", {
@@ -126,8 +124,13 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
                 <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-background border-border">
-              <DropdownMenuLabel className="text-foreground">Actions</DropdownMenuLabel>
+            <DropdownMenuContent
+              align="end"
+              className="bg-background border-border"
+            >
+              <DropdownMenuLabel className="text-foreground">
+                Actions
+              </DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => setIsEditDialogOpen(true)}
                 className="text-foreground hover:bg-accent"
@@ -151,7 +154,8 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the water data record.
+              This action cannot be undone. This will permanently delete the
+              water data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -164,7 +168,7 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
               disabled={deleteWaterDataMutation.isPending}
             >
               {deleteWaterDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -172,7 +176,7 @@ const WaterDataTableRow: React.FC<WaterDataTableRowProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Water Data</DialogTitle>
           </DialogHeader>

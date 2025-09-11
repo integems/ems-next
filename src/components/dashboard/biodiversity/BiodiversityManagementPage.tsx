@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useCallback } from "react";
@@ -32,14 +31,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { BiodiversityData, Location, TimeOfDay, LocationType } from "@/types/common.types";
+import {
+  BiodiversityData,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
 import { ExportButton } from "@/components/ExportButton";
 import { BiodiversityDataFilterDto } from "@/dtos/biodiversity.dto";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Loader2,
+  LoaderIcon,
   Search,
   MapPin,
   ChevronDown,
@@ -69,22 +73,46 @@ const biodiversityDataColumns = [
   { header: "Updated By", accessor: "updatedBy" },
 ];
 
-export default function BiodiversityManagementPage({ setActiveView }: { setActiveView: (view: string) => void }) {
+export default function BiodiversityManagementPage({
+  setActiveView,
+}: {
+  setActiveView: (view: string) => void;
+}) {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
-  const [locationIdFilter, setLocationIdFilter] = useState<string | undefined>(undefined);
-  const [activeLocationIdFilter, setActiveLocationIdFilter] = useState<string | undefined>(undefined);
-  const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(undefined);
-  const [activeStartDateFilter, setActiveStartDateFilter] = useState<Date | undefined>(undefined);
-  const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(undefined);
-  const [activeEndDateFilter, setActiveEndDateFilter] = useState<Date | undefined>(undefined);
-  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [locationTypeFilter, setLocationTypeFilter] = useState<LocationType | undefined>(undefined);
-  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<LocationType | undefined>(undefined);
+  const [locationIdFilter, setLocationIdFilter] = useState<string | undefined>(
+    undefined,
+  );
+  const [activeLocationIdFilter, setActiveLocationIdFilter] = useState<
+    string | undefined
+  >(undefined);
+  const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(
+    undefined,
+  );
+  const [activeStartDateFilter, setActiveStartDateFilter] = useState<
+    Date | undefined
+  >(undefined);
+  const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
+    undefined,
+  );
+  const [activeEndDateFilter, setActiveEndDateFilter] = useState<
+    Date | undefined
+  >(undefined);
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(
+    undefined,
+  );
+  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<
+    TimeOfDay | undefined
+  >(undefined);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
+  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
 
   const limit = 5;
 
@@ -147,10 +175,11 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
         locationType: activeLocationTypeFilter,
       };
 
-      const biodiversityData = await biodiversityService.findAllBiodiversityData(
-        currentUser.token,
-        filters,
-      );
+      const biodiversityData =
+        await biodiversityService.findAllBiodiversityData(
+          currentUser.token,
+          filters,
+        );
       return biodiversityData;
     },
     getNextPageParam: (lastPage) => {
@@ -254,7 +283,9 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
           <Select
             value={timeOfDayFilter || ""}
             onValueChange={(value: string) =>
-              setTimeOfDayFilter(value === "all" ? undefined : value as TimeOfDay)
+              setTimeOfDayFilter(
+                value === "all" ? undefined : (value as TimeOfDay),
+              )
             }
           >
             <SelectTrigger
@@ -281,7 +312,9 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
           <Select
             value={locationTypeFilter || ""}
             onValueChange={(value: string) =>
-              setLocationTypeFilter(value === "all" ? undefined : value as LocationType)
+              setLocationTypeFilter(
+                value === "all" ? undefined : (value as LocationType),
+              )
             }
           >
             <SelectTrigger
@@ -337,7 +370,7 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
               id="location"
               className={cn(
                 "bg-background border-border",
-                locationIdFilter && "text-primary"
+                locationIdFilter && "text-primary",
               )}
             >
               <SelectValue placeholder="Select location" />
@@ -391,11 +424,11 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
 
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-          <p>Couldn't connect: {error.message}</p>
+          <p>Couldn't connect. Try again</p>
           <Button
             onClick={() => refetch()}
             variant="outline"
@@ -410,19 +443,42 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
             <Table className="w-full min-w-max">
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="text-foreground font-semibold">Location</TableHead>
-                  <TableHead className="text-foreground font-semibold">Time of Day</TableHead>
-                  <TableHead className="text-foreground font-semibold">Location Type</TableHead>
-                  <TableHead className="text-foreground font-semibold">Species Count</TableHead>
-                  <TableHead className="text-foreground font-semibold">Shannon Index</TableHead>
-                  <TableHead className="text-foreground font-semibold">Observations</TableHead>
-                  <TableHead className="text-foreground font-semibold">Measurement Time</TableHead>
-                  <TableHead className="text-foreground font-semibold">Notes</TableHead>
-                  <TableHead className="text-foreground font-semibold">Created At</TableHead>
-                  <TableHead className="text-foreground font-semibold">Updated At</TableHead>
-                  <TableHead className="text-foreground font-semibold">Created By</TableHead>
-                  <TableHead className="text-foreground font-semibold">Updated By</TableHead>
-                  <TableHead className="w-[50px] text-foreground font-semibold">Action</TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Location
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Time of Day
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Location Type
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Species Count
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Shannon Index
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Measurement Time
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Notes
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created By
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated By
+                  </TableHead>
+                  <TableHead className="w-[50px] text-foreground font-semibold">
+                    Action
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -458,7 +514,7 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
                     onClick={handlePreviousPage}
                     className={cn(
                       "text-foreground hover:bg-accent",
-                      !hasPreviousPage && "pointer-events-none opacity-50"
+                      !hasPreviousPage && "pointer-events-none opacity-50",
                     )}
                   />
                 </PaginationItem>
@@ -467,7 +523,7 @@ export default function BiodiversityManagementPage({ setActiveView }: { setActiv
                     onClick={handleNextPage}
                     className={cn(
                       "text-foreground hover:bg-accent",
-                      !hasNextPage && "pointer-events-none opacity-50"
+                      !hasNextPage && "pointer-events-none opacity-50",
                     )}
                   />
                 </PaginationItem>

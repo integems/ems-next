@@ -31,14 +31,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { NoiseData, Location, TimeOfDay, LocationType } from "@/types/common.types";
+import {
+  NoiseData,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
 import { ExportButton } from "@/components/ExportButton";
 import { NoiseDataFilterDto } from "@/dtos/noise.dto";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Loader2,
+  LoaderIcon,
   Search,
   MapPin,
   ChevronDown,
@@ -72,7 +77,11 @@ const noiseDataColumns = [
   { header: "Updated By", accessor: "updatedBy" },
 ];
 
-export default function NoiseManagementPage({ setActiveView }: { setActiveView: (view: string) => void }) {
+export default function NoiseManagementPage({
+  setActiveView,
+}: {
+  setActiveView: (view: string) => void;
+}) {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
 
@@ -96,10 +105,18 @@ export default function NoiseManagementPage({ setActiveView }: { setActiveView: 
   const [activeEndDateFilter, setActiveEndDateFilter] = useState<
     Date | undefined
   >(undefined);
-  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [locationTypeFilter, setLocationTypeFilter] = useState<LocationType | undefined>(undefined);
-  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<LocationType | undefined>(undefined);
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(
+    undefined,
+  );
+  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<
+    TimeOfDay | undefined
+  >(undefined);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
+  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
 
   const limit = 5;
 
@@ -240,12 +257,12 @@ export default function NoiseManagementPage({ setActiveView }: { setActiveView: 
             columns={noiseDataColumns}
           />
           <Button
-              size="sm"
-              onClick={() => setActiveView("create")}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              New <ArrowRight className="h-4 w-4" />
-            </Button>
+            size="sm"
+            onClick={() => setActiveView("create")}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            New <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
@@ -268,7 +285,7 @@ export default function NoiseManagementPage({ setActiveView }: { setActiveView: 
           </label>
           <Select
             value={timeOfDayFilter || ""}
-            onValueChange={(value:any) =>
+            onValueChange={(value: any) =>
               setTimeOfDayFilter(value === "all" ? undefined : value)
             }
           >
@@ -406,11 +423,11 @@ export default function NoiseManagementPage({ setActiveView }: { setActiveView: 
 
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-          <p>Couldn't connect {error.message}</p>
+          <p>Couldn't connect. Try again</p>
           <Button
             onClick={() => refetch()}
             variant="outline"
@@ -425,23 +442,57 @@ export default function NoiseManagementPage({ setActiveView }: { setActiveView: 
             <Table className="w-full min-w-max">
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="text-foreground font-semibold">Location</TableHead>
-                  <TableHead className="text-foreground font-semibold">Time of Day</TableHead>
-                  <TableHead className="text-foreground font-semibold">Location Type</TableHead>
-                  <TableHead className="text-foreground font-semibold">Duration</TableHead>
-                  <TableHead className="text-foreground font-semibold">LAeq</TableHead>
-                  <TableHead className="text-foreground font-semibold">LAFMax</TableHead>
-                  <TableHead className="text-foreground font-semibold">Frequency</TableHead>
-                  <TableHead className="text-foreground font-semibold">LA10</TableHead>
-                  <TableHead className="text-foreground font-semibold">LA90</TableHead>
-                  <TableHead className="text-foreground font-semibold">LAFMin</TableHead>
-                  <TableHead className="text-foreground font-semibold">Measurement Time</TableHead>
-                  <TableHead className="text-foreground font-semibold">Notes</TableHead>
-                  <TableHead className="text-foreground font-semibold">Created At</TableHead>
-                  <TableHead className="text-foreground font-semibold">Updated At</TableHead>
-                  <TableHead className="text-foreground font-semibold">Created By</TableHead>
-                  <TableHead className="text-foreground font-semibold">Updated By</TableHead>
-                  <TableHead className="w-[50px] text-foreground font-semibold">Action</TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Location
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Time of Day
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Location Type
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Duration
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    LAeq
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    LAFMax
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Frequency
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    LA10
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    LA90
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    LAFMin
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Measurement Time
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Notes
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated At
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Created By
+                  </TableHead>
+                  <TableHead className="text-foreground font-semibold">
+                    Updated By
+                  </TableHead>
+                  <TableHead className="w-[50px] text-foreground font-semibold">
+                    Action
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

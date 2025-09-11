@@ -31,14 +31,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { AirData, Location, TimeOfDay, LocationType } from "@/types/common.types";
+import {
+  AirData,
+  Location,
+  TimeOfDay,
+  LocationType,
+} from "@/types/common.types";
 import { ExportButton } from "@/components/ExportButton";
 import { AirDataFilterDto } from "@/dtos/air.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Loader2,
+  LoaderIcon,
   Search,
   MapPin,
   ChevronDown,
@@ -73,7 +78,11 @@ const airDataColumns = [
   { header: "Updated By", accessor: "updatedBy" },
 ];
 
-export default function AirManagementPage({ setActiveView }: { setActiveView: (view: string) => void }) {
+export default function AirManagementPage({
+  setActiveView,
+}: {
+  setActiveView: (view: string) => void;
+}) {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
 
@@ -97,10 +106,18 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
   const [activeEndDateFilter, setActiveEndDateFilter] = useState<
     Date | undefined
   >(undefined);
-  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<TimeOfDay | undefined>(undefined);
-  const [locationTypeFilter, setLocationTypeFilter] = useState<LocationType | undefined>(undefined);
-  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<LocationType | undefined>(undefined);
+  const [timeOfDayFilter, setTimeOfDayFilter] = useState<TimeOfDay | undefined>(
+    undefined,
+  );
+  const [activeTimeOfDayFilter, setActiveTimeOfDayFilter] = useState<
+    TimeOfDay | undefined
+  >(undefined);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
+  const [activeLocationTypeFilter, setActiveLocationTypeFilter] = useState<
+    LocationType | undefined
+  >(undefined);
 
   const limit = 5;
 
@@ -241,12 +258,12 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
             columns={airDataColumns}
           />
           <Button
-              size="sm"
-              onClick={() => setActiveView("create")}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              New <ArrowRight className="h-4 w-4" />
-            </Button>
+            size="sm"
+            onClick={() => setActiveView("create")}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            New <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
@@ -269,7 +286,7 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
           </label>
           <Select
             value={timeOfDayFilter || ""}
-            onValueChange={(value:any) =>
+            onValueChange={(value: any) =>
               setTimeOfDayFilter(value === "all" ? undefined : value)
             }
           >
@@ -407,11 +424,11 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
 
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : isError ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-          <p>Couldn't connect {error.message}</p>
+          <p>Couldn't connect. Try again</p>
           <Button
             onClick={() => refetch()}
             variant="outline"
@@ -485,10 +502,7 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
               <TableBody>
                 {airData.length > 0 ? (
                   airData.map((dataItem) => (
-                    <AirDataTableRow
-                      key={dataItem.airDataId}
-                      data={dataItem}
-                    />
+                    <AirDataTableRow key={dataItem.airDataId} data={dataItem} />
                   ))
                 ) : (
                   <TableRow>
@@ -533,6 +547,6 @@ export default function AirManagementPage({ setActiveView }: { setActiveView: (v
           </div>
         </>
       )}
-      </div>
+    </div>
   );
 }

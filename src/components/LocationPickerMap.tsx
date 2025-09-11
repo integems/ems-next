@@ -11,11 +11,13 @@ interface LocationPickerMapProps {
   onLocationSelect: (lat: number, lng: number) => void;
 }
 
-const LocationPickerMap: React.FC<LocationPickerMapProps> = ({ onLocationSelect }) => {
+const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
+  onLocationSelect,
+}) => {
   const [marker, setMarker] = useState<[number, number] | null>(null);
   const [latInput, setLatInput] = useState<string>("");
   const [lngInput, setLngInput] = useState<string>("");
-  const [isExpanded, setIsExpanded] = useState(false); 
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleMapClick = ({ latLng }: { latLng: [number, number] }) => {
     const [lat, lng] = latLng;
@@ -28,8 +30,15 @@ const LocationPickerMap: React.FC<LocationPickerMapProps> = ({ onLocationSelect 
   const handleLatLngInput = () => {
     const lat = parseFloat(latInput);
     const lng = parseFloat(lngInput);
-    
-    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+
+    if (
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    ) {
       const newMarker: [number, number] = [lat, lng];
       setMarker(newMarker);
       onLocationSelect(lat, lng);

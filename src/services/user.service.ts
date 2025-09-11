@@ -106,6 +106,9 @@ export class UserService {
         where: whereClause,
         limit,
         offset,
+        columns: {
+          password: false,
+        },
         orderBy: [desc(schema.users.createdAt)],
         with: {
           userRole: {
@@ -122,12 +125,7 @@ export class UserService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(
-      users.map(this.excludePassword),
-      totalItems,
-      page,
-      limit,
-    );
+    return this.paginateResponse(users, totalItems, page, limit);
   }
 
   /**
@@ -138,6 +136,9 @@ export class UserService {
   async findUserById(userId: string) {
     const user = await db.query.users.findFirst({
       where: eq(schema.users.userId, userId),
+      columns: {
+        password: false,
+      },
       with: {
         userRole: {
           with: {
@@ -152,7 +153,7 @@ export class UserService {
       throw new Error("User not found");
     }
 
-    return { data: this.excludePassword(user) };
+    return user;
   }
 
   /**
@@ -163,7 +164,7 @@ export class UserService {
    */
   async createUser(userDto: CreateUserDto, currentUser?: CurrentUser) {
     const { email, password, roleName, ...rest } = userDto;
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const existingUser = await db.query.users.findFirst({
@@ -237,7 +238,7 @@ export class UserService {
     userDto: UpdateUserDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedUser] = await db
       .update(schema.users)
@@ -288,7 +289,7 @@ export class UserService {
     roleId: string,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const user = await db.query.users.findFirst({

@@ -50,7 +50,16 @@ export class NoiseService {
    * @returns A paginated list of noise data.
    */
   async findAllNoiseData(filter: NoiseDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -61,7 +70,13 @@ export class NoiseService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.noiseData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.noiseData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -69,11 +84,15 @@ export class NoiseService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.noiseData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.noiseData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.noiseData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.noiseData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -92,7 +111,7 @@ export class NoiseService {
         limit,
         offset,
         orderBy: [desc(schema.noiseData.createdAt)],
-           with: {
+        with: {
           location: {
             columns: {
               geom: false,
@@ -141,7 +160,7 @@ export class NoiseService {
     noiseDataDto: CreateNoiseDataDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = noiseDataDto.map((dto) => ({
@@ -186,7 +205,7 @@ export class NoiseService {
     noiseDataDto: UpdateNoiseDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedNoiseData] = await db
       .update(schema.noiseData)
@@ -195,8 +214,10 @@ export class NoiseService {
         measurementTime: noiseDataDto.measurementTime
           ? new Date(noiseDataDto.measurementTime)
           : undefined,
-        timeOfDay: noiseDataDto.timeOfDay,
-        locationType: noiseDataDto.locationType,
+        timeOfDay: noiseDataDto.timeOfDay ? noiseDataDto.timeOfDay : undefined,
+        locationType: noiseDataDto.locationType
+          ? noiseDataDto.locationType
+          : undefined,
         laeq: noiseDataDto.laeq?.toString(),
         lafMax: noiseDataDto.lafMax?.toString(),
         la10: noiseDataDto.la10?.toString(),

@@ -34,7 +34,7 @@ import { FrontendUserService } from "@/frontend-services/user.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
   MoreHorizontal,
-  Loader2,
+  LoaderIcon,
   Pencil,
   UserCheck,
   Trash2,
@@ -222,7 +222,7 @@ export default function UserTableRow({
               disabled={assignRoleMutation.isPending || !selectedRoleId}
             >
               {assignRoleMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Assign Role
             </Button>

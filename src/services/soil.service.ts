@@ -50,7 +50,16 @@ export class SoilService {
    * @returns A paginated list of soil data.
    */
   async findAllSoilData(filter: SoilDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -61,7 +70,13 @@ export class SoilService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.soilData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.soilData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -69,11 +84,15 @@ export class SoilService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.soilData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.soilData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.soilData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.soilData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -92,7 +111,7 @@ export class SoilService {
         limit,
         offset,
         orderBy: [desc(schema.soilData.createdAt)],
-            with: {
+        with: {
           location: {
             columns: {
               geom: false,
@@ -141,7 +160,7 @@ export class SoilService {
     soilDataDto: CreateSoilDataDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = soilDataDto.map((dto) => ({
@@ -184,7 +203,7 @@ export class SoilService {
     soilDataDto: UpdateSoilDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedSoilData] = await db
       .update(schema.soilData)
@@ -193,8 +212,10 @@ export class SoilService {
         measurementTime: soilDataDto.measurementTime
           ? new Date(soilDataDto.measurementTime)
           : undefined,
-        timeOfDay: soilDataDto.timeOfDay,
-        locationType: soilDataDto.locationType,
+        timeOfDay: soilDataDto.timeOfDay ? soilDataDto.timeOfDay : undefined,
+        locationType: soilDataDto.locationType
+          ? soilDataDto.locationType
+          : undefined,
         ph: soilDataDto.ph?.toString(),
         nitrogen: soilDataDto.nitrogen?.toString(),
         phosphorus: soilDataDto.phosphorus?.toString(),

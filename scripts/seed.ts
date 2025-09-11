@@ -23,7 +23,6 @@ async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, salt);
 }
 
-
 async function seedDatabase() {
   try {
     const now = new Date();
@@ -158,7 +157,12 @@ async function seedDatabase() {
         baseLat + (Math.random() * offset * 0.5 - offset * 0.25),
       ];
 
-      const locationTypes = ["industrial", "residential", "commercial", "rural"];
+      const locationTypes = [
+        "industrial",
+        "residential",
+        "commercial",
+        "rural",
+      ];
 
       await db.insert(schema.locations).values({
         locationId,
@@ -168,7 +172,9 @@ async function seedDatabase() {
         pointGeom: pointCoords,
         altitude: (Math.random() * 100).toString(), // 0-100m
         category: city.category as any,
-        locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
+        locationType: locationTypes[
+          Math.floor(Math.random() * locationTypes.length)
+        ] as any,
         createdBy: "system",
         createdAt: now,
         updatedBy: "system",
@@ -210,14 +216,23 @@ async function seedDatabase() {
 
         if (category === "air") {
           const timeOfDays = ["day", "evening", "night"];
-          const locationTypes = ["industrial", "residential", "commercial", "rural"];
+          const locationTypes = [
+            "industrial",
+            "residential",
+            "commercial",
+            "rural",
+          ];
           await db.insert(schema.airData).values({
             airDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
-            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
-            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
+            timeOfDay: timeOfDays[
+              Math.floor(Math.random() * timeOfDays.length)
+            ] as any,
+            locationType: locationTypes[
+              Math.floor(Math.random() * locationTypes.length)
+            ] as any,
             pm25: (Math.random() * 100).toString(), // 0-100 µg/m³
             pm10: (Math.random() * 150).toString(), // 0-150 µg/m³
             no2: (Math.random() * 50).toString(), // 0-50 µg/m³
@@ -255,7 +270,9 @@ async function seedDatabase() {
             cod: (Math.random() * 50).toString(), // 0-50 mg/L
             totalDissolvedSolids: (Math.random() * 1000).toString(), // 0-1000 mg/L
             temperature: (Math.random() * 30).toString(), // 0-30 °C
-            waterSource: waterSources[Math.floor(Math.random() * waterSources.length)] as any,
+            waterSource: waterSources[
+              Math.floor(Math.random() * waterSources.length)
+            ] as any,
             notes: `Water quality measurement ${i + 1} in ${city.name}`,
             photos: ["https://picsum.photos/400/300"],
             createdBy: "system",
@@ -265,14 +282,23 @@ async function seedDatabase() {
           });
         } else if (category === "soil") {
           const timeOfDays = ["day", "evening", "night"];
-          const locationTypes = ["industrial", "residential", "commercial", "rural"];
+          const locationTypes = [
+            "industrial",
+            "residential",
+            "commercial",
+            "rural",
+          ];
           await db.insert(schema.soilData).values({
             soilDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
-            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
-            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
+            timeOfDay: timeOfDays[
+              Math.floor(Math.random() * timeOfDays.length)
+            ] as any,
+            locationType: locationTypes[
+              Math.floor(Math.random() * locationTypes.length)
+            ] as any,
             ph: (5 + Math.random() * 3).toString(), // 5-8 pH
             nitrogen: (Math.random() * 100).toString(), // 0-100 mg/kg
             phosphorus: (Math.random() * 50).toString(), // 0-50 mg/kg
@@ -298,7 +324,9 @@ async function seedDatabase() {
             la10: (60 + Math.random() * 40).toString(), // 60-100 dB
             la90: (30 + Math.random() * 40).toString(), // 30-70 dB
             lafMin: (20 + Math.random() * 30).toString(), // 20-50 dB
-            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
+            timeOfDay: timeOfDays[
+              Math.floor(Math.random() * timeOfDays.length)
+            ] as any,
             duration: `${Math.floor(Math.random() * 59) + 1} minutes`,
             frequency: (20 + Math.random() * 980).toString(), // 20-1000 Hz
             notes: `Noise measurement ${i + 1} in ${city.name}`,
@@ -310,14 +338,23 @@ async function seedDatabase() {
           });
         } else if (category === "biodiversity") {
           const timeOfDays = ["day", "evening", "night"];
-          const locationTypes = ["industrial", "residential", "commercial", "rural"];
+          const locationTypes = [
+            "industrial",
+            "residential",
+            "commercial",
+            "rural",
+          ];
           await db.insert(schema.biodiversityData).values({
             biodiversityDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
-            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
-            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
+            timeOfDay: timeOfDays[
+              Math.floor(Math.random() * timeOfDays.length)
+            ] as any,
+            locationType: locationTypes[
+              Math.floor(Math.random() * locationTypes.length)
+            ] as any,
             speciesCount: Math.floor(Math.random() * 50) + 10, // 10-60 species (integer)
             shannonIndex: (Math.random() * 4).toString(), // 0-4
             observations: [
@@ -333,14 +370,23 @@ async function seedDatabase() {
           });
         } else if (category === "waste") {
           const timeOfDays = ["day", "evening", "night"];
-          const locationTypes = ["industrial", "residential", "commercial", "rural"];
+          const locationTypes = [
+            "industrial",
+            "residential",
+            "commercial",
+            "rural",
+          ];
           await db.insert(schema.wasteData).values({
             wasteDataId: `int${generateId()}`,
             locationId,
             pointGeom: pointCoords,
             measurementTime,
-            timeOfDay: timeOfDays[Math.floor(Math.random() * timeOfDays.length)] as any,
-            locationType: locationTypes[Math.floor(Math.random() * locationTypes.length)] as any,
+            timeOfDay: timeOfDays[
+              Math.floor(Math.random() * timeOfDays.length)
+            ] as any,
+            locationType: locationTypes[
+              Math.floor(Math.random() * locationTypes.length)
+            ] as any,
             solidWasteKg: (Math.random() * 1000).toString(), // 0-1000 kg
             hazardousWasteKg: (Math.random() * 100).toString(), // 0-100 kg
             recycledWasteKg: (Math.random() * 500).toString(), // 0-500 kg

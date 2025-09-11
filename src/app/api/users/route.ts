@@ -74,10 +74,10 @@ export async function POST(request: NextRequest) {
     const newUserResponse = await userService.createUser(userDto, auth.user);
     return NextResponse.json(newUserResponse, { status: 201 });
   } catch (error: any) {
-    console.error(error);
+    // console.log({error})
     if (error.message.includes("already")) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }
-    return NextResponse.json({ message: error.message }, { status: 400 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

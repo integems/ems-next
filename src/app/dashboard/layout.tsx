@@ -15,6 +15,7 @@ export default function DashboardLayout({
           <main className="w-full md:min-w-[65rem] p-4 pb-20 sm:p-6 lg:p-8">
             <SidebarTrigger />
             {children}
+            <div className="h-20"></div>
           </main>
         </div>
       </SidebarProvider>

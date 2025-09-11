@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { FrontendAuthService } from "@/frontend-services/auth.service";
-import { Mail, Key, Loader2 } from "lucide-react";
+import { Mail, Key, LoaderIcon } from "lucide-react";
 import { VerifyOtpDto } from "@/dtos/auth.dto";
 
 const verifyOtpSchema = z.object({
@@ -164,7 +164,7 @@ export default function VerifyOtpPage() {
               disabled={mutation.isPending}
             >
               {mutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 "Verify"
               )}
@@ -179,7 +179,7 @@ export default function VerifyOtpPage() {
                   disabled={resendOtpMutation.isPending}
                 >
                   {resendOtpMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     "Resend OTP"
                   )}

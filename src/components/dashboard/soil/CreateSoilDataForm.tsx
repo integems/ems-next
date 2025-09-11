@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
 import { Category, Location } from "@/types/common.types";
-import { createSoilDataDto, CreateSoilDataDto, singleSoilData as soilDto } from "@/dtos/soil.dto";
+import {
+  createSoilDataDto,
+  CreateSoilDataDto,
+  singleSoilData as soilDto,
+} from "@/dtos/soil.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
+import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -37,26 +36,29 @@ const locationService = new FrontendLocationService();
 const soilService = new FrontendSoilService();
 
 // Updated soilDto schema with validation for at least one measurement
-const updatedSoilDto = soilDto.extend({
-  ph: z.number().optional(),
-  moisture: z.number().optional(),
-  nitrogen: z.number().optional(),
-  phosphorus: z.number().optional(),
-  potassium: z.number().optional(),
-  organicMatter: z.number().optional(),
-}).refine(
-  (data) =>
-    data.ph != null ||
-    data.moisture != null ||
-    data.nitrogen != null ||
-    data.phosphorus != null ||
-    data.potassium != null ||
-    data.organicMatter != null,
-  {
-    message: "At least one measurement (pH Level, Moisture, Nitrogen, Phosphorus, Potassium, or Organic Matter) is required",
-    path: ["measurements"],
-  }
-);
+const updatedSoilDto = soilDto
+  .extend({
+    ph: z.number().optional(),
+    moisture: z.number().optional(),
+    nitrogen: z.number().optional(),
+    phosphorus: z.number().optional(),
+    potassium: z.number().optional(),
+    organicMatter: z.number().optional(),
+  })
+  .refine(
+    (data) =>
+      data.ph != null ||
+      data.moisture != null ||
+      data.nitrogen != null ||
+      data.phosphorus != null ||
+      data.potassium != null ||
+      data.organicMatter != null,
+    {
+      message:
+        "At least one measurement (pH Level, Moisture, Nitrogen, Phosphorus, Potassium, or Organic Matter) is required",
+      path: ["measurements"],
+    },
+  );
 
 interface CreateSoilDataFormProps {
   onClose: () => void;
@@ -75,24 +77,28 @@ const parameterMappings: { [key: string]: keyof SoilDataFormData } = {
   notes: "notes",
 };
 
-export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps) {
+export default function CreateSoilDataForm({
+  onClose,
+}: CreateSoilDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
     category: Category.Soil,
     pointGeom: [0.0, 0.0],
   });
-  const [soilDataFormData, setSoilDataFormData] = useState<SoilDataFormData[]>([
-    {
-      measurementTime: new Date(),
-    },
-  ]);
-  const [singleSoilData, setSingleSoilData] = useState<Partial<SoilDataFormData>>({
+  const [soilDataFormData, setSoilDataFormData] = useState<SoilDataFormData[]>(
+    [],
+  );
+  const [singleSoilData, setSingleSoilData] = useState<
+    Partial<SoilDataFormData>
+  >({
     measurementTime: new Date(),
   });
   const [errors, setErrors] = useState<any>({});
@@ -104,10 +110,13 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token || "", {
-        page: 1,
-        limit: 1000,
-      });
+      const response = await locationService.findAllLocations(
+        currentUser.token || "",
+        {
+          page: 1,
+          limit: 1000,
+        },
+      );
       return response.data;
     },
     enabled: !!currentUser?.token,
@@ -124,7 +133,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
       onClose();
     },
     onError: (error) => {
-      toast.error(`Error updating soil data: ${error.message}`);
+      toast.error(`Couldn't add data.`);
     },
   });
 
@@ -132,7 +141,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({"Created Location":data})
+      console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
@@ -150,7 +159,7 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
       }
     },
     onError: (error: any) => {
-      toast.error(`Error creating location: ${error.message}`);
+      toast.error(`Couldn't add location`);
     },
   });
 
@@ -159,7 +168,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
     setLocationFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSingleSoilDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSingleSoilDataChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setSingleSoilData((prev) => ({
       ...prev,
@@ -192,7 +203,8 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
     ];
 
     const newData = data.map((row, index) => {
-      const rowData: Partial<SoilDataFormData> = index < soilDataFormData.length ? { ...soilDataFormData[index] } : {};
+      const rowData: Partial<SoilDataFormData> =
+        index < soilDataFormData.length ? { ...soilDataFormData[index] } : {};
       headers.forEach((header, colIndex) => {
         const value = row[colIndex]?.value;
         if (value) {
@@ -204,7 +216,14 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
           } else if (
-            ["ph", "moisture", "nitrogen", "phosphorus", "potassium", "organicMatter"].includes(header)
+            [
+              "ph",
+              "moisture",
+              "nitrogen",
+              "phosphorus",
+              "potassium",
+              "organicMatter",
+            ].includes(header)
           ) {
             rowData[header as keyof SoilDataFormData] = Number(value) as any;
           } else {
@@ -237,7 +256,12 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
   };
 
   const spreadsheetData = soilDataFormData.map((data) => [
-    { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
+    {
+      value:
+        data.measurementTime instanceof Date
+          ? format(data.measurementTime, "MM/dd/yyyy hh:mm a")
+          : "",
+    },
     { value: data.ph?.toString() || "" },
     { value: data.moisture?.toString() || "" },
     { value: data.nitrogen?.toString() || "" },
@@ -249,7 +273,11 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
 
   const handleFileUpload = useCallback(
     (file: File) => {
-      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls") && !file.name.endsWith(".csv")) {
+      if (
+        !file.name.endsWith(".xlsx") &&
+        !file.name.endsWith(".xls") &&
+        !file.name.endsWith(".csv")
+      ) {
         toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
         return;
       }
@@ -274,7 +302,10 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
           const rows = jsonData.slice(1) as any[][];
 
           const mappedData: SoilDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<SoilDataFormData> = index < soilDataFormData.length ? { ...soilDataFormData[index] } : {};
+            const rowData: Partial<SoilDataFormData> =
+              index < soilDataFormData.length
+                ? { ...soilDataFormData[index] }
+                : {};
             headers.forEach((header, colIndex) => {
               const mappedKey = parameterMappings[header];
               const value = row[colIndex];
@@ -285,12 +316,19 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
                     } else {
-                      toast.error(`Invalid date format in uploaded file: ${value}`);
+                      toast.error(
+                        `Invalid date format in uploaded file: ${value}`,
+                      );
                     }
                   } else if (
-                    ["ph", "moisture", "nitrogen", "phosphorus", "potassium", "organicMatter"].includes(
-                      mappedKey,
-                    )
+                    [
+                      "ph",
+                      "moisture",
+                      "nitrogen",
+                      "phosphorus",
+                      "potassium",
+                      "organicMatter",
+                    ].includes(mappedKey)
                   ) {
                     rowData[mappedKey] = Number(value) as any;
                   } else {
@@ -378,7 +416,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
         toast.error("Please select a location.");
         return;
       }
-      const selectedLocation = locations.find((loc) => loc.locationId === selectedLocationId);
+      const selectedLocation = locations.find(
+        (loc) => loc.locationId === selectedLocationId,
+      );
       if (!selectedLocation?.pointGeom) {
         setErrors({ locationId: "Selected location has no coordinates." });
         toast.error("Selected location has no coordinates.");
@@ -410,7 +450,10 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
               Location Selection
             </h2>
 
-            <Tabs value={isCreatingLocation ? "create" : "existing"} className="w-full">
+            <Tabs
+              value={isCreatingLocation ? "create" : "existing"}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger
                   value="existing"
@@ -447,14 +490,19 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                         </SelectItem>
                       ) : (
                         locations?.map((location) => (
-                          <SelectItem key={location.locationId} value={location.locationId}>
+                          <SelectItem
+                            key={location.locationId}
+                            value={location.locationId}
+                          >
                             {location.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.locationId && <p className="text-xs text-red-500">{errors.locationId}</p>}
+                  {errors.locationId && (
+                    <p className="text-xs text-red-500">{errors.locationId}</p>
+                  )}
                 </div>
               </TabsContent>
 
@@ -470,10 +518,14 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                         onChange={handleLocationChange}
                         placeholder="Enter location name"
                       />
-                      {errors.name && <p className="text-xs text-red-500">{errors.name[0]}</p>}
+                      {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name[0]}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newLocationDescription">Description</Label>
+                      <Label htmlFor="newLocationDescription">
+                        Description
+                      </Label>
                       <Input
                         id="newLocationDescription"
                         name="description"
@@ -486,7 +538,12 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                       <Label htmlFor="newLocationType">Location Type</Label>
                       <Select
                         name="locationType"
-                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        onValueChange={(value) =>
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            locationType: value as any,
+                          }))
+                        }
                         value={locationFormData.locationType || ""}
                       >
                         <SelectTrigger>
@@ -494,12 +551,18 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="industrial">Industrial</SelectItem>
-                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="residential">
+                            Residential
+                          </SelectItem>
                           <SelectItem value="commercial">Commercial</SelectItem>
                           <SelectItem value="rural">Rural</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                      {errors.locationType && (
+                        <p className="text-xs text-red-500">
+                          {errors.locationType[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -507,12 +570,17 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     <div className="h-64 border rounded-lg overflow-hidden">
                       <LocationPickerMap
                         onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({ ...prev, pointGeom: [lat, lng] }))
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            pointGeom: [lat, lng],
+                          }))
                         }
                       />
                     </div>
                     {errors.pointGeom && (
-                      <p className="text-xs text-red-500">{errors.pointGeom[0]}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.pointGeom[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -530,7 +598,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
             <Label>Import from Excel (Optional)</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -557,26 +627,27 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
           </div>
 
           {/* Spreadsheet Section */}
-          <div className="space-y-2">
-            <Label>Soil Quality Data Entries</Label>
-            <div className="max-w-[60rem] overflow-auto rounded">
-              <Spreadsheet
-                data={spreadsheetData}
-                columnLabels={[
-                  "Measurement Time",
-                  "pH Level",
-                  "Moisture Level (%)",
-                  "Nitrogen Level (ppm)",
-                  "Phosphorus Level (ppm)",
-                  "Potassium Level (ppm)",
-                  "Organic Matter (%)",
-                  "Notes",
-                ]}
-                onChange={(data)=>handleSpreadsheetChange(data as any)}
-              />
-       
+          {!!spreadsheetData.length && (
+            <div className="space-y-2">
+              <Label>Soil Quality Data Entries</Label>
+              <div className="max-w-[60rem] overflow-auto rounded">
+                <Spreadsheet
+                  data={spreadsheetData}
+                  columnLabels={[
+                    "Measurement Time",
+                    "pH Level",
+                    "Moisture Level (%)",
+                    "Nitrogen Level (ppm)",
+                    "Phosphorus Level (ppm)",
+                    "Potassium Level (ppm)",
+                    "Organic Matter (%)",
+                    "Notes",
+                  ]}
+                  onChange={(data) => handleSpreadsheetChange(data as any)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Manual Entry Section */}
           <div className="space-y-6">
@@ -594,7 +665,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                   }
                 />
                 {errors.measurementTime && (
-                  <p className="text-xs text-red-500">{errors.measurementTime[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.measurementTime[0]}
+                  </p>
                 )}
               </div>
               <div></div>
@@ -602,7 +675,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
 
             {/* Primary Measurements */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Primary Measurements</Label>
+              <Label className="text-base font-medium">
+                Primary Measurements
+              </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">pH Level</Label>
@@ -613,7 +688,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.ph && <p className="text-xs text-red-500">{errors.ph[0]}</p>}
+                  {errors.ph && (
+                    <p className="text-xs text-red-500">{errors.ph[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Moisture Level (%)</Label>
@@ -624,7 +701,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.moisture && <p className="text-xs text-red-500">{errors.moisture[0]}</p>}
+                  {errors.moisture && (
+                    <p className="text-xs text-red-500">{errors.moisture[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Nitrogen Level (ppm)</Label>
@@ -635,7 +714,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.nitrogen && <p className="text-xs text-red-500">{errors.nitrogen[0]}</p>}
+                  {errors.nitrogen && (
+                    <p className="text-xs text-red-500">{errors.nitrogen[0]}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Phosphorus Level (ppm)</Label>
@@ -646,7 +727,11 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.phosphorus && <p className="text-xs text-red-500">{errors.phosphorus[0]}</p>}
+                  {errors.phosphorus && (
+                    <p className="text-xs text-red-500">
+                      {errors.phosphorus[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Potassium Level (ppm)</Label>
@@ -657,7 +742,11 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.potassium && <p className="text-xs text-red-500">{errors.potassium[0]}</p>}
+                  {errors.potassium && (
+                    <p className="text-xs text-red-500">
+                      {errors.potassium[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Organic Matter (%)</Label>
@@ -668,13 +757,16 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
                     onChange={handleSingleSoilDataChange}
                     placeholder="0"
                   />
-                  {errors.organicMatter && <p className="text-xs text-red-500">{errors.organicMatter[0]}</p>}
+                  {errors.organicMatter && (
+                    <p className="text-xs text-red-500">
+                      {errors.organicMatter[0]}
+                    </p>
+                  )}
                 </div>
               </div>
               {errors.measurements && (
                 <p className="text-xs text-red-500">{errors.measurements}</p>
               )}
-         
             </div>
 
             {/* Notes */}
@@ -689,9 +781,9 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
               />
             </div>
 
-              {errors.locationId && (
-                <p className="text-xs text-red-500">{errors.locationId}</p>
-              )}
+            {errors.locationId && (
+              <p className="text-xs text-red-500">{errors.locationId}</p>
+            )}
 
             <div className="flex justify-end">
               <Button type="button" size="sm" onClick={handleAddSingleSoilData}>
@@ -709,10 +801,14 @@ export default function CreateSoilDataForm({ onClose }: CreateSoilDataFormProps)
           <Button
             type="submit"
             size="sm"
-            disabled={createLocationMutation.isPending || createSoilDataMutation.isPending}
+            disabled={
+              createLocationMutation.isPending ||
+              createSoilDataMutation.isPending
+            }
           >
-            {(createLocationMutation.isPending || createSoilDataMutation.isPending) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {(createLocationMutation.isPending ||
+              createSoilDataMutation.isPending) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit
           </Button>

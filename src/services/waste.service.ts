@@ -50,7 +50,16 @@ export class WasteService {
    * @returns A paginated list of waste data.
    */
   async findAllWasteData(filter: WasteDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -61,7 +70,13 @@ export class WasteService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.wasteData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.wasteData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -69,11 +84,15 @@ export class WasteService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.wasteData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.wasteData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.wasteData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.wasteData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -92,7 +111,7 @@ export class WasteService {
         limit,
         offset,
         orderBy: [desc(schema.wasteData.createdAt)],
-            with: {
+        with: {
           location: {
             columns: {
               geom: false,
@@ -141,7 +160,7 @@ export class WasteService {
     wasteDataDto: CreateWasteDataDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = wasteDataDto.map((dto) => ({
@@ -155,8 +174,8 @@ export class WasteService {
       organicWasteKg: dto.organicWasteKg?.toString(),
       scrapWasteKg: dto.solidWasteKg?.toString(),
       scrapMetalKg: dto.scrapMetalKg?.toString(),
-      cansWasteKg:dto.cansWasteKg?.toString(),
-      eWasteKg:dto.eWasteKg?.toString(),
+      cansWasteKg: dto.cansWasteKg?.toString(),
+      eWasteKg: dto.eWasteKg?.toString(),
       plasticWasteKg: dto.plasticWasteKg?.toString(),
       paperWasteKg: dto.paperWasteKg?.toString(),
       pointGeom: dto.pointGeom,
@@ -189,7 +208,7 @@ export class WasteService {
     wasteDataDto: UpdateWasteDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedWasteData] = await db
       .update(schema.wasteData)
@@ -198,8 +217,10 @@ export class WasteService {
         measurementTime: wasteDataDto.measurementTime
           ? new Date(wasteDataDto.measurementTime)
           : undefined,
-        timeOfDay: wasteDataDto.timeOfDay,
-        locationType: wasteDataDto.locationType,
+        timeOfDay: wasteDataDto.timeOfDay ? wasteDataDto.timeOfDay : undefined,
+        locationType: wasteDataDto.locationType
+          ? wasteDataDto.locationType
+          : undefined,
         solidWasteKg: wasteDataDto.solidWasteKg?.toString(),
         hazardousWasteKg: wasteDataDto.hazardousWasteKg?.toString(),
         recycledWasteKg: wasteDataDto.recycledWasteKg?.toString(),

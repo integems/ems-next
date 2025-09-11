@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 
 interface ProtectedProps {
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export default function Protected({ children }: ProtectedProps) {
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center h-screen w-screen">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <LoaderIcon className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }

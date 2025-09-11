@@ -10,11 +10,17 @@ import { FrontendAirService } from "@/frontend-services/air.service";
 import { useAuth } from "@/hooks/use-auth";
 import { AirData, TimeOfDay, LocationType } from "@/types/common.types";
 import { updateAirDataDto, UpdateAirDataDto } from "@/dtos/air.dto";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const airService = new FrontendAirService();
 
@@ -25,7 +31,10 @@ interface UpdateAirDataFormProps {
 
 type UpdateAirDataFormData = z.infer<typeof updateAirDataDto>;
 
-export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormProps) {
+export default function UpdateAirDataForm({
+  onClose,
+  data,
+}: UpdateAirDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UpdateAirDataFormData>({});
@@ -35,14 +44,14 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
     if (data) {
       setFormData({
         measurementTime: new Date(data.measurementTime),
-        pm25: data.pm25 as number || undefined,
-        pm10: data.pm10 as number || undefined,
-        no2: data.no2 as number || undefined,
-        o3: data.o3 as number || undefined,
-        co: data.co as number || undefined,
-        so2: data.so2 as number || undefined,
-        temperature: data.temperature as number || undefined,
-        humidity: data.humidity as number || undefined,
+        pm25: (data.pm25 as number) || undefined,
+        pm10: (data.pm10 as number) || undefined,
+        no2: (data.no2 as number) || undefined,
+        o3: (data.o3 as number) || undefined,
+        co: (data.co as number) || undefined,
+        so2: (data.so2 as number) || undefined,
+        temperature: (data.temperature as number) || undefined,
+        humidity: (data.humidity as number) || undefined,
         notes: data.notes || undefined,
         timeOfDay: data.timeOfDay || undefined,
         locationType: data.locationType || undefined,
@@ -55,7 +64,11 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      return airService.updateAirData(currentUser.token, data.airDataId, updatedData);
+      return airService.updateAirData(
+        currentUser.token,
+        data.airDataId,
+        updatedData,
+      );
     },
     onSuccess: () => {
       toast.success("Air data updated successfully");
@@ -63,20 +76,26 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update air data")
+      toast("Failed to update air data");
       setErrors({ server: "Failed to update air data" });
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
-    setErrors((prev:any) => ({ ...prev, [name]: undefined, server: undefined }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: undefined,
+      server: undefined,
+    }));
   };
-  
+
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
@@ -107,7 +126,11 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
             onChange={handleDateChange}
           />
           {errors.measurementTime && (
-            <p className="text-xs text-red-500">{Array.isArray(errors.measurementTime) ? errors.measurementTime[0] : errors.measurementTime}</p>
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.measurementTime)
+                ? errors.measurementTime[0]
+                : errors.measurementTime}
+            </p>
           )}
         </div>
         <div></div>
@@ -120,44 +143,64 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
             <Input
               type="number"
               name="pm25"
-              value={formData.pm25 as number || 0}
+              value={(formData.pm25 as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.pm25 && <p className="text-xs text-red-500">{Array.isArray(errors.pm25) ? errors.pm25[0] : errors.pm25}</p>}
+            {errors.pm25 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.pm25) ? errors.pm25[0] : errors.pm25}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">PM10 (µg/m³)</Label>
             <Input
               type="number"
               name="pm10"
-              value={formData.pm10 as number || 0}
+              value={(formData.pm10 as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.pm10 && <p className="text-xs text-red-500">{Array.isArray(errors.pm10) ? errors.pm10[0] : errors.pm10}</p>}
+            {errors.pm10 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.pm10) ? errors.pm10[0] : errors.pm10}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Temperature (°C)</Label>
             <Input
               type="number"
               name="temperature"
-              value={formData.temperature as number || 0}
+              value={(formData.temperature as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.temperature && <p className="text-xs text-red-500">{Array.isArray(errors.temperature) ? errors.temperature[0] : errors.temperature}</p>}
+            {errors.temperature && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.temperature)
+                  ? errors.temperature[0]
+                  : errors.temperature}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Humidity (%)</Label>
             <Input
               type="number"
               name="humidity"
-              value={formData.humidity as number || 0}
+              value={(formData.humidity as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.humidity && <p className="text-xs text-red-500">{Array.isArray(errors.humidity) ? errors.humidity[0] : errors.humidity}</p>}
+            {errors.humidity && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.humidity)
+                  ? errors.humidity[0]
+                  : errors.humidity}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -168,22 +211,30 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
             <Input
               type="number"
               name="no2"
-              value={formData.no2 as number || 0}
+              value={(formData.no2 as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.no2 && <p className="text-xs text-red-500">{Array.isArray(errors.no2) ? errors.no2[0] : errors.no2}</p>}
+            {errors.no2 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.no2) ? errors.no2[0] : errors.no2}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">O₃ (µg/m³)</Label>
             <Input
               type="number"
               name="o3"
-              value={formData.o3 as number || 0}
+              value={(formData.o3 as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.o3 && <p className="text-xs text-red-500">{Array.isArray(errors.o3) ? errors.o3[0] : errors.o3}</p>}
+            {errors.o3 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.o3) ? errors.o3[0] : errors.o3}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">CO (µg/m³)</Label>
@@ -194,7 +245,11 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.co && <p className="text-xs text-red-500">{Array.isArray(errors.co) ? errors.co[0] : errors.co}</p>}
+            {errors.co && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.co) ? errors.co[0] : errors.co}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">SO₂ (µg/m³)</Label>
@@ -205,12 +260,17 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.so2 && <p className="text-xs text-red-500">{Array.isArray(errors.so2) ? errors.so2[0] : errors.so2}</p>}
+            {errors.so2 && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.so2) ? errors.so2[0] : errors.so2}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Time of Day</Label>
             <Select
-              value={formData.timeOfDay || ""}
+              value={formData.timeOfDay}
+              defaultValue={formData.timeOfDay}
               onValueChange={(value: TimeOfDay) => handleTimeOfDayChange(value)}
             >
               <SelectTrigger>
@@ -224,13 +284,22 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
                 ))}
               </SelectContent>
             </Select>
-            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+            {errors.timeOfDay && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.timeOfDay)
+                  ? errors.timeOfDay[0]
+                  : errors.timeOfDay}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Location Type</Label>
             <Select
-              value={formData.locationType || ""}
-              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+              value={formData.locationType}
+              defaultValue={formData.locationType}
+              onValueChange={(value: LocationType) =>
+                handleLocationTypeChange(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Location Type" />
@@ -243,7 +312,13 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
                 ))}
               </SelectContent>
             </Select>
-            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
+            {errors.locationType && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.locationType)
+                  ? errors.locationType[0]
+                  : errors.locationType}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -263,7 +338,7 @@ export default function UpdateAirDataForm({ onClose, data }: UpdateAirDataFormPr
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>

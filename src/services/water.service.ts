@@ -49,7 +49,17 @@ export class WaterService {
    * @returns A paginated list of water data.
    */
   async findAllWaterData(filter: WaterDataFilterDto) {
-    const { page = 1, limit = 10000000, search, locationId,waterSource, startDate, endDate, timeOfDay, locationType } = filter;
+    const {
+      page = 1,
+      limit = 10000000,
+      search,
+      locationId,
+      waterSource,
+      startDate,
+      endDate,
+      timeOfDay,
+      locationType,
+    } = filter;
     const offset = (page - 1) * limit;
 
     const conditions = [];
@@ -60,7 +70,13 @@ export class WaterService {
         .split(/\s+/)
         .filter((term) => term.length > 0);
 
-      conditions.push(or(...searchTerms.map((term) => ilike(schema.waterData.notes, `%${term}%`))));
+      conditions.push(
+        or(
+          ...searchTerms.map((term) =>
+            ilike(schema.waterData.notes, `%${term}%`),
+          ),
+        ),
+      );
     }
 
     if (locationId) {
@@ -68,11 +84,15 @@ export class WaterService {
     }
 
     if (startDate) {
-      conditions.push(sql`${schema.waterData.measurementTime} >= ${startDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.waterData.measurementTime} >= ${startDate.toISOString()}`,
+      );
     }
 
     if (endDate) {
-      conditions.push(sql`${schema.waterData.measurementTime} <= ${endDate.toISOString()}`);
+      conditions.push(
+        sql`${schema.waterData.measurementTime} <= ${endDate.toISOString()}`,
+      );
     }
 
     if (timeOfDay) {
@@ -95,7 +115,7 @@ export class WaterService {
         limit,
         offset,
         orderBy: [desc(schema.waterData.createdAt)],
-            with: {
+        with: {
           location: {
             columns: {
               geom: false,
@@ -144,7 +164,7 @@ export class WaterService {
     waterDataDto: CreateWaterDataDto,
     currentUser?: CurrentUser,
   ) {
-    const createdBy = currentUser?.userId || currentUser?.email || "system";
+    const createdBy = currentUser?.fullName || currentUser?.email || "system";
     const updatedBy = createdBy;
 
     const dataToInsert = waterDataDto.map((dto) => ({
@@ -167,7 +187,6 @@ export class WaterService {
       totalDissolvedSolids: dto.totalDissolvedSolids?.toString(),
       temperature: dto.temperature?.toString(),
       pointGeom: dto.pointGeom,
-      waterSource: dto.waterSource,
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy,
@@ -197,7 +216,7 @@ export class WaterService {
     waterDataDto: UpdateWaterDataDto,
     currentUser?: CurrentUser,
   ) {
-    const updatedBy = currentUser?.userId || currentUser?.email || "system";
+    const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
     const [updatedWaterData] = await db
       .update(schema.waterData)
@@ -206,8 +225,10 @@ export class WaterService {
         measurementTime: waterDataDto.measurementTime
           ? new Date(waterDataDto.measurementTime)
           : undefined,
-        timeOfDay: waterDataDto.timeOfDay,
-        locationType: waterDataDto.locationType,
+        timeOfDay: waterDataDto.timeOfDay ? waterDataDto.timeOfDay : undefined,
+        locationType: waterDataDto.locationType
+          ? waterDataDto.locationType
+          : undefined,
         ph: waterDataDto.ph?.toString(),
         phMv: waterDataDto.phMv?.toString(),
         orp: waterDataDto.orp?.toString(),
@@ -224,7 +245,9 @@ export class WaterService {
         totalDissolvedSolids: waterDataDto.totalDissolvedSolids?.toString(),
         temperature: waterDataDto.temperature?.toString(),
         pointGeom: waterDataDto.pointGeom,
-        waterSource: waterDataDto.waterSource,
+        waterSource: waterDataDto.waterSource
+          ? waterDataDto.waterSource
+          : undefined,
         updatedAt: new Date(),
         updatedBy,
       })

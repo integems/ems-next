@@ -4,7 +4,11 @@ import {
   UpdateWasteDataDto,
   WasteDataFilterDto,
 } from "@/dtos/waste.dto";
-import { WasteData, PaginationResponse, DataResponse } from "@/types/common.types";
+import {
+  WasteData,
+  PaginationResponse,
+  DataResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/waste";
 

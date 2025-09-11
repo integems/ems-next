@@ -4,7 +4,11 @@ import {
   UpdateWaterDataDto,
   WaterDataFilterDto,
 } from "@/dtos/water.dto";
-import { WaterData, PaginationResponse, DataResponse } from "@/types/common.types";
+import {
+  WaterData,
+  PaginationResponse,
+  DataResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/water";
 

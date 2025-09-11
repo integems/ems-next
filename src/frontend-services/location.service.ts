@@ -4,7 +4,11 @@ import {
   UpdateLocationDto,
   LocationFilterDto,
 } from "@/dtos/location.dto";
-import { DataResponse, Location, PaginationResponse } from "@/types/common.types";
+import {
+  DataResponse,
+  Location,
+  PaginationResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/locations";
 

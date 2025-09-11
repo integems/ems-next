@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { useAuth } from "@/hooks/use-auth";
 import { Category, Location } from "@/types/common.types";
-import { createBiodiversityDataDto, CreateBiodiversityDataDto, singleBiodiversityData as biodiversityDto } from "@/dtos/biodiversity.dto";
+import {
+  createBiodiversityDataDto,
+  CreateBiodiversityDataDto,
+  singleBiodiversityData as biodiversityDto,
+} from "@/dtos/biodiversity.dto";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { Loader2, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
+import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
@@ -37,18 +36,16 @@ const locationService = new FrontendLocationService();
 const biodiversityService = new FrontendBiodiversityService();
 
 // Updated biodiversityDto schema with validation for at least one measurement
-const updatedBiodiversityDto = biodiversityDto.extend({
-  speciesCount: z.number().optional(),
-  shannonIndex: z.number().optional(),
-}).refine(
-  (data) =>
-    data.speciesCount != null ||
-    data.shannonIndex != null,
-  {
-    message: "At least one measurement (Species Count or Shannon Index) is required",
+const updatedBiodiversityDto = biodiversityDto
+  .extend({
+    speciesCount: z.number().optional(),
+    shannonIndex: z.number().optional(),
+  })
+  .refine((data) => data.speciesCount != null || data.shannonIndex != null, {
+    message:
+      "At least one measurement (Species Count or Shannon Index) is required",
     path: ["measurements"],
-  }
-);
+  });
 
 interface CreateBiodiversityDataFormProps {
   onClose: () => void;
@@ -65,24 +62,28 @@ const parameterMappings: { [key: string]: keyof BiodiversityDataFormData } = {
   locationtype: "locationType",
 };
 
-export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversityDataFormProps) {
+export default function CreateBiodiversityDataForm({
+  onClose,
+}: CreateBiodiversityDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
   const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
     name: "",
     description: "",
     category: Category.Biodiversity,
     pointGeom: [0.0, 0.0],
   });
-  const [biodiversityDataFormData, setBiodiversityDataFormData] = useState<BiodiversityDataFormData[]>([
-    {
-      measurementTime: new Date(),
-    },
-  ]);
-  const [singleBiodiversityData, setSingleBiodiversityData] = useState<Partial<BiodiversityDataFormData>>({
+  const [biodiversityDataFormData, setBiodiversityDataFormData] = useState<
+    BiodiversityDataFormData[]
+  >([]);
+  const [singleBiodiversityData, setSingleBiodiversityData] = useState<
+    Partial<BiodiversityDataFormData>
+  >({
     measurementTime: new Date(),
   });
   const [errors, setErrors] = useState<any>({});
@@ -94,10 +95,13 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      const response = await locationService.findAllLocations(currentUser.token || "", {
-        page: 1,
-        limit: 1000,
-      });
+      const response = await locationService.findAllLocations(
+        currentUser.token || "",
+        {
+          page: 1,
+          limit: 1000,
+        },
+      );
       return response.data;
     },
     enabled: !!currentUser?.token,
@@ -107,14 +111,17 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
   const createBiodiversityDataMutation = useMutation({
     mutationFn: (newBiodiversityData: CreateBiodiversityDataDto) =>
-      biodiversityService.createBiodiversityData(currentUser!.token || "", newBiodiversityData),
+      biodiversityService.createBiodiversityData(
+        currentUser!.token || "",
+        newBiodiversityData,
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["biodiversity-data"] });
       toast.success("Biodiversity data updated successfully!");
       onClose();
     },
     onError: (error) => {
-      toast.error(`Error updating biodiversity data: ${error.message}`);
+      toast.error(`Couldn't update biodiversity data.`);
     },
   });
 
@@ -122,16 +129,20 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({"Created Location":data})
+      console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
-      const biodiversityDataWithLocation = biodiversityDataFormData.map((data) => ({
-        ...data,
-        locationId: newLocationId,
-        pointGeom: locationFormData.pointGeom,
-      }));
-      const result = createBiodiversityDataDto.safeParse(biodiversityDataWithLocation);
+      const biodiversityDataWithLocation = biodiversityDataFormData.map(
+        (data) => ({
+          ...data,
+          locationId: newLocationId,
+          pointGeom: locationFormData.pointGeom,
+        }),
+      );
+      const result = createBiodiversityDataDto.safeParse(
+        biodiversityDataWithLocation,
+      );
       if (result.success) {
         createBiodiversityDataMutation.mutate(result.data);
       } else {
@@ -140,7 +151,7 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
       }
     },
     onError: (error: any) => {
-      toast.error(`Error creating location: ${error.message}`);
+      toast.error(`couldn't add location.`);
     },
   });
 
@@ -149,7 +160,9 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
     setLocationFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSingleBiodiversityDataChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSingleBiodiversityDataChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setSingleBiodiversityData((prev) => ({
       ...prev,
@@ -181,7 +194,10 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
     ];
 
     const newData = data.map((row, index) => {
-      const rowData: Partial<BiodiversityDataFormData> = index < biodiversityDataFormData.length ? { ...biodiversityDataFormData[index] } : {};
+      const rowData: Partial<BiodiversityDataFormData> =
+        index < biodiversityDataFormData.length
+          ? { ...biodiversityDataFormData[index] }
+          : {};
       headers.forEach((header, colIndex) => {
         const value = row[colIndex]?.value;
         if (value) {
@@ -192,10 +208,10 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
             } else {
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
-          } else if (
-            ["speciesCount", "shannonIndex"].includes(header)
-          ) {
-            rowData[header as keyof BiodiversityDataFormData] = Number(value) as any;
+          } else if (["speciesCount", "shannonIndex"].includes(header)) {
+            rowData[header as keyof BiodiversityDataFormData] = Number(
+              value,
+            ) as any;
           } else if (header === "timeOfDay") {
             rowData.timeOfDay = value as any;
           } else if (header === "locationType") {
@@ -230,7 +246,12 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
   };
 
   const spreadsheetData = biodiversityDataFormData.map((data) => [
-    { value: data.measurementTime instanceof Date ? format(data.measurementTime, "MM/dd/yyyy hh:mm a") : "" },
+    {
+      value:
+        data.measurementTime instanceof Date
+          ? format(data.measurementTime, "MM/dd/yyyy hh:mm a")
+          : "",
+    },
     { value: data.speciesCount?.toString() || "" },
     { value: data.shannonIndex?.toString() || "" },
     { value: data.timeOfDay || "" },
@@ -242,7 +263,11 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
   const handleFileUpload = useCallback(
     (file: File) => {
-      if (!file.name.endsWith(".xlsx") && !file.name.endsWith(".xls") && !file.name.endsWith(".csv")) {
+      if (
+        !file.name.endsWith(".xlsx") &&
+        !file.name.endsWith(".xls") &&
+        !file.name.endsWith(".csv")
+      ) {
         toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
         return;
       }
@@ -266,38 +291,43 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
           );
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: BiodiversityDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<BiodiversityDataFormData> = index < biodiversityDataFormData.length ? { ...biodiversityDataFormData[index] } : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
-                if (mappedKey) {
-                  if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
-                    if (!isNaN(date.getTime())) {
-                      rowData[mappedKey] = date;
+          const mappedData: BiodiversityDataFormData[] = rows.map(
+            (row, index) => {
+              const rowData: Partial<BiodiversityDataFormData> =
+                index < biodiversityDataFormData.length
+                  ? { ...biodiversityDataFormData[index] }
+                  : {};
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+                if (value) {
+                  if (mappedKey) {
+                    if (mappedKey === "measurementTime") {
+                      const date = new Date(value);
+                      if (!isNaN(date.getTime())) {
+                        rowData[mappedKey] = date;
+                      } else {
+                        toast.error(
+                          `Invalid date format in uploaded file: ${value}`,
+                        );
+                      }
+                    } else if (
+                      ["speciesCount", "shannonIndex"].includes(mappedKey)
+                    ) {
+                      rowData[mappedKey] = Number(value) as any;
+                    } else if (mappedKey === "timeOfDay") {
+                      rowData[mappedKey] = value as any;
+                    } else if (mappedKey === "locationType") {
+                      rowData[mappedKey] = value as any;
                     } else {
-                      toast.error(`Invalid date format in uploaded file: ${value}`);
+                      rowData[mappedKey] = value as any;
                     }
-                  } else if (
-                    ["speciesCount", "shannonIndex"].includes(
-                      mappedKey,
-                    )
-                  ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else if (mappedKey === "timeOfDay") {
-                    rowData[mappedKey] = value as any;
-                  } else if (mappedKey === "locationType") {
-                    rowData[mappedKey] = value as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
                   }
                 }
-              }
-            });
-            return rowData as BiodiversityDataFormData;
-          });
+              });
+              return rowData as BiodiversityDataFormData;
+            },
+          );
 
           // Validate uploaded data
           const validatedData: BiodiversityDataFormData[] = [];
@@ -375,18 +405,24 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
         toast.error("Please select a location.");
         return;
       }
-      const selectedLocation = locations.find((loc) => loc.locationId === selectedLocationId);
+      const selectedLocation = locations.find(
+        (loc) => loc.locationId === selectedLocationId,
+      );
       if (!selectedLocation?.pointGeom) {
         setErrors({ locationId: "Selected location has no coordinates." });
         toast.error("Selected location has no coordinates.");
         return;
       }
-      const biodiversityDataWithLocation = biodiversityDataFormData.map((data) => ({
-        ...data,
-        locationId: selectedLocationId,
-        pointGeom: selectedLocation.pointGeom,
-      }));
-      const biodiversityDataResult = createBiodiversityDataDto.safeParse(biodiversityDataWithLocation);
+      const biodiversityDataWithLocation = biodiversityDataFormData.map(
+        (data) => ({
+          ...data,
+          locationId: selectedLocationId,
+          pointGeom: selectedLocation.pointGeom,
+        }),
+      );
+      const biodiversityDataResult = createBiodiversityDataDto.safeParse(
+        biodiversityDataWithLocation,
+      );
       if (biodiversityDataResult.success) {
         createBiodiversityDataMutation.mutate(biodiversityDataResult.data);
       } else {
@@ -407,7 +443,10 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
               Location Selection
             </h2>
 
-            <Tabs value={isCreatingLocation ? "create" : "existing"} className="w-full">
+            <Tabs
+              value={isCreatingLocation ? "create" : "existing"}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger
                   value="existing"
@@ -444,14 +483,19 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                         </SelectItem>
                       ) : (
                         locations?.map((location) => (
-                          <SelectItem key={location.locationId} value={location.locationId}>
+                          <SelectItem
+                            key={location.locationId}
+                            value={location.locationId}
+                          >
                             {location.name}
                           </SelectItem>
                         ))
                       )}
                     </SelectContent>
                   </Select>
-                  {errors.locationId && <p className="text-xs text-red-500">{errors.locationId}</p>}
+                  {errors.locationId && (
+                    <p className="text-xs text-red-500">{errors.locationId}</p>
+                  )}
                 </div>
               </TabsContent>
 
@@ -467,10 +511,14 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                         onChange={handleLocationChange}
                         placeholder="Enter location name"
                       />
-                      {errors.name && <p className="text-xs text-red-500">{errors.name[0]}</p>}
+                      {errors.name && (
+                        <p className="text-xs text-red-500">{errors.name[0]}</p>
+                      )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="newLocationDescription">Description</Label>
+                      <Label htmlFor="newLocationDescription">
+                        Description
+                      </Label>
                       <Input
                         id="newLocationDescription"
                         name="description"
@@ -483,7 +531,12 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                       <Label htmlFor="newLocationType">Location Type</Label>
                       <Select
                         name="locationType"
-                        onValueChange={(value) => setLocationFormData((prev) => ({ ...prev, locationType: value as any }))}
+                        onValueChange={(value) =>
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            locationType: value as any,
+                          }))
+                        }
                         value={locationFormData.locationType || ""}
                       >
                         <SelectTrigger>
@@ -491,12 +544,18 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="industrial">Industrial</SelectItem>
-                          <SelectItem value="residential">Residential</SelectItem>
+                          <SelectItem value="residential">
+                            Residential
+                          </SelectItem>
                           <SelectItem value="commercial">Commercial</SelectItem>
                           <SelectItem value="rural">Rural</SelectItem>
                         </SelectContent>
                       </Select>
-                      {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                      {errors.locationType && (
+                        <p className="text-xs text-red-500">
+                          {errors.locationType[0]}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -504,12 +563,17 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                     <div className="h-64 border rounded-lg overflow-hidden">
                       <LocationPickerMap
                         onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({ ...prev, pointGeom: [lat, lng] }))
+                          setLocationFormData((prev) => ({
+                            ...prev,
+                            pointGeom: [lat, lng],
+                          }))
                         }
                       />
                     </div>
                     {errors.pointGeom && (
-                      <p className="text-xs text-red-500">{errors.pointGeom[0]}</p>
+                      <p className="text-xs text-red-500">
+                        {errors.pointGeom[0]}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -520,14 +584,18 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
 
         {/* Biodiversity Data Section */}
         <div className="flex-1 space-y-6">
-          <h2 className="text-xl font-semibold mb-4">Biodiversity Quality Data</h2>
+          <h2 className="text-xl font-semibold mb-4">
+            Biodiversity Quality Data
+          </h2>
 
           {/* File Upload Section */}
           <div className="space-y-2">
             <Label>Import from Excel (Optional)</Label>
             <div
               className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+                isDragging
+                  ? "border-primary bg-primary/5"
+                  : "border-muted-foreground/25"
               }`}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
@@ -554,27 +622,28 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
           </div>
 
           {/* Spreadsheet Section */}
-          <div className="space-y-2">
-            <Label>Biodiversity Quality Data Entries</Label>
-            <div className="max-w-[60rem] overflow-auto rounded">
-              <Spreadsheet
-                data={spreadsheetData}
-            
+
+          {!!spreadsheetData.length && (
+            <div className="space-y-2">
+              <Label>Biodiversity Quality Data Entries</Label>
+              <div className="max-w-[60rem] overflow-auto rounded">
+                <Spreadsheet
+                  data={spreadsheetData}
                   columnLabels={[
-                  "Measurement Time",
-                  "Species Count",
-                  "Shannon Index",
-                  "Time of Day",
-                  "Location Type",
-                  "Notes",
-                  "Time of Day",
-                  "Location Type",
-                ]}
-                onChange={(data)=>handleSpreadsheetChange(data as any)}
-              />
-       
+                    "Measurement Time",
+                    "Species Count",
+                    "Shannon Index",
+                    "Time of Day",
+                    "Location Type",
+                    "Notes",
+                    "Time of Day",
+                    "Location Type",
+                  ]}
+                  onChange={(data) => handleSpreadsheetChange(data as any)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Manual Entry Section */}
           <div className="space-y-6">
@@ -592,7 +661,9 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                   }
                 />
                 {errors.measurementTime && (
-                  <p className="text-xs text-red-500">{errors.measurementTime[0]}</p>
+                  <p className="text-xs text-red-500">
+                    {errors.measurementTime[0]}
+                  </p>
                 )}
               </div>
               <div></div>
@@ -611,7 +682,11 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                     onChange={handleSingleBiodiversityDataChange}
                     placeholder="0"
                   />
-                  {errors.speciesCount && <p className="text-xs text-red-500">{errors.speciesCount[0]}</p>}
+                  {errors.speciesCount && (
+                    <p className="text-xs text-red-500">
+                      {errors.speciesCount[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Shannon Index</Label>
@@ -622,14 +697,21 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                     onChange={handleSingleBiodiversityDataChange}
                     placeholder="0"
                   />
-                  {errors.shannonIndex && <p className="text-xs text-red-500">{errors.shannonIndex[0]}</p>}
+                  {errors.shannonIndex && (
+                    <p className="text-xs text-red-500">
+                      {errors.shannonIndex[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">Time of Day</Label>
                   <Select
                     name="timeOfDay"
                     onValueChange={(value) =>
-                      setSingleBiodiversityData((prev) => ({ ...prev, timeOfDay: value as any }))
+                      setSingleBiodiversityData((prev) => ({
+                        ...prev,
+                        timeOfDay: value as any,
+                      }))
                     }
                     value={singleBiodiversityData.timeOfDay || ""}
                   >
@@ -642,14 +724,23 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                       <SelectItem value="night">Night</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.timeOfDay && <p className="text-xs text-red-500">{errors.timeOfDay[0]}</p>}
+                  {errors.timeOfDay && (
+                    <p className="text-xs text-red-500">
+                      {errors.timeOfDay[0]}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm">Location Type (Data Specific)</Label>
+                  <Label className="text-sm">
+                    Location Type (Data Specific)
+                  </Label>
                   <Select
                     name="locationType"
                     onValueChange={(value) =>
-                      setSingleBiodiversityData((prev) => ({ ...prev, locationType: value as any }))
+                      setSingleBiodiversityData((prev) => ({
+                        ...prev,
+                        locationType: value as any,
+                      }))
                     }
                     value={singleBiodiversityData.locationType || ""}
                   >
@@ -663,12 +754,14 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
                       <SelectItem value="rural">Rural</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.locationType && <p className="text-xs text-red-500">{errors.locationType[0]}</p>}
+                  {errors.locationType && (
+                    <p className="text-xs text-red-500">
+                      {errors.locationType[0]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
-
-            
 
             {/* Notes */}
             <div className="space-y-2">
@@ -682,14 +775,16 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
               />
             </div>
 
-            
-
-              {errors.locationId && (
-                <p className="text-xs text-red-500">{errors.locationId}</p>
-              )}
+            {errors.locationId && (
+              <p className="text-xs text-red-500">{errors.locationId}</p>
+            )}
 
             <div className="flex justify-end">
-              <Button type="button" size="sm" onClick={handleAddSingleBiodiversityData}>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddSingleBiodiversityData}
+              >
                 Add to list
               </Button>
             </div>
@@ -704,10 +799,14 @@ export default function CreateBiodiversityDataForm({ onClose }: CreateBiodiversi
           <Button
             type="submit"
             size="sm"
-            disabled={createLocationMutation.isPending || createBiodiversityDataMutation.isPending}
+            disabled={
+              createLocationMutation.isPending ||
+              createBiodiversityDataMutation.isPending
+            }
           >
-            {(createLocationMutation.isPending || createBiodiversityDataMutation.isPending) && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {(createLocationMutation.isPending ||
+              createBiodiversityDataMutation.isPending) && (
+              <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit
           </Button>

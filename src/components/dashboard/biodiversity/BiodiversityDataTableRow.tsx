@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { BiodiversityData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -33,7 +33,9 @@ interface BiodiversityDataTableRowProps {
 
 const biodiversityService = new FrontendBiodiversityService();
 
-const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ data }) => {
+const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({
+  data,
+}) => {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -44,7 +46,10 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ dat
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      await biodiversityService.deleteBiodiversityData(currentUser.token, biodiversityDataId);
+      await biodiversityService.deleteBiodiversityData(
+        currentUser.token,
+        biodiversityDataId,
+      );
     },
     onSuccess: () => {
       toast.success("Biodiversity data deleted successfully");
@@ -84,7 +89,7 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ dat
             : "N/A"}
         </TableCell>
         <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
-        
+
         <TableCell>
           {data.createdAt
             ? new Date(data.createdAt).toLocaleDateString("en-GB", {
@@ -143,8 +148,8 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ dat
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the biodiversity
-              data record.
+              This action cannot be undone. This will permanently delete the
+              biodiversity data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -157,7 +162,7 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ dat
               disabled={deleteBiodiversityDataMutation.isPending}
             >
               {deleteBiodiversityDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -165,11 +170,14 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({ dat
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Biodiversity Data</DialogTitle>
           </DialogHeader>
-          <UpdateBiodiversityDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateBiodiversityDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

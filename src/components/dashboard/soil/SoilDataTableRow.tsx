@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { SoilData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -145,8 +145,8 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the soil
-              data record.
+              This action cannot be undone. This will permanently delete the
+              soil data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -159,7 +159,7 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
               disabled={deleteSoilDataMutation.isPending}
             >
               {deleteSoilDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -167,11 +167,14 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Soil Data</DialogTitle>
           </DialogHeader>
-          <UpdateSoilDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateSoilDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

@@ -14,7 +14,9 @@ const BiodiversityPage = () => {
         <BiodiversityManagementPage setActiveView={setActiveView} />
       )}
       {activeView === "create" && (
-        <CreateBiodiversityDataForm onClose={() => setActiveView("management")} />
+        <CreateBiodiversityDataForm
+          onClose={() => setActiveView("management")}
+        />
       )}
     </>
   );

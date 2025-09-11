@@ -25,8 +25,12 @@ export async function GET(request: NextRequest) {
       limit: searchParams.get("limit") || undefined,
       search: searchParams.get("search") || undefined,
       locationId: searchParams.get("locationId") || undefined,
-      startDate: searchParams.get("startDate") ? new Date(searchParams.get("startDate") as string) : undefined,
-      endDate: searchParams.get("endDate") ? new Date(searchParams.get("endDate") as string) : undefined,
+      startDate: searchParams.get("startDate")
+        ? new Date(searchParams.get("startDate") as string)
+        : undefined,
+      endDate: searchParams.get("endDate")
+        ? new Date(searchParams.get("endDate") as string)
+        : undefined,
       timeOfDay: searchParams.get("timeOfDay") || undefined,
       locationType: searchParams.get("locationType") || undefined,
     });
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
     );
     return NextResponse.json(newSoilData, { status: 201 });
   } catch (error: any) {
+    // console.log({error})
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

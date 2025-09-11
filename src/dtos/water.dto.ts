@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { TimeOfDay, LocationType } from "../types/common.types";
 
-export const waterSourceEnum = z.enum([
-  "surface",
-  "underground",
-]);
+export const waterSourceEnum = z.enum(["surface", "underground"]);
 
 export const singleWaterData = z.object({
   locationId: z.string().optional(),

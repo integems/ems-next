@@ -17,7 +17,7 @@ import { RoleName } from "@/types/common.types";
 import { FrontendUserService } from "@/frontend-services/user.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { z } from "zod";
 
 interface CreateUserFormProps {
@@ -168,7 +168,7 @@ export default function CreateUserForm({
         </Button>
         <Button size="sm" type="submit" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Create User
         </Button>

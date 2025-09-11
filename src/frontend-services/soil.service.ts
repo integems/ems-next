@@ -4,7 +4,11 @@ import {
   UpdateSoilDataDto,
   SoilDataFilterDto,
 } from "@/dtos/soil.dto";
-import { SoilData, PaginationResponse, DataResponse } from "@/types/common.types";
+import {
+  SoilData,
+  PaginationResponse,
+  DataResponse,
+} from "@/types/common.types";
 
 const API_BASE_URL = "/api/soil";
 

@@ -21,7 +21,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { WasteData } from "@/types/common.types";
-import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -91,7 +91,6 @@ const WasteDataTableRow: React.FC<WasteDataTableRowProps> = ({ data }) => {
             : "N/A"}
         </TableCell>
         <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
-        <TableCell>{data.photos ? "Yes" : "No"}</TableCell>
         <TableCell>
           {data.createdAt
             ? new Date(data.createdAt).toLocaleDateString("en-GB", {
@@ -150,8 +149,8 @@ const WasteDataTableRow: React.FC<WasteDataTableRowProps> = ({ data }) => {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the waste
-              data record.
+              This action cannot be undone. This will permanently delete the
+              waste data record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -164,7 +163,7 @@ const WasteDataTableRow: React.FC<WasteDataTableRowProps> = ({ data }) => {
               disabled={deleteWasteDataMutation.isPending}
             >
               {deleteWasteDataMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
               Delete
             </Button>
@@ -172,11 +171,14 @@ const WasteDataTableRow: React.FC<WasteDataTableRowProps> = ({ data }) => {
         </DialogContent>
       </Dialog>
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="md:min-w-4xl">
           <DialogHeader>
             <DialogTitle>Edit Waste Data</DialogTitle>
           </DialogHeader>
-          <UpdateWasteDataForm data={data} onClose={() => setIsEditDialogOpen(false)} />
+          <UpdateWasteDataForm
+            data={data}
+            onClose={() => setIsEditDialogOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

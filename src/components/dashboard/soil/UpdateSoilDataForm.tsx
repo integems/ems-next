@@ -10,11 +10,17 @@ import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
 import { SoilData, TimeOfDay, LocationType } from "@/types/common.types";
 import { updateSoilDataDto, UpdateSoilDataDto } from "@/dtos/soil.dto";
-import { Loader2 } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { z } from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const soilService = new FrontendSoilService();
 
@@ -25,7 +31,10 @@ interface UpdateSoilDataFormProps {
 
 type UpdateSoilDataFormData = z.infer<typeof updateSoilDataDto>;
 
-export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataFormProps) {
+export default function UpdateSoilDataForm({
+  onClose,
+  data,
+}: UpdateSoilDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState<UpdateSoilDataFormData>({});
@@ -35,12 +44,12 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
     if (data) {
       setFormData({
         measurementTime: new Date(data.measurementTime),
-        ph: data.ph as number || undefined,
-        nitrogen: data.nitrogen as number || undefined,
-        phosphorus: data.phosphorus as number || undefined,
-        potassium: data.potassium as number || undefined,
-        organicMatter: data.organicMatter as number || undefined,
-        moisture: data.moisture as number || undefined,
+        ph: (data.ph as number) || undefined,
+        nitrogen: (data.nitrogen as number) || undefined,
+        phosphorus: (data.phosphorus as number) || undefined,
+        potassium: (data.potassium as number) || undefined,
+        organicMatter: (data.organicMatter as number) || undefined,
+        moisture: (data.moisture as number) || undefined,
         notes: data.notes || undefined,
         timeOfDay: data.timeOfDay || undefined,
         locationType: data.locationType || undefined,
@@ -53,7 +62,11 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
-      return soilService.updateSoilData(currentUser.token, data.soilDataId, updatedData);
+      return soilService.updateSoilData(
+        currentUser.token,
+        data.soilDataId,
+        updatedData,
+      );
     },
     onSuccess: () => {
       toast.success("Soil data updated successfully");
@@ -61,20 +74,26 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update soil data")
+      toast("Failed to update soil data");
       setErrors({ server: "Failed to update soil data" });
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
-    setErrors((prev:any) => ({ ...prev, [name]: undefined, server: undefined }));
+    setErrors((prev: any) => ({
+      ...prev,
+      [name]: undefined,
+      server: undefined,
+    }));
   };
-  
+
   const handleDateChange = (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, measurementTime: date }));
   };
@@ -104,7 +123,11 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
             onChange={handleDateChange}
           />
           {errors.measurementTime && (
-            <p className="text-xs text-red-500">{Array.isArray(errors.measurementTime) ? errors.measurementTime[0] : errors.measurementTime}</p>
+            <p className="text-xs text-red-500">
+              {Array.isArray(errors.measurementTime)
+                ? errors.measurementTime[0]
+                : errors.measurementTime}
+            </p>
           )}
         </div>
         <div></div>
@@ -117,66 +140,100 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
             <Input
               type="number"
               name="ph"
-              value={formData.ph as number || 0}
+              value={(formData.ph as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.ph && <p className="text-xs text-red-500">{Array.isArray(errors.ph) ? errors.ph[0] : errors.ph}</p>}
+            {errors.ph && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.ph) ? errors.ph[0] : errors.ph}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Moisture Level (%)</Label>
             <Input
               type="number"
               name="moisture"
-              value={formData.moisture as number || 0}
+              value={(formData.moisture as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.moisture && <p className="text-xs text-red-500">{Array.isArray(errors.moisture) ? errors.moisture[0] : errors.moisture}</p>}
+            {errors.moisture && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.moisture)
+                  ? errors.moisture[0]
+                  : errors.moisture}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Nitrogen Level (ppm)</Label>
             <Input
               type="number"
               name="nitrogen"
-              value={formData.nitrogen as number || 0}
+              value={(formData.nitrogen as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.nitrogen && <p className="text-xs text-red-500">{Array.isArray(errors.nitrogen) ? errors.nitrogen[0] : errors.nitrogen}</p>}
+            {errors.nitrogen && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.nitrogen)
+                  ? errors.nitrogen[0]
+                  : errors.nitrogen}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Phosphorus Level (ppm)</Label>
             <Input
               type="number"
               name="phosphorus"
-              value={formData.phosphorus as number || 0}
+              value={(formData.phosphorus as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.phosphorus && <p className="text-xs text-red-500">{Array.isArray(errors.phosphorus) ? errors.phosphorus[0] : errors.phosphorus}</p>}
+            {errors.phosphorus && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.phosphorus)
+                  ? errors.phosphorus[0]
+                  : errors.phosphorus}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Potassium Level (ppm)</Label>
             <Input
               type="number"
               name="potassium"
-              value={formData.potassium as number || 0}
+              value={(formData.potassium as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.potassium && <p className="text-xs text-red-500">{Array.isArray(errors.potassium) ? errors.potassium[0] : errors.potassium}</p>}
+            {errors.potassium && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.potassium)
+                  ? errors.potassium[0]
+                  : errors.potassium}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Organic Matter (%)</Label>
             <Input
               type="number"
               name="organicMatter"
-              value={formData.organicMatter as number || 0}
+              value={(formData.organicMatter as number) || 0}
               onChange={handleChange}
               placeholder="0"
             />
-            {errors.organicMatter && <p className="text-xs text-red-500">{Array.isArray(errors.organicMatter) ? errors.organicMatter[0] : errors.organicMatter}</p>}
+            {errors.organicMatter && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.organicMatter)
+                  ? errors.organicMatter[0]
+                  : errors.organicMatter}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Time of Day</Label>
@@ -195,13 +252,21 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
                 ))}
               </SelectContent>
             </Select>
-            {errors.timeOfDay && <p className="text-xs text-red-500">{Array.isArray(errors.timeOfDay) ? errors.timeOfDay[0] : errors.timeOfDay}</p>}
+            {errors.timeOfDay && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.timeOfDay)
+                  ? errors.timeOfDay[0]
+                  : errors.timeOfDay}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-sm">Location Type</Label>
             <Select
               value={formData.locationType || ""}
-              onValueChange={(value: LocationType) => handleLocationTypeChange(value)}
+              onValueChange={(value: LocationType) =>
+                handleLocationTypeChange(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select Location Type" />
@@ -214,7 +279,13 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
                 ))}
               </SelectContent>
             </Select>
-            {errors.locationType && <p className="text-xs text-red-500">{Array.isArray(errors.locationType) ? errors.locationType[0] : errors.locationType}</p>}
+            {errors.locationType && (
+              <p className="text-xs text-red-500">
+                {Array.isArray(errors.locationType)
+                  ? errors.locationType[0]
+                  : errors.locationType}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -234,7 +305,7 @@ export default function UpdateSoilDataForm({ onClose, data }: UpdateSoilDataForm
         </Button>
         <Button type="submit" size="sm" disabled={mutation.isPending}>
           {mutation.isPending && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
           )}
           Save Changes
         </Button>
