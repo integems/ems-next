@@ -6,7 +6,7 @@ import {
   BiodiversityDataFilterDto,
 } from "@/dtos/biodiversity.dto";
 import { PaginationResponse, CurrentUser } from "@/types/common.types";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 
 const generateId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 22);
@@ -51,18 +51,17 @@ export class BiodiversityService {
    */
   async findAllBiodiversityData(filter: BiodiversityDataFilterDto) {
     const {
-      page = 1,
-      limit = 10000000,
+      page,
+      limit,
       search,
-      locationId,
+      locationIds,
       startDate,
       endDate,
       timeOfDay,
       locationType,
     } = filter;
-    const offset = (page - 1) * limit;
 
-    console.log({ page, offset });
+    const offset = page && limit ? (page - 1) * limit : undefined;
 
     const conditions = [];
 
@@ -81,8 +80,8 @@ export class BiodiversityService {
       );
     }
 
-    if (locationId) {
-      conditions.push(eq(schema.biodiversityData.locationId, locationId));
+    if (locationIds && locationIds.length > 0) {
+      conditions.push(inArray(schema.biodiversityData.locationId, locationIds));
     }
 
     if (startDate) {
@@ -112,11 +111,10 @@ export class BiodiversityService {
         where: whereClause,
         limit,
         offset,
-        orderBy: [desc(schema.biodiversityData.createdAt)],
+        orderBy: [desc(schema.biodiversityData.measurementTime)],
         with: {
           location: {
             columns: {
-              geom: false,
               pointGeom: false,
             },
           },
@@ -129,7 +127,21 @@ export class BiodiversityService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(biodiversityData, totalItems, page, limit);
+    if (page && limit) {
+      return this.paginateResponse(biodiversityData, totalItems, page, limit);
+    } else {
+      return {
+        data: biodiversityData,
+        metadata: {
+          currentPage: 1,
+          itemsPerPage: totalItems,
+          totalItems,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   /**

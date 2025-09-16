@@ -39,7 +39,7 @@ export const soilDataFilterDto = z.object({
   page: z.preprocess((val) => Number(val), z.number().min(1)).optional(),
   limit: z.preprocess((val) => Number(val), z.number().min(1)).optional(),
   search: z.string().optional(),
-  locationId: z.string().optional(),
+  locationIds: z.array(z.string()).optional(),
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   timeOfDay: z.enum(TimeOfDay).optional(),

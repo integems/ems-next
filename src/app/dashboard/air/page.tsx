@@ -16,6 +16,7 @@ const AirPage = () => {
       {activeView === "create" && (
         <CreateAirDataForm onClose={() => setActiveView("management")} />
       )}
+      {activeView === "analysis" && <AirAnalysisPage />}
     </>
   );
 };

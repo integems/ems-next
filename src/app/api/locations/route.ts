@@ -8,15 +8,15 @@ const locationService = new LocationService();
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const auth = await authenticateRequest(authHeader);
+    // const authHeader = request.headers.get("authorization");
+    // const auth = await authenticateRequest(authHeader);
 
-    if (auth.status === "error") {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.statusCode },
-      );
-    }
+    // if (auth.status === "error") {
+    //   return NextResponse.json(
+    //     { error: auth.error },
+    //     { status: auth.statusCode },
+    //   );
+    // }
     const { searchParams } = new URL(request.url);
     const filter = locationFilterDto.parse({
       page: searchParams.get("page") || undefined,

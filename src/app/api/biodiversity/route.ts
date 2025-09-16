@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       page: searchParams.get("page") || undefined,
       limit: searchParams.get("limit") || undefined,
       search: searchParams.get("search") || undefined,
-      locationId: searchParams.get("locationId") || undefined,
+      locationIds: searchParams.get("locationIds")?.split(",") || undefined,
       startDate: searchParams.get("startDate")
         ? new Date(searchParams.get("startDate") as string)
         : undefined,

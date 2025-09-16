@@ -6,7 +6,7 @@ import {
   SoilDataFilterDto,
 } from "@/dtos/soil.dto";
 import { PaginationResponse, CurrentUser } from "@/types/common.types";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 
 const generateId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 22);
@@ -51,16 +51,17 @@ export class SoilService {
    */
   async findAllSoilData(filter: SoilDataFilterDto) {
     const {
-      page = 1,
-      limit = 10000000,
+      page,
+      limit,
       search,
-      locationId,
+      locationIds,
       startDate,
       endDate,
       timeOfDay,
       locationType,
     } = filter;
-    const offset = (page - 1) * limit;
+
+    const offset = page && limit ? (page - 1) * limit : undefined;
 
     const conditions = [];
 
@@ -79,8 +80,8 @@ export class SoilService {
       );
     }
 
-    if (locationId) {
-      conditions.push(eq(schema.soilData.locationId, locationId));
+    if (locationIds && locationIds.length > 0) {
+      conditions.push(inArray(schema.soilData.locationId, locationIds));
     }
 
     if (startDate) {
@@ -110,11 +111,10 @@ export class SoilService {
         where: whereClause,
         limit,
         offset,
-        orderBy: [desc(schema.soilData.createdAt)],
+        orderBy: [desc(schema.soilData.measurementTime)],
         with: {
           location: {
             columns: {
-              geom: false,
               pointGeom: false,
             },
           },
@@ -127,7 +127,21 @@ export class SoilService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(soilData, totalItems, page, limit);
+    if (page && limit) {
+      return this.paginateResponse(soilData, totalItems, page, limit);
+    } else {
+      return {
+        data: soilData,
+        metadata: {
+          currentPage: 1,
+          itemsPerPage: totalItems,
+          totalItems,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   /**

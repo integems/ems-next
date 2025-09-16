@@ -54,8 +54,8 @@ export class LocationService {
    * @returns A paginated list of locations.
    */
   async findAllLocations(filter: LocationFilterDto) {
-    const { page = 1, limit = 10000000, search, category } = filter;
-    const offset = (page - 1) * limit;
+    const { page, limit, search, category } = filter;
+    const offset = page && limit ? (page - 1) * limit : undefined;
 
     let whereClause: any = undefined;
 
@@ -87,9 +87,6 @@ export class LocationService {
         limit,
         offset,
         orderBy: [desc(schema.locations.createdAt)],
-        columns: {
-          geom: false,
-        },
       }),
       db
         .select({ count: sql<number>`count(*)` })
@@ -98,7 +95,21 @@ export class LocationService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(locations, totalItems, page, limit);
+    if (page && limit) {
+      return this.paginateResponse(locations, totalItems, page, limit);
+    } else {
+      return {
+        data: locations,
+        metadata: {
+          currentPage: 1,
+          itemsPerPage: totalItems,
+          totalItems,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   /**
@@ -139,9 +150,6 @@ export class LocationService {
         ...locationDto,
         category: locationDto.category as Category,
         locationType: locationDto.locationType,
-        geom: locationDto.geom
-          ? sql`ST_GeomFromText(${locationDto.geom}, 4326)`
-          : undefined,
         pointGeom: locationDto.pointGeom,
         altitude: locationDto.altitude?.toString(),
         createdAt: new Date(),
@@ -176,9 +184,6 @@ export class LocationService {
       .set({
         ...locationDto,
         locationType: locationDto.locationType,
-        geom: locationDto.geom
-          ? sql`ST_GeomFromText(${locationDto.geom}, 4326)`
-          : undefined,
         pointGeom: locationDto.pointGeom,
         altitude: locationDto.altitude?.toString(),
         updatedAt: new Date(),

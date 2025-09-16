@@ -31,7 +31,7 @@ export class FrontendWaterService {
         page: filter?.page?.toString(),
         limit: filter?.limit?.toString(),
         search: filter?.search,
-        locationId: filter?.locationId,
+        locationIds: filter?.locationIds,
         startDate: filter?.startDate,
         endDate: filter?.endDate,
         timeOfDay: filter?.timeOfDay,

@@ -78,11 +78,6 @@ export enum WaterSource {
 
 export type GeometryPoint = [number, number];
 
-export interface GeometryPolygon {
-  type: "Polygon";
-  coordinates: number[][][]; // Array of rings, each ring is an array of [longitude, latitude]
-}
-
 export interface CurrentUser {
   userId?: string;
   email?: string;
@@ -171,7 +166,6 @@ export interface Location {
   locationIdSerial: number;
   name: string;
   description: string | null;
-  geom: GeometryPolygon | null;
   pointGeom: GeometryPoint | null;
   altitude: number | null;
   category: Category;

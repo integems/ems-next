@@ -49,8 +49,8 @@ export default function NavComponent() {
         {/* Right side */}
         <div className="flex flex-row items-center gap-4">
           {!currentUser.isAuthenticated && (
-            <Button asChild size="sm">
-              <Link href={"/signin"}></Link>
+            <Button asChild size="sm" variant="outline">
+              <Link href={"/signin"}>SIGN IN</Link>
             </Button>
           )}
           <ThemeToggle />

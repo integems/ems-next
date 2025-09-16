@@ -1,0 +1,3 @@
+allow public -remove token for query allow
+Modify analysis
+Added detailed for (air,water,waste,management,and others)

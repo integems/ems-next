@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,12 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AirData,
-  Location,
-  TimeOfDay,
-  LocationType,
-} from "@/types/common.types";
+import { AirData, Location, LocationType } from "@/types/common.types";
 import { AirDataFilterDto } from "@/dtos/air.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -26,47 +21,113 @@ import {
   MapPin,
   LineChart,
   BarChart,
-  ScatterChart as ScatterChartIcon,
   TrendingUp,
   Activity,
-  Filter,
   RefreshCcw,
   Search,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import MapComponent from "@/components/MapComponent";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   ResponsiveContainer,
   LineChart as RechartsLineChart,
   BarChart as RechartsBarChart,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   Line,
   Bar,
-  ScatterChart,
-  Scatter,
-  ZAxis,
+  ReferenceLine,
 } from "recharts";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Input } from "@/components/ui/input";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Label } from "@/components/ui/label";
 
+// Services
 const airService = new FrontendAirService();
 const locationService = new FrontendLocationService();
 
-// Helper functions for statistics
+// WHO/EPA/Local guideline thresholds
+const PARAMETER_GUIDELINES: Record<
+  string,
+  { 
+    residential?: number; 
+    industrial?: number;
+    unit?: string;
+    name?: string;
+  }
+> = {
+  pm25: { 
+    residential: 25, 
+    industrial: 75, 
+    unit: "µg/m³",
+    name: "PM2.5"
+  },
+  pm10: { 
+    residential: 50, 
+    industrial: 150, 
+    unit: "µg/m³",
+    name: "PM10"
+  },
+  no2: { 
+    residential: 40, 
+    industrial: 200, 
+    unit: "µg/m³",
+    name: "NO₂"
+  },
+  o3: { 
+    residential: 100, 
+    industrial: 180, 
+    unit: "µg/m³",
+    name: "O₃"
+  },
+  co: { 
+    residential: 10, 
+    industrial: 30, 
+    unit: "mg/m³",
+    name: "CO"
+  },
+  so2: { 
+    residential: 20, 
+    industrial: 500, 
+    unit: "µg/m³",
+    name: "SO₂"
+  },
+  noise: {
+    residential: 55,
+    industrial: 70,
+    unit: "dB(A)",
+    name: "Noise Level"
+  },
+  temperature: {
+    unit: "°C",
+    name: "Temperature"
+  },
+  humidity: {
+    unit: "%",
+    name: "Relative Humidity"
+  },
+};
+
+// Color palette for locations
+const CHART_COLORS = [
+  "#2563eb", "#dc2626", "#059669", "#d97706", "#7c3aed", 
+  "#db2777", "#0891b2", "#65a30d", "#dc2626", "#9333ea",
+  "#0369a1", "#b91c1c", "#047857", "#92400e", "#6b21a8"
+];
+
+// Helper functions
 const calculateMean = (data: number[]) =>
   data.reduce((a, b) => a + b, 0) / data.length;
+
 const calculateMedian = (data: number[]) => {
   const sorted = [...data].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
@@ -74,6 +135,7 @@ const calculateMedian = (data: number[]) => {
     ? sorted[mid]
     : (sorted[mid - 1] + sorted[mid]) / 2;
 };
+
 const calculateStdDev = (data: number[]) => {
   const mean = calculateMean(data);
   const variance =
@@ -81,38 +143,67 @@ const calculateStdDev = (data: number[]) => {
   return Math.sqrt(variance);
 };
 
+
+
 export default function AirAnalysisPage() {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
-  const [locationIdFilter, setLocationIdFilter] = useState<string | undefined>(
-    undefined,
-  );
+  const [locationIdsFilter, setLocationIdsFilter] = useState<string[]>([]);
   const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(
-    undefined,
+    undefined
   );
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
-    undefined,
+    new Date()
   );
-  const [timeOfDayFilter, setTimeOfDayFilter] = useState<
-    "day" | "evening" | "night" | "All" | undefined
-  >(undefined);
   const [locationTypeFilter, setLocationTypeFilter] = useState<
     "industrial" | "residential" | "commercial" | "rural" | "All" | undefined
   >(undefined);
   const [selectedParameter, setSelectedParameter] =
     useState<keyof AirData>("pm25");
-  const [selectedParameter2, setSelectedParameter2] =
-    useState<keyof AirData>("temperature");
+  const [chartType, setChartType] = useState<"monthly" | "daily" | "quarterly">("monthly");
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      // Bar chart tooltip
+      if (payload[0].payload.locationName) {
+          const unit = PARAMETER_GUIDELINES[selectedParameter as string]?.unit || '';
+          return (
+            <div className="bg-white dark:bg-gray-800 p-3 border rounded-lg shadow-lg">
+              <p className="font-medium">{`Location: ${label}`}</p>
+              {payload.map((entry: any, index: number) => (
+                <p key={index} style={{ color: entry.fill }}>
+                  {`${entry.name}: ${Number(entry.value).toFixed(2)} ${unit}`}
+                </p>
+              ))}
+            </div>
+          );
+      }
+  
+      // Line chart tooltip
+      return (
+        <div className="bg-white dark:bg-gray-800 p-3 border rounded-lg shadow-lg">
+          <p className="font-medium">{`Period: ${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.dataKey}: ${Number(entry.value).toFixed(2)} ${PARAMETER_GUIDELINES[entry.payload?.parameter]?.unit || ''}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Fetch locations
   const { data: locationsData } = useQuery({
     queryKey: ["locations", currentUser?.token],
     queryFn: async () => {
       if (!currentUser?.token) throw new Error("User not authenticated");
       const response = await locationService.findAllLocations(
         currentUser.token,
-        { page: 1, limit: 1000000000 },
+        { page: 1, limit: 1000000000 }
       );
       return response.data;
     },
@@ -121,48 +212,43 @@ export default function AirAnalysisPage() {
 
   const locations: Location[] = locationsData || [];
 
+  // Fetch air data with filters
   const {
     data: airData,
     isLoading,
     isError,
-    error,
     refetch,
   } = useQuery({
     queryKey: [
       "air-data-analysis",
       activeSearchQuery,
-      locationIdFilter,
+      locationIdsFilter,
       startDateFilter,
       endDateFilter,
-      timeOfDayFilter,
       locationTypeFilter,
       currentUser?.token,
     ],
     queryFn: async () => {
       if (!currentUser?.token) throw new Error("User not authenticated");
       const filters: AirDataFilterDto = {
-        page: 1,
-        limit: 10000,
         search: activeSearchQuery,
-        locationId: locationIdFilter,
+        locationIds: locationIdsFilter,
         startDate: startDateFilter,
         endDate: endDateFilter,
-        timeOfDay:
-          timeOfDayFilter === "All"
-            ? undefined
-            : (timeOfDayFilter as TimeOfDay),
         locationType:
           locationTypeFilter === "All"
             ? undefined
             : (locationTypeFilter as LocationType),
       };
+
+      console.log({filters})
       const response = await airService.findAllAirData(
         currentUser.token,
-        filters,
+        filters
       );
       return response.data;
     },
-    enabled: !!currentUser?.token,
+    enabled: !!currentUser?.token && locationIdsFilter.length > 0,
   });
 
   const handleApplyFilters = () => {
@@ -170,13 +256,41 @@ export default function AirAnalysisPage() {
     refetch();
   };
 
+  console.log({airData})
+
+  // const airData = useMemo(() => {
+  //   if (!airData) return [];
+  //   if (locationIdsFilter.length > 0) {
+  //     return airData.filter(item => item.locationId && locationIdsFilter.includes(item.locationId));
+  //   }
+  //   return airData;
+  // }, [airData, locationIdsFilter]);
+
+  // Group data by location
+  const groupedData = useMemo(() => {
+    if (!airData) return {};
+    return airData.reduce(
+      (acc, item) => {
+        const locationId = item.locationId || "unknown";
+        if (!acc[locationId]) {
+          acc[locationId] = [];
+        }
+        acc[locationId].push(item);
+        return acc;
+      },
+      {} as { [key: string]: AirData[] }
+    );
+  }, [airData]);
+
+  // Get numeric data for selected parameter
   const numericData = useMemo(() => {
     if (!airData) return [];
     return airData
       .map((item) => Number(item[selectedParameter]))
-      .filter((v) => !isNaN(v));
+      .filter((v) => !isNaN(v) && v !== null && v !== undefined);
   }, [airData, selectedParameter]);
 
+  // Calculate statistics
   const statistics = useMemo(() => {
     if (numericData.length === 0) return null;
     return {
@@ -185,63 +299,162 @@ export default function AirAnalysisPage() {
       stdDev: calculateStdDev(numericData).toFixed(2),
       min: Math.min(...numericData).toFixed(2),
       max: Math.max(...numericData).toFixed(2),
+      count: numericData.length,
     };
   }, [numericData]);
 
-  const histogramData = useMemo(() => {
-    if (numericData.length === 0) return [];
-    const min = Math.min(...numericData);
-    const max = Math.max(...numericData);
-    const range = max - min;
-    const binCount = 10;
-    const binSize = range / binCount;
-
-    const bins = Array.from({ length: binCount }, (_, i) => {
-      const binStart = min + i * binSize;
-      const binEnd = binStart + binSize;
-      return {
-        name: `${binStart.toFixed(1)}-${binEnd.toFixed(1)}`,
-        count: 0,
-      };
-    });
-
-    for (const value of numericData) {
-      let binIndex = Math.floor((value - min) / binSize);
-      if (binIndex === binCount) binIndex--; // Put max value in last bin
-      if (bins[binIndex]) {
-        bins[binIndex].count++;
+  // Generate time periods based on chart type
+  const timePeriods = useMemo(() => {
+    if (!airData || airData.length === 0) return [];
+  
+    const periodMap = new Map<string, Date>();
+  
+    airData.forEach((item) => {
+      const date = new Date(item.measurementTime);
+      let periodKey = "";
+  
+      switch (chartType) {
+        case "monthly":
+          periodKey = format(date, "MMM-yy");
+          break;
+        case "quarterly":
+          const quarter = Math.ceil((date.getMonth() + 1) / 3);
+          periodKey = `Q${quarter}-${format(date, "yy")}`;
+          break;
+        case "daily":
+          periodKey = format(date, "dd-MMM-yy");
+          break;
+        default:
+          periodKey = format(date, "MMM-yy");
       }
-    }
-    return bins;
-  }, [numericData]);
+      
+      if (!periodMap.has(periodKey)) {
+        periodMap.set(periodKey, date);
+      }
+    });
+  
+    const sortedPeriods = Array.from(periodMap.entries())
+      .sort(([, dateA], [, dateB]) => dateA.getTime() - dateB.getTime())
+      .map(([periodKey]) => periodKey);
+  
+    return sortedPeriods;
+  }, [airData, chartType]);
 
-  const scatterData = useMemo(() => {
-    if (!airData) return [];
-    return airData
-      .map((item) => ({
-        x: Number(item[selectedParameter]),
-        y: Number(item[selectedParameter2]),
-      }))
-      .filter((item) => !isNaN(item.x) && !isNaN(item.y));
-  }, [airData, selectedParameter, selectedParameter2]);
+  // Prepare time series data
+  const timeSeriesData = useMemo(() => {
+    if (!airData || !timePeriods.length) return [];
+    
+    return timePeriods.map((period) => {
+      const dataPoint: any = { 
+        period,
+        parameter: selectedParameter 
+      };
+      
+      Object.entries(groupedData).forEach(([locationId, locationData]) => {
+        const location = locations.find(loc => loc.locationId === locationId);
+        const locationName = location?.name || `Location ${locationId}`;
+        
+        const periodData = locationData.filter(item => {
+          const date = new Date(item.measurementTime);
+          let itemPeriod = "";
+          
+          switch (chartType) {
+            case "monthly":
+              itemPeriod = format(date, "MMM-yy");
+              break;
+            case "quarterly":
+              const quarter = Math.ceil((date.getMonth() + 1) / 3);
+              itemPeriod = `Q${quarter}-${format(date, "yy")}`;
+              break;
+            case "daily":
+              itemPeriod = format(date, "dd-MMM-yy");
+              break;
+            default:
+              itemPeriod = format(date, "MMM-yy");
+          }
+          
+          return itemPeriod === period;
+        });
+        
+        if (periodData.length > 0) {
+          const values = periodData
+            .map(item => Number(item[selectedParameter]))
+            .filter(v => !isNaN(v));
+          
+          if (values.length > 0) {
+            dataPoint[locationName] = calculateMean(values);
+          }
+        }
+      });
+      
+      return dataPoint;
+    });
+  }, [airData, timePeriods, groupedData, locations, selectedParameter, chartType]);
 
+  // Prepare data for bar chart
+  const barChartData = useMemo(() => {
+    if (!airData || !timePeriods.length || !locationIdsFilter.length) return [];
+
+    const selectedLocations = locations.filter(loc => locationIdsFilter.includes(loc.locationId));
+
+    return selectedLocations.map(location => {
+      const locationData: any = {
+        locationName: location.name,
+      };
+
+      timePeriods.forEach(period => {
+        const periodData = groupedData[location.locationId]?.filter(item => {
+          const date = new Date(item.measurementTime);
+          let itemPeriod = "";
+
+          switch (chartType) {
+            case "monthly":
+              itemPeriod = format(date, "MMM-yy");
+              break;
+            case "quarterly":
+              const quarter = Math.ceil((date.getMonth() + 1) / 3);
+              itemPeriod = `Q${quarter}-${format(date, "yy")}`;
+              break;
+            case "daily":
+              itemPeriod = format(date, "dd-MMM-yy");
+              break;
+            default:
+              itemPeriod = format(date, "MMM-yy");
+          }
+          return itemPeriod === period;
+        });
+
+        if (periodData && periodData.length > 0) {
+          const values = periodData
+            .map(item => Number(item[selectedParameter]))
+            .filter(v => !isNaN(v));
+          if (values.length > 0) {
+            locationData[period] = calculateMean(values);
+          }
+        }
+      });
+
+      return locationData;
+    });
+  }, [airData, timePeriods, groupedData, locations, selectedParameter, chartType, locationIdsFilter]);
+
+  // Parameter options
   const parameterOptions: { value: keyof AirData; label: string }[] = [
     { value: "pm25", label: "PM2.5 (µg/m³)" },
     { value: "pm10", label: "PM10 (µg/m³)" },
     { value: "no2", label: "NO₂ (µg/m³)" },
     { value: "o3", label: "O₃ (µg/m³)" },
-    { value: "co", label: "CO (µg/m³)" },
+    { value: "co", label: "CO (mg/m³)" },
     { value: "so2", label: "SO₂ (µg/m³)" },
     { value: "temperature", label: "Temperature (°C)" },
     { value: "humidity", label: "Humidity (%)" },
   ];
 
-  const selectedLocation = locations.find(
-    (loc) => loc.locationId === locationIdFilter,
-  );
+  // Get current parameter guidelines
+  const currentGuidelines = PARAMETER_GUIDELINES[selectedParameter as string];
 
   return (
-    <div className="w-full max-w-[60rem]">
+    <div className="w-full max-w-[70rem] mx-auto">
       <div className="py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -250,449 +463,395 @@ export default function AirAnalysisPage() {
             Air Quality Analysis
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-lg">
-            Comprehensive environmental data insights and trends
+            Comprehensive environmental data insights and trend analysis on Air Quality
           </p>
         </div>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end max-w-[60rem]">
-          <DateTimePicker
-            value={startDateFilter}
-            onChange={setStartDateFilter}
-            label="Start Date"
-          />
-          <DateTimePicker
-            value={endDateFilter}
-            onChange={setEndDateFilter}
-            label="End Date"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <DatePicker value={startDateFilter} onChange={setStartDateFilter} label="Start Date" />
+          <DatePicker value={endDateFilter} onChange={setEndDateFilter} label="End Date" />
+
           <div className="flex-1">
-            <label
-              htmlFor="timeOfDay"
-              className="block text-sm font-medium mb-2 text-foreground"
-            >
-              Filter by Time of Day
-            </label>
+            <label className="block text-sm font-medium mb-2">Location Type</label>
             <Select
-              value={timeOfDayFilter}
-              onValueChange={(value) =>
-                setTimeOfDayFilter(
-                  value === "All"
-                    ? undefined
-                    : (value as "day" | "evening" | "night"),
-                )
-              }
-            >
-              <SelectTrigger
-                id="timeOfDay"
-                className="bg-background border-border"
-              >
-                <SelectValue placeholder="Select Time of Day" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={"all"}>All</SelectItem>
-                {Object.values(TimeOfDay).map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex-1">
-            <label
-              htmlFor="locationType"
-              className="block text-sm font-medium mb-2 text-foreground"
-            >
-              Filter by Location Type
-            </label>
-            <Select
-              value={locationTypeFilter}
+              value={locationTypeFilter || "All"}
               onValueChange={(value) =>
                 setLocationTypeFilter(
                   value === "All"
                     ? undefined
-                    : (value as
-                        | "industrial"
-                        | "residential"
-                        | "commercial"
-                        | "rural"),
+                    : (value as "industrial" | "residential" | "commercial" | "rural")
                 )
               }
             >
-              <SelectTrigger
-                id="locationType"
-                className="bg-background border-border"
-              >
+              <SelectTrigger className="bg-background border-border">
                 <SelectValue placeholder="Select Location Type" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="All">All Types</SelectItem>
                 {Object.values(LocationType).map((type) => (
                   <SelectItem key={type} value={type}>
-                    {type}
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-2">Time Period</label>
+            <Select
+              value={chartType}
+              onValueChange={(value: "monthly" | "daily" | "quarterly") => setChartType(value)}
+            >
+              <SelectTrigger className="bg-background border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="quarterly">Quarterly</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-          <div className="flex-1">
-            <label
-              htmlFor="search"
-              className="block text-sm font-medium mb-2 text-foreground"
-            >
-              Search
-            </label>
+
+        {/* Search and Apply */}
+        <div className="flex gap-4">
+          <div className="flex-1 max-w-sm">
+            <label className="block text-sm font-medium mb-2">Search</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" />
               <Input
-                id="search"
                 type="text"
                 placeholder="Search..."
                 value={searchQuery || ""}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
+                className="pl-9 pr-3"
               />
             </div>
           </div>
-          <div className="flex-1">
-            <label
-              htmlFor="location"
-              className="block text-sm font-medium mb-2 text-foreground"
-            >
-              Filter by Location
-            </label>
-            <Select
-              value={locationIdFilter}
-              onValueChange={(value) =>
-                setLocationIdFilter(value === "all" ? "" : value)
-              }
-            >
-              <SelectTrigger
-                id="location"
-                className="bg-background border-border"
-              >
-                <SelectValue placeholder="Select location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {locations.map((loc: any) => (
-                  <SelectItem key={loc.locationId} value={loc.locationId}>
-                    <div className="flex flex-row gap-1 items-center justify-start">
-                      <MapPin size={15} />
-                      <div>{loc.name}</div>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            onClick={handleApplyFilters}
-            disabled={isLoading}
-            className="self-end"
-          >
+          
+          <Button onClick={handleApplyFilters} disabled={isLoading} className="self-end">
             {isLoading ? (
               <LoaderIcon className="h-4 w-4 animate-spin mr-2" />
             ) : (
               <RefreshCcw className="h-4 w-4 mr-2" />
             )}
-            Apply Filters
+            Search
           </Button>
         </div>
 
-        <Collapsible
-          open={isMapOpen}
-          onOpenChange={setIsMapOpen}
-          className="mb-6"
-        >
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2 w-full justify-between"
+        {/* Location Filter */}
+        <div className="space-y-4">
+          <div className="max-w-sm">
+            <label className="block text-sm font-medium mb-2">Filter by Location</label>
+            <Select
+              onValueChange={(value) => {
+                if (value && !locationIdsFilter.includes(value)) {
+                  setLocationIdsFilter([...locationIdsFilter, value]);
+                }
+              }}
             >
+              <SelectTrigger className="bg-background border-border">
+                <SelectValue placeholder="Add location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations
+                  .filter(loc => !locationIdsFilter.includes(loc.locationId))
+                  .map((loc) => (
+                    <SelectItem key={loc.locationId} value={loc.locationId}>
+                      <div className="flex items-center gap-2">
+                        <MapPin size={15} />
+                        <span>{loc.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({loc.locationType})
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Selected locations */}
+          {locationIdsFilter.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {locationIdsFilter.map((locationId, index) => {
+                const location = locations.find((loc) => loc.locationId === locationId);
+                return (
+                  <div
+                    key={locationId}
+                    className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
+                    style={{ 
+                      backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`,
+                      borderColor: CHART_COLORS[index % CHART_COLORS.length],
+                      borderWidth: '1px'
+                    }}
+                  >
+                    <span>{location ? location.name : "Unknown"}</span>
+                    <button
+                      onClick={() =>
+                        setLocationIdsFilter(locationIdsFilter.filter((id) => id !== locationId))
+                      }
+                      className="hover:text-red-600 ml-1"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLocationIdsFilter([])}
+                className="h-6"
+              >
+                Clear All
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Map Toggle */}
+        <Collapsible open={isMapOpen} onOpenChange={setIsMapOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="flex items-center justify-between w-full">
               <span>{isMapOpen ? "Hide Map" : "Show Map"}</span>
-              {isMapOpen ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
+              {isMapOpen ? <ChevronUp /> : <ChevronDown />}
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-4">
             <MapComponent
               locations={locations}
-              activeLocationId={locationIdFilter}
+              activeLocationId={locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined}
             />
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Content */}
+        {/* Loading / Error / Charts */}
         {isLoading ? (
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+          <Card>
             <CardContent className="flex items-center justify-center h-64">
-              <div className="text-center space-y-4">
-                <LoaderIcon className="h-12 w-12 animate-spin text-primary mx-auto" />
-                <p className="text-slate-600 dark:text-slate-400">
-                  Loading air quality data...
-                </p>
-              </div>
+              <LoaderIcon className="h-12 w-12 animate-spin text-primary" />
             </CardContent>
           </Card>
         ) : isError ? (
-          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-            <p>Couldn't connect. Try again</p>
-            <Button
-              onClick={() => refetch()}
-              variant="outline"
-              className="mt-2 border-border text-foreground hover:bg-accent"
-            >
+          <div className="flex flex-col items-center justify-center h-32 space-y-4">
+            <p className="text-red-600">Failed to load data. Please try again.</p>
+            <Button onClick={() => refetch()} variant="outline">
+              <RefreshCcw className="h-4 w-4 mr-2" />
               Retry
             </Button>
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Statistical Summary - Enhanced */}
+            {/* Parameter Selection */}
+            <div className="w-full ">
+               <label className="block text-sm font-medium mb-2">Paramter Selection</label>
+                <Select
+                  value={selectedParameter}
+                  onValueChange={(value) => setSelectedParameter(value as keyof AirData)}
+                >
+                  <SelectTrigger className="bg-background border-border max-w-sm">
+                    <SelectValue placeholder="Select Parameter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parameterOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+            </div>
+
+            {/* Statistics Summary */}
             <Card>
-              <CardHeader className="pb-6">
-                <CardTitle className="flex items-center gap-3 text-xl text-slate-800 dark:text-slate-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
                   <TrendingUp className="h-6 w-6 text-green-600" />
-                  Statistical Summary -{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }
+                  Statistical Summary - {parameterOptions.find((p) => p.value === selectedParameter)?.label}
+                  {statistics && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({statistics.count} data points)
+                    </span>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {statistics ? (
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                    <div className="text-center p-4 bg-green-600/10  rounded-xl shadow-sm">
-                      <p className="text-2xl font-bold  text-green-600">
-                        {statistics.mean}
-                      </p>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
-                        Mean
-                      </p>
+                    <div className="text-center p-4 bg-green-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-green-600">{statistics.mean}</p>
+                      <p className="text-sm">Mean</p>
                     </div>
-                    <div className="text-center p-4 bg-green-600/10  rounded-xl shadow-sm">
-                      <p className="text-2xl font-bold text-green-600">
-                        {statistics.median}
-                      </p>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
-                        Median
-                      </p>
+                    <div className="text-center p-4 bg-blue-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-blue-600">{statistics.median}</p>
+                      <p className="text-sm">Median</p>
                     </div>
-                    <div className="text-center p-4 bg-purple-600/10  rounded-xl shadow-sm">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {statistics.stdDev}
-                      </p>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
-                        Std Dev
-                      </p>
+                    <div className="text-center p-4 bg-purple-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-purple-600">{statistics.stdDev}</p>
+                      <p className="text-sm">Std Dev</p>
                     </div>
-                    <div className="text-center p-4 bg-orange-600/10  rounded-xl shadow-sm">
-                      <p className="text-2xl font-bold text-orange-600">
-                        {statistics.min}
-                      </p>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
-                        Minimum
-                      </p>
+                    <div className="text-center p-4 bg-orange-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-orange-600">{statistics.min}</p>
+                      <p className="text-sm">Minimum</p>
                     </div>
-                    <div className="text-center p-4 bg-red-600/10  rounded-xl shadow-sm">
-                      <p className="text-2xl font-bold text-red-600">
-                        {statistics.max}
-                      </p>
-                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">
-                        Maximum
-                      </p>
+                    <div className="text-center p-4 bg-red-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-red-600">{statistics.max}</p>
+                      <p className="text-sm">Maximum</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <p className="text-slate-500 dark:text-slate-400">
-                      No data available for statistical analysis
-                    </p>
+                  <p className="text-center text-slate-500">No data available for analysis</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Trend Analysis Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChart className="h-6 w-6 text-blue-600" />
+                  Trend Analysis - {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Averages
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {timeSeriesData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={400}>
+                    <RechartsLineChart data={timeSeriesData}>
+                      <XAxis 
+                        dataKey="period" 
+                        tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis 
+                        label={{ 
+                          value: currentGuidelines?.unit || '', 
+                          angle: -90, 
+                          position: 'insideLeft' 
+                        }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      
+                      {Object.entries(groupedData).map(([locationId, data], index) => {
+                        const location = locations.find(loc => loc.locationId === locationId);
+                        const locationName = location?.name || `Location ${index + 1}`;
+                        const color = CHART_COLORS[index % CHART_COLORS.length];
+                        
+                        return (
+                          <Line
+                            key={locationId}
+                            type="monotone"
+                            dataKey={locationName}
+                            
+                            stroke={color}
+                            strokeWidth={2}
+                            dot={{ r: 4 }}
+                            connectNulls={false}
+                          />
+                        );
+                      })}
+                      
+                      {/* Reference Lines for Guidelines */}
+                      {currentGuidelines?.residential && (
+                        <ReferenceLine
+                          y={currentGuidelines.residential}
+                          label={{ value: "Residential Limit", position:"insideTopRight" }}
+                          stroke="#22c55e"
+                          strokeDasharray="8 8"
+                          strokeWidth={2}
+                        />
+                      )}
+                      {currentGuidelines?.industrial && (
+                        <ReferenceLine
+                          y={currentGuidelines.industrial}
+                          label={{ value: "Industrial Limit", position:"insideTopRight" }}
+                          stroke="#ef4444"
+                          strokeDasharray="8 8"
+                          strokeWidth={2}
+                        />
+                      )}
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-muted-foreground">
+                    No data available for the selected filters
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Parameter Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-slate-800 dark:text-slate-200">
-                    Primary Parameter
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    value={selectedParameter}
-                    onValueChange={(value) =>
-                      setSelectedParameter(value as keyof AirData)
-                    }
-                  >
-                    <SelectTrigger className="bg-background border-border">
-                      <SelectValue placeholder="Select Parameter 1" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {parameterOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </div>
-
-              <div>
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-slate-800 dark:text-slate-200">
-                    Secondary Parameter
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Select
-                    value={selectedParameter2}
-                    onValueChange={(value) =>
-                      setSelectedParameter2(value as keyof AirData)
-                    }
-                  >
-                    <SelectTrigger className="bg-background border-border">
-                      <SelectValue placeholder="Select Parameter 2" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {parameterOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardContent>
-              </div>
-            </div>
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LineChart className="h-6 w-6  text-green-600" />
-                  Trend Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                  <RechartsLineChart
-                    data={airData?.map((i) => ({
-                      ...i,
-                      measurementTime: format(
-                        new Date(i.measurementTime),
-                        "yyyy-MM-dd HH:mm",
-                      ),
-                    }))}
-                  >
-                    {/* <CartesianGrid strokeDasharray="3 3" /> */}
-                    <XAxis dataKey="measurementTime" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey={selectedParameter}
-                      name={selectedParameter.toString()}
-                      stroke="#82ca9d"
-                      activeDot={{ r: 8 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey={selectedParameter2}
-                      name={selectedParameter2.toString()}
-                      stroke="#8884d8"
-                    />
-                  </RechartsLineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            <Card className="lg:col-span-2">
+            {/* Comparison Bar Chart */}
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart className="h-6 w-6 text-green-600" />
-                  Distribution of {selectedParameter.toUpperCase()}
+                  Location Comparison - {chartType.charAt(0).toUpperCase() + chartType.slice(1)} Averages
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsBarChart data={histogramData}>
-                    {/* <CartesianGrid strokeDasharray="3 3" /> */}
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="count" fill="#82ca9d" radius={2} />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                {barChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={400}>
+                    <RechartsBarChart data={barChartData} margin={{ top: 5, right: 30, left: 20, bottom: 50 }}>
+                      <XAxis
+                        dataKey="locationName"
+                        tick={{ fontSize: 12 }}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        interval={0}
+                      />
+                      <YAxis
+                        label={{
+                          value: currentGuidelines?.unit || '',
+                          angle: -90,
+                          position: 'insideLeft'
+                        }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
 
-            {/* Correlation Analysis */}
-            <Card className="xl:col-span-2">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-slate-800 dark:text-slate-200">
-                  <ScatterChartIcon className="h-6 w-6 text-green-600" />
-                  Correlation Analysis:{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }{" "}
-                  vs{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter2)
-                      ?.label
-                  }
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={450}>
-                  <ScatterChart>
-                    {/* <CartesianGrid strokeDasharray="3 3" opacity={0.3} /> */}
-                    <XAxis
-                      type="number"
-                      dataKey="x"
-                      name={
-                        parameterOptions.find(
-                          (p) => p.value === selectedParameter,
-                        )?.label
-                      }
-                    />
-                    <YAxis
-                      type="number"
-                      dataKey="y"
-                      name={
-                        parameterOptions.find(
-                          (p) => p.value === selectedParameter2,
-                        )?.label
-                      }
-                    />
-                    <ZAxis range={[50, 200]} />
-                    <Tooltip
-                      cursor={{ strokeDasharray: "3 3" }}
-                      contentStyle={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        border: "none",
-                        borderRadius: "8px",
-                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                      }}
-                    />
-                    <Legend />
-                    <Scatter
-                      name="Data Points"
-                      data={scatterData}
-                      fill="#82ca9d"
-                      opacity={0.7}
-                    />
-                  </ScatterChart>
-                </ResponsiveContainer>
+                      {timePeriods.map((period, index) => (
+                        <Bar
+                          key={period}
+                          dataKey={period}
+                          name={period}
+                          fill={CHART_COLORS[index % CHART_COLORS.length]}
+                          opacity={0.8}
+                        />
+                      ))}
+
+                      {/* Reference Lines */}
+                      {currentGuidelines?.residential && (
+                        <ReferenceLine
+                          y={currentGuidelines.residential}
+                          label={{ value: "Residential Limit", position:"insideTopRight" }}
+                          stroke="#22c55e"
+                          strokeDasharray="8 8"
+                          strokeWidth={2}
+                        />
+                      )}
+                      {currentGuidelines?.industrial && (
+                        <ReferenceLine
+                          y={currentGuidelines.industrial}
+                          label={{ value: "Industrial Limit", position:"insideTopRight" }}
+                          stroke="#ef4444"
+                          strokeDasharray="8 8"
+                          strokeWidth={2}
+                        />
+                      )}
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-muted-foreground">
+                    No data available for the selected filters
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

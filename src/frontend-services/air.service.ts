@@ -31,7 +31,7 @@ export class FrontendAirService {
         page: filter?.page?.toString(),
         limit: filter?.limit?.toString(),
         search: filter?.search,
-        locationId: filter?.locationId,
+        locationIds: filter?.locationIds?.join(","),
         startDate: filter?.startDate,
         endDate: filter?.endDate,
         timeOfDay: filter?.timeOfDay,

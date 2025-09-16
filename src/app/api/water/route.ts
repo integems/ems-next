@@ -8,24 +8,24 @@ const waterService = new WaterService();
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization");
-    const auth = await authenticateRequest(authHeader);
+    // const authHeader = request.headers.get("authorization");
+    // const auth = await authenticateRequest(authHeader);
 
-    if (auth.status === "error") {
-      return NextResponse.json(
-        { error: auth.error },
-        { status: auth.statusCode },
-      );
-    }
-    if (!auth.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    // if (auth.status === "error") {
+    //   return NextResponse.json(
+    //     { error: auth.error },
+    //     { status: auth.statusCode },
+    //   );
+    // }
+    // if (!auth.user) {
+    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // }
     const { searchParams } = new URL(request.url);
     const filter = waterDataFilterDto.parse({
       page: searchParams.get("page") || undefined,
       limit: searchParams.get("limit") || undefined,
       search: searchParams.get("search") || undefined,
-      locationId: searchParams.get("locationId") || undefined,
+      locationIds: searchParams.get("locationIds")?.split(",") || undefined,
       startDate: searchParams.get("startDate")
         ? new Date(searchParams.get("startDate") as string)
         : undefined,

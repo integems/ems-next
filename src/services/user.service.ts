@@ -58,7 +58,7 @@ export class UserService {
    */
   async findAllUsers(filter: UserFilterDto) {
     const { page, limit, search, role, status } = filter;
-    const offset = (page - 1) * limit;
+    const offset = page && limit ? (page - 1) * limit : undefined;
 
     let whereClause: any = undefined;
 
@@ -125,7 +125,21 @@ export class UserService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(users, totalItems, page, limit);
+    if (page && limit) {
+      return this.paginateResponse(users, totalItems, page, limit);
+    } else {
+      return {
+        data: users,
+        metadata: {
+          currentPage: 1,
+          itemsPerPage: totalItems,
+          totalItems,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   /**

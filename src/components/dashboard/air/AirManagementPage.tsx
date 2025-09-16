@@ -169,7 +169,7 @@ export default function AirManagementPage({
         page: pageParam,
         limit,
         search: activeSearchQuery,
-        locationId: activeLocationIdFilter,
+        locationIds: [activeLocationIdFilter || ""],
         startDate: activeStartDateFilter
           ? new Date(activeStartDateFilter)
           : undefined,

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgis/postgis:17-3.5 # PostgreSQL 17 with PostGIS 3.5
+    image: postgres:17 # PostgreSQL 17
     container_name: ems_db
     restart: unless-stopped
     environment:

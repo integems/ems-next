@@ -6,7 +6,7 @@ import {
   WaterDataFilterDto,
 } from "@/dtos/water.dto";
 import { PaginationResponse, CurrentUser } from "@/types/common.types";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 
 const generateId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 22);
@@ -50,17 +50,18 @@ export class WaterService {
    */
   async findAllWaterData(filter: WaterDataFilterDto) {
     const {
-      page = 1,
-      limit = 10000000,
+      page,
+      limit,
       search,
-      locationId,
+      locationIds,
       waterSource,
       startDate,
       endDate,
       timeOfDay,
       locationType,
     } = filter;
-    const offset = (page - 1) * limit;
+
+    const offset = page && limit ? (page - 1) * limit : undefined;
 
     const conditions = [];
 
@@ -79,8 +80,8 @@ export class WaterService {
       );
     }
 
-    if (locationId) {
-      conditions.push(eq(schema.waterData.locationId, locationId));
+    if (locationIds && locationIds.length > 0) {
+      conditions.push(inArray(schema.waterData.locationId, locationIds));
     }
 
     if (startDate) {
@@ -114,11 +115,10 @@ export class WaterService {
         where: whereClause,
         limit,
         offset,
-        orderBy: [desc(schema.waterData.createdAt)],
+        orderBy: [desc(schema.waterData.measurementTime)],
         with: {
           location: {
             columns: {
-              geom: false,
               pointGeom: false,
             },
           },
@@ -131,7 +131,21 @@ export class WaterService {
     ]);
 
     const totalItems = Number(count[0].count);
-    return this.paginateResponse(waterData, totalItems, page, limit);
+    if (page && limit) {
+      return this.paginateResponse(waterData, totalItems, page, limit);
+    } else {
+      return {
+        data: waterData,
+        metadata: {
+          currentPage: 1,
+          itemsPerPage: totalItems,
+          totalItems,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    }
   }
 
   /**

@@ -8,13 +8,12 @@ import {
   boolean,
   jsonb,
   integer,
-  geometry,
   numeric,
   index,
   interval,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+
 
 // Define enums
 export const locationTypeEnum = pgEnum("location_type", [
@@ -62,8 +61,7 @@ export const locations = pgTable(
     locationIdSerial: serial("location_id_serial").unique(),
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description"),
-    geom: geometry("geom", { type: "polygon", srid: 4326, mode: "tuple" }),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     altitude: numeric("altitude", { precision: 10, scale: 2 }),
     category: categoryEnum("category").notNull(),
     locationType: locationTypeEnum("location_type"),
@@ -73,8 +71,6 @@ export const locations = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_locations_geom").using("gist", table.geom),
-    index("idx_locations_point_geom").using("gist", table.pointGeom),
     index("idx_locations_created_at").using(
       "btree",
       table.createdAt.asc().nullsLast(),
@@ -91,7 +87,7 @@ export const noiseData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -110,7 +106,6 @@ export const noiseData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_noise_data_point_geom").using("gist", table.pointGeom),
     index("idx_noise_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),
@@ -131,7 +126,7 @@ export const waterData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -162,7 +157,6 @@ export const waterData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_water_data_point_geom").using("gist", table.pointGeom),
     index("idx_water_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),
@@ -302,7 +296,7 @@ export const airData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -322,7 +316,6 @@ export const airData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_air_data_point_geom").using("gist", table.pointGeom),
     index("idx_air_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),
@@ -343,7 +336,7 @@ export const soilData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -361,7 +354,6 @@ export const soilData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_soil_data_point_geom").using("gist", table.pointGeom),
     index("idx_soil_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),
@@ -384,7 +376,7 @@ export const biodiversityData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -399,7 +391,6 @@ export const biodiversityData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_biodiversity_data_point_geom").using("gist", table.pointGeom),
     index("idx_biodiversity_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),
@@ -420,7 +411,7 @@ export const wasteData = pgTable(
       () => locations.locationId,
       { onDelete: "set null" },
     ),
-    pointGeom: geometry("point_geom", { type: "point", srid: 4326 }),
+    pointGeom: jsonb("point_geom"), // Stores [longitude, latitude]
     measurementTime: timestamp("measurement_time", { mode: "date" }).notNull(),
     timeOfDay: timeOfDayEnum("time_of_day"),
     locationType: locationTypeEnum("location_type"),
@@ -445,7 +436,6 @@ export const wasteData = pgTable(
     updatedBy: varchar("updated_by", { length: 80 }).notNull(),
   },
   (table) => [
-    index("idx_waste_data_point_geom").using("gist", table.pointGeom),
     index("idx_waste_data_location_id").using(
       "btree",
       table.locationId.asc().nullsLast(),

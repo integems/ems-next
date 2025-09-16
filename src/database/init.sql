@@ -1,6 +1,4 @@
 
--- Enable PostGIS extension (run once per database)
-CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Create Role
 CREATE ROLE ems LOGIN PASSWORD 'ems';
@@ -84,8 +82,7 @@ CREATE TABLE IF NOT EXISTS public.locations (
     location_id_serial SERIAL UNIQUE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    geom geometry(POLYGON, 4326),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     altitude NUMERIC(10, 2),
     category public.category NOT NULL,
     location_type public.location_type,
@@ -100,7 +97,7 @@ CREATE TABLE IF NOT EXISTS public.air_data (
     air_data_id VARCHAR(25) PRIMARY KEY,
     air_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -126,7 +123,7 @@ CREATE TABLE IF NOT EXISTS public.water_data (
     water_data_id VARCHAR(25) PRIMARY KEY,
     water_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -160,7 +157,7 @@ CREATE TABLE IF NOT EXISTS public.soil_data (
     soil_data_id VARCHAR(25) PRIMARY KEY,
     soil_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -184,7 +181,7 @@ CREATE TABLE IF NOT EXISTS public.noise_data (
     noise_data_id VARCHAR(25) PRIMARY KEY,
     noise_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -209,7 +206,7 @@ CREATE TABLE IF NOT EXISTS public.biodiversity_data (
     biodiversity_data_id VARCHAR(25) PRIMARY KEY,
     biodiversity_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -230,7 +227,7 @@ CREATE TABLE IF NOT EXISTS public.waste_data (
     waste_data_id VARCHAR(25) PRIMARY KEY,
     waste_data_id_serial SERIAL UNIQUE,
     location_id VARCHAR(25),
-    point_geom geometry(POINT, 4326),
+    point_geom JSONB,
     measurement_time TIMESTAMPTZ NOT NULL,
     time_of_day public.time_of_day,
     location_type public.location_type,
@@ -269,37 +266,36 @@ CREATE INDEX IF NOT EXISTS idx_user_auths_user_id ON public.user_auths USING btr
 CREATE INDEX IF NOT EXISTS idx_user_auths_created_at ON public.user_auths USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for locations table
-CREATE INDEX IF NOT EXISTS idx_locations_geom ON public.locations USING gist (geom);
-CREATE INDEX IF NOT EXISTS idx_locations_point_geom ON public.locations USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_locations_point_geom ON public.locations USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_locations_created_at ON public.locations USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for air_data table
-CREATE INDEX IF NOT EXISTS idx_air_data_point_geom ON public.air_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_air_data_point_geom ON public.air_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_air_data_location_id ON public.air_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_air_data_created_at ON public.air_data USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for water_data table
-CREATE INDEX IF NOT EXISTS idx_water_data_point_geom ON public.water_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_water_data_point_geom ON public.water_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_water_data_location_id ON public.water_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_water_data_created_at ON public.water_data USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for soil_data table
-CREATE INDEX IF NOT EXISTS idx_soil_data_point_geom ON public.soil_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_soil_data_point_geom ON public.soil_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_soil_data_location_id ON public.soil_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_soil_data_created_at ON public.soil_data USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for noise_data table
-CREATE INDEX IF NOT EXISTS idx_noise_data_point_geom ON public.noise_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_noise_data_point_geom ON public.noise_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_noise_data_location_id ON public.noise_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_noise_data_created_at ON public.noise_data USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for biodiversity_data table
-CREATE INDEX IF NOT EXISTS idx_biodiversity_data_point_geom ON public.biodiversity_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_biodiversity_data_point_geom ON public.biodiversity_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_biodiversity_data_location_id ON public.biodiversity_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_biodiversity_data_created_at ON public.biodiversity_data USING btree (created_at ASC NULLS LAST);
 
 -- Create indexes for waste_data table
-CREATE INDEX IF NOT EXISTS idx_waste_data_point_geom ON public.waste_data USING gist (point_geom);
+CREATE INDEX IF NOT EXISTS idx_waste_data_point_geom ON public.waste_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_waste_data_location_id ON public.waste_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_waste_data_created_at ON public.waste_data USING btree (created_at ASC NULLS LAST);
 
