@@ -30,11 +30,10 @@ export default function DashboardPage() {
   const [locationId, setLocationId] = useState<string | undefined>(undefined);
 
   const { data: locationsData, isLoading: locationsLoading } = useQuery({
-    queryKey: ["locations", currentUser?.token],
+    queryKey: ["locations"],
     queryFn: async () => {
-      if (!currentUser?.token) throw new Error("User not authenticated");
       const response = await locationService.findAllLocations(
-        currentUser.token,
+        currentUser.token || "",
         {
           page: 1,
           limit: 1000,
@@ -47,7 +46,6 @@ export default function DashboardPage() {
       }
       return response.data;
     },
-    enabled: !!currentUser?.token,
   });
 
   const locations: Location[] = locationsData || [];
@@ -72,7 +70,7 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           {locationsLoading ? (
-            <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
+            <LoaderIcon className="h-8 w-8 animate-spin text-primary p-5" />
           ) : (
             <Select onValueChange={setLocationId} value={locationId}>
               <SelectTrigger className="bg-background border-border text-primary">

@@ -16,14 +16,13 @@ import { Logo } from "./sidebar";
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
   { href: "/ai-chatbox", label: "AI Chatbox" },
 ];
 
 export default function NavComponent() {
   const { currentUser } = useAuth();
   return (
-    <header className="fixed top-0 p-3 w-full">
+    <header className="fixed top-0 p-3 w-full z-50">
       <div className="flex h-16 items-center justify-between mx-auto gap-4 w-full md:px-20">
         <div className="flex items-center gap-2">
           {/* Main nav */}
@@ -42,6 +41,17 @@ export default function NavComponent() {
                     </NavigationMenuLink>
                   </NavigationMenuItem>
                 ))}
+
+                {currentUser.isAuthenticated && (
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      href={"/dashboard"}
+                      className=" py-1.5 font-semibold hover:opacity-50 hover:border-b-2 transition-all"
+                    >
+                      Dashboard
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
               </NavigationMenuList>
             </NavigationMenu>
           </div>

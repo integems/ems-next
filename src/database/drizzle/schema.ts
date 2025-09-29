@@ -14,7 +14,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-
 // Define enums
 export const locationTypeEnum = pgEnum("location_type", [
   "industrial",

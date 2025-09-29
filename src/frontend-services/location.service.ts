@@ -34,7 +34,6 @@ export class FrontendLocationService {
         category: filter?.category,
       };
 
-      console.log("Query Params:", queryParams);
       const response = await axios.get(API_BASE_URL, {
         params: queryParams,
         headers: {

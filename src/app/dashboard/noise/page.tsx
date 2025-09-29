@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import NoiseManagementPage from "@/components/dashboard/noise/NoiseManagementPage";
 import NoiseAnalysisPage from "@/components/dashboard/noise/NoiseAnalysisPage";
 import CreateNoiseDataForm from "@/components/dashboard/noise/CreateNoiseDataForm";
-import { Button } from "@/components/ui/button";
 
 const NoisePage = () => {
   const [activeView, setActiveView] = useState("management");
@@ -16,6 +15,7 @@ const NoisePage = () => {
       {activeView === "create" && (
         <CreateNoiseDataForm onClose={() => setActiveView("management")} />
       )}
+      {activeView === "analysis" && <NoiseAnalysisPage />}
     </>
   );
 };

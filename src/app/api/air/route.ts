@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
-    const  locationIds =  searchParams.get("locationIds")?.split(",") || undefined;
+    const locationIds =
+      searchParams.get("locationIds")?.split(",") || undefined;
     const search = searchParams.get("search");
     const timeOfDay = searchParams.get("timeOfDay");
     const locationType = searchParams.get("locationType");
@@ -35,12 +36,12 @@ export async function GET(request: NextRequest) {
       locationType: locationType || undefined,
     });
 
-    console.log({filter})
+    console.log({ filter });
 
     const airData = await airService.findAllAirData(filter);
     return NextResponse.json(airData);
   } catch (error: any) {
-    console.error(error)
+    console.error(error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         {

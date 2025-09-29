@@ -31,7 +31,7 @@ export class FrontendNoiseService {
         page: filter?.page?.toString(),
         limit: filter?.limit?.toString(),
         search: filter?.search,
-        locationIds: filter?.locationIds,
+        locationIds: filter?.locationIds?.join(","),
         startDate: filter?.startDate,
         endDate: filter?.endDate,
         timeOfDay: filter?.timeOfDay,

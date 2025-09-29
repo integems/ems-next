@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Select,
@@ -14,7 +12,7 @@ import { WasteData } from "@/types/common.types";
 import { WasteDataFilterDto } from "@/dtos/waste.dto";
 import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { useAuth } from "@/hooks/use-auth";
-import { LoaderIcon, Activity } from "lucide-react";
+import { LoaderIcon, Activity, TrendingUp } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart as RechartsLineChart,
@@ -29,6 +27,25 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Button } from "@/components/ui/button";
 
 const wasteService = new FrontendWasteService();
+
+// Helper functions
+const calculateMean = (data: number[]) =>
+  data.reduce((a, b) => a + b, 0) / data.length;
+
+const calculateMedian = (data: number[]) => {
+  const sorted = [...data].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+const calculateStdDev = (data: number[]) => {
+  const mean = calculateMean(data);
+  const variance =
+    data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
+  return Math.sqrt(variance);
+};
 
 interface WasteAnalysisSectionProps {
   locationId: string | undefined;
@@ -58,25 +75,42 @@ export default function WasteAnalysisSection({
       locationId,
       startDateFilter,
       endDateFilter,
-      currentUser?.token,
     ],
     queryFn: async () => {
-      if (!currentUser?.token) throw new Error("User not authenticated");
       const filters: WasteDataFilterDto = {
         page: 1,
         limit: 1000,
-        locationId: locationId,
+        locationIds: locationId ? [locationId] : undefined,
         startDate: startDateFilter,
         endDate: endDateFilter,
       };
       const response = await wasteService.findAllWasteData(
-        currentUser.token,
+        currentUser.token || "",
         filters,
       );
       return response.data;
     },
-    enabled: !!currentUser?.token && !!locationId,
+    enabled: !!locationId,
   });
+
+  const numericData = useMemo(() => {
+    if (!wasteData) return [];
+    return wasteData
+      .map((item) => Number(item[selectedParameter]))
+      .filter((v) => !isNaN(v) && v !== null && v !== undefined);
+  }, [wasteData, selectedParameter]);
+
+  const statistics = useMemo(() => {
+    if (numericData.length === 0) return null;
+    return {
+      mean: calculateMean(numericData).toFixed(2),
+      median: calculateMedian(numericData).toFixed(2),
+      stdDev: calculateStdDev(numericData).toFixed(2),
+      min: Math.min(...numericData).toFixed(2),
+      max: Math.max(...numericData).toFixed(2),
+      count: numericData.length,
+    };
+  }, [numericData]);
 
   const parameterOptions: { value: keyof WasteData; label: string }[] = [
     { value: "solidWasteKg", label: "Solid Waste (kg)" },
@@ -150,32 +184,91 @@ export default function WasteAnalysisSection({
             No data available for the selected criteria.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <RechartsLineChart
-              data={wasteData.map((i) => ({
-                ...i,
-                measurementTime: format(
-                  new Date(i.measurementTime),
-                  "yyyy-MM-dd HH:mm",
-                ),
-              }))}
-            >
-              <XAxis dataKey="measurementTime" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey={selectedParameter}
-                name={
-                  parameterOptions.find((p) => p.value === selectedParameter)
-                    ?.label
-                }
-                stroke="#82ca9d"
-                activeDot={{ r: 8 }}
-              />
-            </RechartsLineChart>
-          </ResponsiveContainer>
+          <div className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <TrendingUp className="h-6 w-6 text-green-600" />
+                  Statistical Summary -{" "}
+                  {
+                    parameterOptions.find((p) => p.value === selectedParameter)
+                      ?.label
+                  }
+                  {statistics && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({statistics.count} data points)
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {statistics ? (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                    <div className="text-center p-4 bg-green-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-green-600">
+                        {statistics.mean}
+                      </p>
+                      <p className="text-sm">Mean</p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-blue-600">
+                        {statistics.median}
+                      </p>
+                      <p className="text-sm">Median</p>
+                    </div>
+                    <div className="text-center p-4 bg-purple-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-purple-600">
+                        {statistics.stdDev}
+                      </p>
+                      <p className="text-sm">Std Dev</p>
+                    </div>
+                    <div className="text-center p-4 bg-orange-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-orange-600">
+                        {statistics.min}
+                      </p>
+                      <p className="text-sm">Minimum</p>
+                    </div>
+                    <div className="text-center p-4 bg-red-600/10 rounded-xl">
+                      <p className="text-2xl font-bold text-red-600">
+                        {statistics.max}
+                      </p>
+                      <p className="text-sm">Maximum</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-500">
+                    No data available for analysis
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+            <ResponsiveContainer width="100%" height={300}>
+              <RechartsLineChart
+                data={wasteData.map((i) => ({
+                  ...i,
+                  measurementTime: format(
+                    new Date(i.measurementTime),
+                    "yyyy-MM-dd HH:mm",
+                  ),
+                }))}
+              >
+                <XAxis dataKey="measurementTime" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey={selectedParameter}
+                  name={
+                    parameterOptions.find((p) => p.value === selectedParameter)
+                      ?.label
+                  }
+                  stroke="#82ca9d"
+                  activeDot={{ r: 8 }}
+                />
+              </RechartsLineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </CardContent>
     </Card>

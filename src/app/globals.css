@@ -141,3 +141,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+.galaxy-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}

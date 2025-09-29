@@ -17,6 +17,7 @@ import { Mail, Lock, Eye, EyeOff, LoaderIcon } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { OAuthDto } from "@/dtos/auth.dto";
+import { Logo } from "@/components/sidebar";
 
 // Zod schema for form validation
 const signInSchema = z.object({
@@ -81,7 +82,7 @@ export default function SignInPage() {
       } else {
         signIn(data.token);
       }
-      router.push("/");
+      router.push("/dashboard");
     },
     onError: (error: any) => {
       setErrors({ server: "Couldn't signin, Please try again." });
@@ -120,6 +121,10 @@ export default function SignInPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="flex justify-center items-center text-center w-full mb-10">
+            <Logo />
+          </div>
+
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {errors.server && (
               <p className="text-sm text-red-500">{errors.server}</p>

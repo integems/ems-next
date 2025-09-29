@@ -1,9 +1,7 @@
+import AiAnalysisChatRoomPage from "@/components/dashboard/ai/AIChatRoom";
+
 const AIChatAnalysis = () => {
-  return (
-    <div>
-      <h2>AI Chat</h2>
-    </div>
-  );
+  return <AiAnalysisChatRoomPage />;
 };
 
 export default AIChatAnalysis;
