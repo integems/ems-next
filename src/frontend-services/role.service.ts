@@ -18,7 +18,7 @@ export class RoleService {
       });
       return response.data;
     } catch (error) {
-      console.error("Error fetching roles:", error);
+      // console.error("Error fetching roles:", error);
       throw error;
     }
   }

@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     return NextResponse.json(newBiodiversityData, { status: 201 });
   } catch (error: any) {
-    console.log({ error });
+    // console.log({ error });
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

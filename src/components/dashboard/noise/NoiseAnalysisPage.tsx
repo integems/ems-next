@@ -229,7 +229,7 @@ export default function NoiseAnalysisPage() {
     refetch();
   };
 
-  console.log({ noiseData });
+  // console.log({ noiseData });
 
   // const noiseData = useMemo(() => {
   //   if (!noiseData) return [];

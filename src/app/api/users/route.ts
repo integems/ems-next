@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    console.log({ currentUser: auth.user });
+    // console.log({ currentUser: auth.user });
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const role = searchParams.get("role");
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const users = await userService.findAllUsers(filters);
     return NextResponse.json(users, { status: 200 });
   } catch (error: any) {
-    console.error(error);
+    // console.error(error);
     return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }

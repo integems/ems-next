@@ -1,12 +1,7 @@
 "use client";
 import {
-  BoltIcon,
-  BookOpenIcon,
   Grid2x2,
-  Layers2Icon,
-  LogOutIcon,
-  PinIcon,
-  UserPenIcon,
+  LogOutIcon
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,7 +19,14 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 
 export default function UserMenu() {
-  const { currentUser } = useAuth();
+  const { currentUser,signOut } = useAuth();
+  const handleSignOut = ()=>{
+    signOut().then(()=>{
+         window.location.reload()
+    })
+  }
+
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -55,7 +57,7 @@ export default function UserMenu() {
         </DropdownMenuGroup>
         <DropdownMenuGroup></DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
           <span>Logout</span>
         </DropdownMenuItem>

@@ -61,7 +61,7 @@ export const useAuth = () => {
         token,
       });
     } catch (error) {
-      console.error("Failed to decode or store token:", error);
+      // console.error("Failed to decode or store token:", error);
       storage.deleteItemAsync(TOKEN_KEY);
       setCurrentUser({ isAuthenticated: false });
     }
@@ -99,7 +99,7 @@ export const useAuth = () => {
             token,
           });
         } catch (error) {
-          console.error("Failed to load or decode token:", error);
+          // console.error("Failed to load or decode token:", error);
           storage.deleteItemAsync(TOKEN_KEY);
           setCurrentUser({ isAuthenticated: false });
         }

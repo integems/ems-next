@@ -69,7 +69,7 @@ export default function PasswordRecoveryPage() {
       setStepOneCompleted(true);
     },
     onError: (error: any) => {
-      console.error(error);
+      // console.error(error);
       toast.error("Couldn't send otp, please try again.");
     },
   });

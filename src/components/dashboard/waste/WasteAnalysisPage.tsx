@@ -217,7 +217,7 @@ export default function WasteAnalysisPage() {
         timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
       };
 
-      console.log({ filters });
+      // console.log({ filters });
       const response = await wasteService.findAllWasteData(
         currentUser.token,
         filters,

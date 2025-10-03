@@ -226,7 +226,7 @@ export default function SoilAnalysisPage() {
     refetch();
   };
 
-  console.log({ soilData });
+  // console.log({ soilData });
 
   // Group data by location
   const groupedData = useMemo(() => {

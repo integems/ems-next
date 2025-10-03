@@ -13,7 +13,7 @@ export default function Protected({ children }: ProtectedProps) {
   const { currentUser } = useAuth();
   const router = useRouter();
 
-  console.log({ currentUser });
+  // console.log({ currentUser });
 
   useEffect(() => {
     if (currentUser && !currentUser.isAuthenticated) {

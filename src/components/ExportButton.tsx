@@ -31,7 +31,7 @@ export function ExportButton<T, F>({
       });
       const dataToExport: T[] = response.data;
 
-      console.table(dataToExport[0]);
+      // console.table(dataToExport[0]);
 
       if (!dataToExport || dataToExport.length === 0) {
         toast.warning(
@@ -64,7 +64,7 @@ export function ExportButton<T, F>({
       );
       toast.success(`${fileName} data exported successfully!`);
     } catch (error: any) {
-      console.error("Export failed:", error);
+      // console.error("Export failed:", error);
       toast.error(`Couldn't export`);
     }
   };

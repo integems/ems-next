@@ -652,9 +652,9 @@ export class AuthService {
           { senderName: createdBy },
         );
         if (!credentialsResult.success) {
-          console.warn(
-            `Failed to send credentials email: ${credentialsResult.message}`,
-          );
+          // console.warn(
+          //   `Failed to send credentials email: ${credentialsResult.message}`,
+          // );
         }
 
         const payload: CurrentUser = {

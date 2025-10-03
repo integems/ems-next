@@ -160,7 +160,7 @@ export default function CreateWasteDataForm({
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
-      console.log({ "Created Location": data });
+      // console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;

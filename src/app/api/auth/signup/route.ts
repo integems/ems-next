@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
-    console.error(error);
+    // console.error(error);
     if (error.message.includes("already exists")) {
       return NextResponse.json({ message: error.message }, { status: 409 });
     }

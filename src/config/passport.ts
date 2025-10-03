@@ -48,7 +48,7 @@ passport.use(
         };
         done(null, user);
       } catch (error) {
-        console.error("Google Strategy error:", error);
+        // console.error("Google Strategy error:", error);
         done(error, false);
       }
     },

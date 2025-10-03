@@ -250,7 +250,7 @@ export default function WaterAnalysisPage() {
     refetch();
   };
 
-  console.log({ waterData });
+  // console.log({ waterData });
 
   // const waterData = useMemo(() => {
   //   if (!waterData) return [];

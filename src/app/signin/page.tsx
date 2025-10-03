@@ -71,7 +71,7 @@ export default function SignInPage() {
       profileImage: credential?.picture,
       fullName: credential?.name || credential?.email,
     };
-    console.log({ Response: requesPayload });
+    // console.log({ Response: requesPayload });
     oAuthMutation.mutate(requesPayload);
   };
   const oAuthMutation = useMutation({
@@ -257,7 +257,7 @@ export default function SignInPage() {
             )}
             Google
           </Button> */}
-          <GoogleLogin
+          {/* <GoogleLogin
             onSuccess={(credentialResponse) => {
               handleGoogleCallback(credentialResponse.credential as string);
             }}
@@ -265,7 +265,7 @@ export default function SignInPage() {
               console.log("Login Failed");
             }}
             useOneTap
-          />
+          /> */}
         </CardContent>
       </Card>
     </div>

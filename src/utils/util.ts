@@ -95,7 +95,7 @@ export async function authenticateRequest(
       status: "success",
     };
   } catch (error) {
-    console.error("Authentication error:", error);
+    // console.error("Authentication error:", error);
     return {
       error: "Invalid or expired token",
       statusCode: 401,

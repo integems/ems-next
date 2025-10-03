@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,6 +25,8 @@ import {
   PaginationItem,
   PaginationPrevious,
   PaginationNext,
+  PaginationLink,
+  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import {
   Collapsible,
@@ -84,6 +86,7 @@ export default function NoiseManagementPage({
 }) {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
@@ -138,20 +141,15 @@ export default function NoiseManagementPage({
   const locations: Location[] = locationsData || [];
 
   const {
-    data,
+    data: noiseDataResponse,
     isLoading,
     isError,
     error,
-    fetchNextPage,
-    fetchPreviousPage,
-    hasPreviousPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
     refetch,
-  } = useInfiniteQuery({
+  } = useQuery({
     queryKey: [
       "noise-data",
+      page,
       activeSearchQuery,
       activeLocationIdFilter,
       activeStartDateFilter,
@@ -160,15 +158,15 @@ export default function NoiseManagementPage({
       activeLocationTypeFilter,
       currentUser?.token,
     ],
-    queryFn: async ({ pageParam = 1 }) => {
+    queryFn: async () => {
       if (!currentUser?.token) {
         throw new Error("User not authenticated");
       }
       const filters: NoiseDataFilterDto = {
-        page: pageParam,
+        page,
         limit,
         search: activeSearchQuery,
-        locationId: activeLocationIdFilter,
+        locationIds: [activeLocationIdFilter as string],
         startDate: activeStartDateFilter
           ? new Date(activeStartDateFilter)
           : undefined,
@@ -185,27 +183,18 @@ export default function NoiseManagementPage({
       );
       return noiseData;
     },
-    getNextPageParam: (lastPage) => {
-      const { currentPage, totalPages } = lastPage.metadata;
-      return currentPage < totalPages ? currentPage + 1 : undefined;
-    },
-    getPreviousPageParam: (firstPage) => {
-      return firstPage.metadata.currentPage > 1
-        ? firstPage.metadata.currentPage - 1
-        : undefined;
-    },
-    initialPageParam: 1,
     enabled: !!currentUser?.token,
   });
 
-  const noiseData = data?.pages.flatMap((page) => page.data) ?? [];
-  const metadata = data?.pages[data.pages.length - 1]?.metadata || {
+  const noiseData = noiseDataResponse?.data ?? [];
+  const metadata = noiseDataResponse?.metadata || {
     totalItems: 0,
     currentPage: 1,
     totalPages: 1,
   };
 
   const handleApplyFilters = useCallback(() => {
+    setPage(1);
     setActiveSearchQuery(searchQuery || "");
     setActiveLocationIdFilter(locationIdFilter);
     setActiveStartDateFilter(startDateFilter);
@@ -223,16 +212,96 @@ export default function NoiseManagementPage({
     refetch,
   ]);
 
-  const handleNextPage = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= metadata.totalPages) {
+      setPage(newPage);
     }
   };
 
-  const handlePreviousPage = () => {
-    if (hasPreviousPage && !isFetchingPreviousPage) {
-      fetchPreviousPage();
+  const renderPagination = () => {
+    const pages = [];
+    const { currentPage, totalPages } = metadata;
+    const ellipsis = (
+      <PaginationItem key="ellipsis">
+        <PaginationEllipsis />
+      </PaginationItem>
+    );
+
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              href="#"
+              onClick={() => handlePageChange(i)}
+              isActive={i === currentPage}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>,
+        );
+      }
+    } else {
+      pages.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            href="#"
+            onClick={() => handlePageChange(1)}
+            isActive={1 === currentPage}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>,
+      );
+
+      if (currentPage > 3) {
+        pages.push(React.cloneElement(ellipsis, { key: "start-ellipsis" }));
+      }
+
+      let startPage = Math.max(2, currentPage - 1);
+      let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+      if (currentPage <= 2) {
+        startPage = 2;
+        endPage = 4;
+      }
+      if (currentPage >= totalPages - 1) {
+        startPage = totalPages - 3;
+        endPage = totalPages - 1;
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              href="#"
+              onClick={() => handlePageChange(i)}
+              isActive={i === currentPage}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>,
+        );
+      }
+
+      if (currentPage < totalPages - 2) {
+        pages.push(React.cloneElement(ellipsis, { key: "end-ellipsis" }));
+      }
+
+      pages.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            href="#"
+            onClick={() => handlePageChange(totalPages)}
+            isActive={totalPages === currentPage}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>,
+      );
     }
+
+    return pages;
   };
 
   return (
@@ -524,22 +593,43 @@ export default function NoiseManagementPage({
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(1)}
+                    disabled={metadata.currentPage === 1}
+                  >
+                    First
+                  </Button>
+                </PaginationItem>
+                <PaginationItem>
                   <PaginationPrevious
-                    onClick={handlePreviousPage}
+                    onClick={() => handlePageChange(metadata.currentPage - 1)}
                     className={cn(
                       "text-foreground hover:bg-accent",
-                      !hasPreviousPage && "pointer-events-none opacity-50",
+                      metadata.currentPage === 1 &&
+                        "pointer-events-none opacity-50",
+                    )}
+                  />
+                </PaginationItem>
+                {renderPagination()}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => handlePageChange(metadata.currentPage + 1)}
+                    className={cn(
+                      "text-foreground hover:bg-accent",
+                      metadata.currentPage === metadata.totalPages &&
+                        "pointer-events-none opacity-50",
                     )}
                   />
                 </PaginationItem>
                 <PaginationItem>
-                  <PaginationNext
-                    onClick={handleNextPage}
-                    className={cn(
-                      "text-foreground hover:bg-accent",
-                      !hasNextPage && "pointer-events-none opacity-50",
-                    )}
-                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => handlePageChange(metadata.totalPages)}
+                    disabled={metadata.currentPage === metadata.totalPages}
+                  >
+                    Last
+                  </Button>
                 </PaginationItem>
               </PaginationContent>
             </Pagination>

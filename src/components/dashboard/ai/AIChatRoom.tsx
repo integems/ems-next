@@ -258,9 +258,6 @@ const AIChatRoom = () => {
           multiple
         >
           <PromptInputBody>
-            <PromptInputAttachments>
-              {(attachment) => <PromptInputAttachment data={attachment} />}
-            </PromptInputAttachments>
             <PromptInputTextarea
               onChange={(e) => setText(e.target.value)}
               value={text}
@@ -274,13 +271,6 @@ const AIChatRoom = () => {
                   <PromptInputActionAddAttachments />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
-              <PromptInputButton
-                onClick={() => setUseWebSearch(!useWebSearch)}
-                variant={useWebSearch ? "default" : "ghost"}
-              >
-                <GlobeIcon size={16} />
-                <span>Search</span>
-              </PromptInputButton>
             </PromptInputTools>
             <PromptInputSubmit disabled={!text && !status} status={status} />
           </PromptInputToolbar>

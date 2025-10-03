@@ -36,12 +36,12 @@ export async function GET(request: NextRequest) {
       locationType: locationType || undefined,
     });
 
-    console.log({ filter });
+    // console.log({ filter });
 
     const airData = await airService.findAllAirData(filter);
     return NextResponse.json(airData);
   } catch (error: any) {
-    console.error(error);
+    // console.error(error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         {
