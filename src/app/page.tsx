@@ -1,14 +1,11 @@
 "use client";
 import DashboardPage from "@/components/dashboard/DashboardPage";
+import EnvironmentalMonitoringSection from "@/components/EnvironmentalMonitoringSection";
 import Galaxy from "@/components/Galaxy";
 import NavComponent from "@/components/NavComponent";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
@@ -73,98 +70,7 @@ export default function HomePage() {
             </div>
           </section>
           <div className="max-w-6xl mx-auto mb-20">
-            <section id="features" className="w-full py-12 md:py-24 lg:py-32">
-              <div className="container px-4 md:px-6">
-                <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3">
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Air Quality</h3>
-                    <p className="text-center text-muted-foreground">
-                      Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.
-                    </p>
-                    <Link
-                      href="/air"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Water Quality</h3>
-                    <p className="text-center text-muted-foreground">
-                      Track water parameters such as pH, turbidity, and
-                      dissolved oxygen.
-                    </p>
-                    <Link
-                      href="/water"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Soil Health</h3>
-                    <p className="text-center text-muted-foreground">
-                      Analyze soil composition, moisture, and nutrient levels.
-                    </p>
-                    <Link
-                      href="/soil"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Biodiversity</h3>
-                    <p className="text-center text-muted-foreground">
-                      Record and monitor the variety of life in a particular
-                      habitat.
-                    </p>
-                    <Link
-                      href="/biodiversity"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Noise</h3>
-                    <p className="text-center text-muted-foreground">
-                      Monitor noise pollution levels in various environments.
-                    </p>
-                    <Link
-                      href="/noise"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                  <div className="group flex flex-col items-center space-y-4">
-                    <div className="w-32 h-32 bg-gray-300 rounded-full"></div>
-                    <h3 className="text-xl font-bold">Waste</h3>
-                    <p className="text-center text-muted-foreground">
-                      Track and manage different types of waste.
-                    </p>
-                    <Link
-                      href="/waste"
-                      className="flex items-center text-primary"
-                    >
-                      <span>Learn More</span>
-                      <ArrowRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <EnvironmentalMonitoringSection/>
             <DashboardPage />
           </div>
         </main>

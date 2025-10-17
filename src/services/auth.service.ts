@@ -273,7 +273,7 @@ export class AuthService {
         };
       });
     } catch (error: any) {
-      throw new Error(`Error in signIn: ${error.message}`);
+      throw new Error(error.message);
     }
   }
 

@@ -1,74 +1,38 @@
 "use client";
-
-import {
-  PromptInput,
-  PromptInputActionAddAttachments,
-  PromptInputActionMenu,
-  PromptInputActionMenuContent,
-  PromptInputActionMenuTrigger,
-  PromptInputAttachment,
-  PromptInputAttachments,
-  PromptInputBody,
-  PromptInputButton,
-  type PromptInputMessage,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-} from "@/components/ai-elements/prompt-input";
-import { GlobeIcon, MicIcon } from "lucide-react";
-import { useState } from "react";
-import { useChat } from "@ai-sdk/react";
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputBody,
+  type PromptInputMessage,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar
+} from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { useChat } from "@ai-sdk/react";
+import { BarChart3 } from "lucide-react";
+import { useState } from "react";
 import AirAIChatAnalysis from "../air/AirAIChatAnalysisComponent";
-import WaterAIChatAnalysis from "../water/WaterAIChatAnalysisComponent";
-import SoilAIChatAnalysis from "../soil/SoilAIChatAnalysisComponent";
-import NoiseAIChatAnalysis from "../noise/NoiseAIChatAnalysisComponent";
 import BiodiversityAIChatAnalysis from "../biodiversity/BiodiversityAIChatAnalysisComponent";
+import NoiseAIChatAnalysis from "../noise/NoiseAIChatAnalysisComponent";
+import SoilAIChatAnalysis from "../soil/SoilAIChatAnalysisComponent";
 import WasteAIChatAnalysis from "../waste/WasteAIChatAnalysisComponent";
+import WaterAIChatAnalysis from "../water/WaterAIChatAnalysisComponent";
 
-// Dummy Components for each data type
-const AirDataDisplay = () => (
-  <div className="p-4 bg-blue-100 rounded-md">These are air data.</div>
-);
-const WaterDataDisplay = () => (
-  <div className="p-4 bg-green-100 rounded-md">These are water data.</div>
-);
-const SoilDataDisplay = () => (
-  <div className="p-4 bg-yellow-100 rounded-md">These are soil data.</div>
-);
-const NoiseDataDisplay = () => (
-  <div className="p-4 bg-purple-100 rounded-md">These are noise data.</div>
-);
-const BiodiversityDataDisplay = () => (
-  <div className="p-4 bg-red-100 rounded-md">These are biodiversity data.</div>
-);
-const WasteDataDisplay = () => (
-  <div className="p-4 bg-gray-100 rounded-md">These are waste data.</div>
-);
-const LocationDataDisplay = () => (
-  <div className="p-4 bg-orange-100 rounded-md">These are location data.</div>
-);
 
 const AIChatRoom = () => {
   const [text, setText] = useState<string>("");
@@ -100,182 +64,190 @@ const AIChatRoom = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6 relative size-full rounded-lg border h-[600px]">
-      <div className="flex flex-col h-full">
-        <Conversation>
-          <ConversationContent>
-            {messages.map((message) => (
-              <Message from={message.role} key={message.id}>
-                <MessageContent>
-                  {message.parts.map((part, i) => {
-                    console.log({ part });
-                    switch (part.type) {
-                      case "text":
-                        return (
-                          <Response key={`${message.id}-${i}`}>
-                            {part.text}
-                          </Response>
-                        );
-                      case "tool-displayAirData":
-                        return (<Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Air Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Air Quality Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of air quality data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <AirAIChatAnalysis
-                                airData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      case "tool-displayWaterData":
-                        return (
-                          <Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Water Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Water Quality Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of water quality data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <WaterAIChatAnalysis
-                                waterData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      case "tool-displaySoilData":
-                        return (
-                          <Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Soil Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Soil Quality Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of soil quality data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <SoilAIChatAnalysis
-                                soilData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      case "tool-displayNoiseData":
-                        return (
-                          <Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Noise Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Noise Level Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of noise level data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <NoiseAIChatAnalysis
-                                noiseData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      case "tool-displayBiodiversityData":
-                        return (
-                          <Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Biodiversity Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Biodiversity Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of biodiversity data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <BiodiversityAIChatAnalysis
-                                biodiversityData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      case "tool-displayWasteData":
-                        return (
-                          <Dialog key={`${message.id}-${i}-dialog`}>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="mt-2">
-                                View Waste Analysis
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle>Waste Management Analysis</DialogTitle>
-                                <DialogDescription>
-                                  Detailed analysis of waste management data.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <WasteAIChatAnalysis
-                                wasteData={part.output as any}
-                              />
-                            </DialogContent>
-                          </Dialog>
-                        );
-                      default:
-                        return null;
-                    }
-                  })}
-                </MessageContent>
-              </Message>
-            ))}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
-
-        <PromptInput
-          onSubmit={handleSubmit}
-          className="mt-4"
-          globalDrop
-          multiple
-        >
-          <PromptInputBody>
-            <PromptInputTextarea
-              onChange={(e) => setText(e.target.value)}
-              value={text}
-            />
-          </PromptInputBody>
-          <PromptInputToolbar>
-            <PromptInputTools>
-              <PromptInputActionMenu>
-                <PromptInputActionMenuTrigger />
-                <PromptInputActionMenuContent>
-                  <PromptInputActionAddAttachments />
-                </PromptInputActionMenuContent>
-              </PromptInputActionMenu>
-            </PromptInputTools>
-            <PromptInputSubmit disabled={!text && !status} status={status} />
-          </PromptInputToolbar>
-        </PromptInput>
-      </div>
+            <div className="w-full max-w-4xl flex flex-col h-[calc(100vh-8rem)] rounded-lg overflow-hidden">
+              {/* Messages Area */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <Conversation className="flex-1 bg-background">
+                  <ConversationContent className="flex-1 overflow-y-auto">
+                    {messages.map((message) => (
+                      <Message from={message.role} key={message.id}>
+                        <MessageContent>
+                          {message.parts.map((part, i) => {
+                            console.log({ part });
+                            switch (part.type) {
+                              case "text":
+                                return (
+                                  <Response key={`${message.id}-${i}`}>
+                                    {part.text}
+                                  </Response>
+                                );
+                              case "tool-displayLocationData":
+                                if((part.output as any)?.data.length < 1){
+                                  return <Response key={`${message.id}-${i}`}>
+                                    Couldn't get locations, try again
+                                  </Response>
+                                }
+                                return(
+                                  <div key={`${message.id}-${i}-locations`} className="flex flex-row gap-2">
+                                  {
+                                    (part.output as any)?.data?.map((data:any,index:number) =>{
+                                      return(<span key={`${message.id}-${i}-location-${index}`}>{data?.name}</span>)
+                                  })
+                                }
+                                  </div>
+                                )
+                             
+    
+                              case "tool-displayAirData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Air Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle className="sr-only">Air Quality Analysis</DialogTitle>
+                                      </DialogHeader>
+                                      <AirAIChatAnalysis
+                                        airData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              case "tool-displayWaterData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Water Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle className="sr-only">Water Quality Analysis</DialogTitle>
+                                      </DialogHeader>
+                                      <WaterAIChatAnalysis
+                                        waterData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              case "tool-displaySoilData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Soil Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle className="sr-only">Soil Quality Analysis</DialogTitle>
+                                      </DialogHeader>
+                                      <SoilAIChatAnalysis
+                                        soilData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              case "tool-displayNoiseData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Noise Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                                                  <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle className="sr-only">Noise Level Analysis</DialogTitle>
+                                      </DialogHeader>
+                                      <NoiseAIChatAnalysis
+                                        noiseData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              case "tool-displayBiodiversityData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Biodiversity Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                                              <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle className="sr-only">Biodiversity Analysis</DialogTitle>
+                                      </DialogHeader>
+                                      <BiodiversityAIChatAnalysis
+                                        biodiversityData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              case "tool-displayWasteData":
+                                return (
+                                  <Dialog key={`${message.id}-${i}-dialog`}>
+                                    <DialogTrigger asChild>
+                                       <Button variant="link" className="mt-2">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        View Waste Analysis
+                                      </Button>
+                                    </DialogTrigger>
+                    <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                      <DialogHeader>
+                                        <DialogTitle>Waste Management Analysis</DialogTitle>
+                                        <DialogDescription>
+                                          Detailed analysis of waste management data.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      <WasteAIChatAnalysis
+                                        wasteData={part.output as any}
+                                      />
+                                    </DialogContent>
+                                  </Dialog>
+                                );
+                              default:
+                                return null;
+                            }
+                          })}
+                        </MessageContent>
+                      </Message>
+                    ))}
+                  </ConversationContent>
+                  <ConversationScrollButton />
+                </Conversation>
+              </div>
+    
+              {/* Input Area */}
+              <div className="border-t p-4 bg-background">
+                <PromptInput
+                  onSubmit={handleSubmit}
+                  className="max-w-2xl mx-auto"
+                  globalDrop
+                  multiple
+                >
+                  <PromptInputBody>
+                    <PromptInputTextarea
+                      onChange={(e) => setText(e.target.value)}
+                      value={text}
+                      placeholder="Type your message..."
+                    />
+                  </PromptInputBody>
+                  <PromptInputToolbar className="flex flex-row justify-end gap-2">
+                    <PromptInputSubmit disabled={!text && !status} status={status} />
+                  </PromptInputToolbar>
+                </PromptInput>
+              </div>
+            </div>
     </div>
   );
 };

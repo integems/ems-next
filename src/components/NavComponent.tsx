@@ -1,22 +1,21 @@
 "use client";
 import UserMenu from "@/components/user-menu";
 import { useAuth } from "@/hooks/use-auth";
-import { HomeIcon } from "lucide-react";
 import Link from "next/link";
+import { Logo } from "./sidebar";
 import { ThemeToggle } from "./theme-toggle";
+import { Button } from "./ui/button";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
 } from "./ui/navigation-menu";
-import { Button } from "./ui/button";
-import { Logo } from "./sidebar";
 
 // Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "/", label: "Home" },
-  { href: "/ai-chatbox", label: "AI Chatbox" },
+  { href: "/ai-chatbot", label: "AI Chatbot" },
 ];
 
 export default function NavComponent() {
