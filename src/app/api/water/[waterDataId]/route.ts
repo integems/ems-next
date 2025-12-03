@@ -7,7 +7,7 @@ const waterService = new WaterService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { waterDataId: string } },
+  { params }: { params: Promise<{ waterDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -22,7 +22,7 @@ export async function GET(
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { waterDataId } = params;
+    const { waterDataId } = await params;
     const waterData = await waterService.findWaterDataById(waterDataId);
     return NextResponse.json(waterData);
   } catch (error: any) {
@@ -32,7 +32,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { waterDataId: string } },
+  { params }: { params: Promise<{ waterDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -48,7 +48,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { waterDataId } = params;
+    const { waterDataId } = await params;
     const waterDataDto: UpdateWaterDataDto = await request.json();
     const updatedWaterData = await waterService.updateWaterData(
       waterDataId,
@@ -63,7 +63,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { waterDataId: string } },
+  { params }: { params: Promise<{ waterDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -79,7 +79,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { waterDataId } = params;
+    const { waterDataId } = await params;
     await waterService.deleteWaterData(waterDataId, auth.user);
     return NextResponse.json({ message: "Water data deleted successfully" });
   } catch (error: any) {

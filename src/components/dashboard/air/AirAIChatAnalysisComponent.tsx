@@ -21,7 +21,7 @@ import {
   AirData,
   Location,
   LocationType,
-  PaginationResponse
+  PaginationResponse,
 } from "@/types/common.types";
 import { format } from "date-fns";
 import {
@@ -215,7 +215,8 @@ export default function AirAIChatAnalysis({ airData }: AirAIChatAnalysisProps) {
 
     if (locationIdsFilter.length > 0) {
       data = data.filter(
-        (item) => item.locationId && locationIdsFilter.includes(item.locationId),
+        (item) =>
+          item.locationId && locationIdsFilter.includes(item.locationId),
       );
     }
 

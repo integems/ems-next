@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { SoilService } from "@/services/soil.service";
 import { UpdateSoilDataDto } from "@/dtos/soil.dto";
-import { CurrentUser } from "@/types/common.types";
+import { SoilService } from "@/services/soil.service";
 import { authenticateRequest } from "@/utils/util";
+import { NextRequest, NextResponse } from "next/server";
 
 const soilService = new SoilService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { soilDataId: string } },
+  { params }: { params: Promise<{ soilDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -20,7 +19,7 @@ export async function GET(
         { status: auth.statusCode },
       );
     }
-    const { soilDataId } = params;
+    const { soilDataId } = await params;
     const soilData = await soilService.findSoilDataById(soilDataId);
     return NextResponse.json(soilData);
   } catch (error: any) {
@@ -30,7 +29,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { soilDataId: string } },
+  { params }: { params: Promise<{ soilDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -46,7 +45,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { soilDataId } = params;
+    const { soilDataId } = await params;
     const soilDataDto: UpdateSoilDataDto = await request.json();
     const updatedSoilData = await soilService.updateSoilData(
       soilDataId,
@@ -61,7 +60,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { soilDataId: string } },
+  { params }: { params: Promise<{ soilDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -77,7 +76,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { soilDataId } = params;
+    const { soilDataId } = await params;
     await soilService.deleteSoilData(soilDataId, auth.user);
     return NextResponse.json({ message: "Soil data deleted successfully" });
   } catch (error: any) {

@@ -1,39 +1,41 @@
 "use client";
-import React from "react";
+import MonitoringDetailPage from "@/components/MonitoringDetailPage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NavComponent from "@/components/NavComponent";
 
 const SoilPage = () => {
+  const soilQualityData = {
+    title: "Soil Quality",
+    description: "Analyze soil composition, moisture, and nutrient levels.",
+    image:"images/soil1.jpg",
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <NavComponent />
-      <h1 className="text-3xl font-bold mb-4 mt-20 text-center">
-        {" "}
-        <span className="text-primary mr-2">Soil Quality</span>
-        <span>Parameters</span>
-      </h1>
-      <p className="mb-8">
+    <MonitoringDetailPage
+      title={soilQualityData.title}
+      description={soilQualityData.description}
+      image={soilQualityData.image}
+    >
+      <h2 className="text-2xl font-bold mb-4 text-foreground">
+        Soil Quality Parameters
+      </h2>
+      <p className="mb-6 text-muted-foreground">
         This page provides a detailed explanation of each parameter used in our
         soil quality monitoring process. These parameters are vital for
         assessing soil health, agricultural productivity, and environmental
         sustainability.
       </p>
-
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>pH</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> pH units
+            <p className="font-semibold">
+              Unit: <span className="font-normal">pH units</span>
             </p>
-            <p>
-              Soil pH is a measure of the acidity or alkalinity of the soil. It
-              is a master variable in soils as it affects many chemical
-              processes. It specifically affects plant nutrient availability by
-              controlling the chemical forms of the different nutrients and
-              influencing the chemical reactions they undergo.
+            <p className="text-muted-foreground mt-2">
+              A measure of soil acidity or alkalinity that affects nutrient
+              availability and chemical processes essential for plant growth.
             </p>
           </CardContent>
         </Card>
@@ -43,14 +45,13 @@ const SoilPage = () => {
             <CardTitle>Nitrogen (N)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm (parts per million) or mg/kg
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm or mg/kg</span>
             </p>
-            <p>
-              Nitrogen is a crucial macronutrient for plant growth and is a
-              major component of chlorophyll and amino acids. Measuring nitrogen
-              levels helps in determining the fertility of the soil and the need
-              for fertilizers.
+            <p className="text-muted-foreground mt-2">
+              A crucial macronutrient for plant growth, being a major component
+              of chlorophyll and amino acids. Its level indicates soil
+              fertility.
             </p>
           </CardContent>
         </Card>
@@ -60,14 +61,13 @@ const SoilPage = () => {
             <CardTitle>Phosphorus (P)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm or mg/kg
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm or mg/kg</span>
             </p>
-            <p>
-              Phosphorus is essential for plant growth, playing a key role in
-              photosynthesis, energy transfer, and nutrient transport. Soil
-              phosphorus levels are indicative of the soil's ability to support
-              healthy plant development.
+            <p className="text-muted-foreground mt-2">
+              Essential for photosynthesis, energy transfer, and nutrient
+              transport, indicating the soil's ability to support healthy
+              plants.
             </p>
           </CardContent>
         </Card>
@@ -77,14 +77,12 @@ const SoilPage = () => {
             <CardTitle>Potassium (K)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm or mg/kg
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm or mg/kg</span>
             </p>
-            <p>
-              Potassium is important for its role in the regulation of water in
-              plants and the activation of enzymes. It contributes to the
-              overall health and vigor of plants. Soil potassium tests help to
-              ensure that levels are adequate for crop needs.
+            <p className="text-muted-foreground mt-2">
+              Important for regulating water in plants and activating enzymes,
+              contributing to overall plant health and vigor.
             </p>
           </CardContent>
         </Card>
@@ -94,13 +92,11 @@ const SoilPage = () => {
             <CardTitle>Organic Matter</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> Percent (%)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">%</span>
             </p>
-            <p>
-              Soil organic matter is the fraction of the soil that consists of
-              plant or animal tissue in various stages of decomposition. It is a
-              critical component for soil health, improving soil structure,
+            <p className="text-muted-foreground mt-2">
+              Decomposed plant and animal tissue that improves soil structure,
               water retention, and nutrient supply.
             </p>
           </CardContent>
@@ -111,19 +107,17 @@ const SoilPage = () => {
             <CardTitle>Moisture</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> Percent (%)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">%</span>
             </p>
-            <p>
-              Soil moisture is the water stored in the soil and is affected by
-              precipitation, irrigation, and soil type. It is a key factor in
-              determining plant growth and the movement of nutrients and
-              contaminants in the soil.
+            <p className="text-muted-foreground mt-2">
+              The amount of water stored in the soil, affecting plant growth and
+              the movement of nutrients and contaminants.
             </p>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MonitoringDetailPage>
   );
 };
 

@@ -1,8 +1,5 @@
 "use client";
-import {
-  Grid2x2,
-  LogOutIcon
-} from "lucide-react";
+import { Grid2x2, LogOutIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,13 +16,12 @@ import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 
 export default function UserMenu() {
-  const { currentUser,signOut } = useAuth();
-  const handleSignOut = ()=>{
-    signOut().then(()=>{
-         window.location.reload()
-    })
-  }
-
+  const { currentUser, signOut } = useAuth();
+  const handleSignOut = () => {
+    signOut().then(() => {
+      window.location.reload();
+    });
+  };
 
   return (
     <DropdownMenu>

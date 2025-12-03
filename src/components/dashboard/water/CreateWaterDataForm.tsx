@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,7 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
+import {
+  createWaterDataDto,
+  CreateWaterDataDto,
+  singleWaterData as waterDto,
+} from "@/dtos/water.dto";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,20 +29,14 @@ import {
   TimeOfDay,
   WaterSource,
 } from "@/types/common.types";
-import {
-  createWaterDataDto,
-  CreateWaterDataDto,
-  singleWaterData as waterDto,
-} from "@/dtos/water.dto";
-import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import LocationPickerMap from "@/components/LocationPickerMap";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { Spreadsheet } from "react-spreadsheet";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { Spreadsheet } from "react-spreadsheet";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { z } from "zod";
 
 const locationService = new FrontendLocationService();
 const waterService = new FrontendWaterService();
@@ -60,6 +60,10 @@ const updatedWaterDto = waterDto
     totalDissolvedSolids: z.number().optional(),
     temperature: z.number().optional(),
     waterSource: z.enum(["surface", "underground"]).optional(),
+    timeOfDay: z.enum(["day", "evening", "night"]).optional(),
+    locationType: z
+      .enum(["industrial", "residential", "commercial", "rural"])
+      .optional(),
   })
   .refine(
     (data) =>
@@ -124,7 +128,9 @@ export default function CreateWaterDataForm({
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
   );
-  const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
+  const [locationFormData, setLocationFormData] = useState<
+    CreateLocationDto & { locationType?: LocationType }
+  >({
     name: "",
     description: "",
     category: Category.Water,
@@ -137,6 +143,8 @@ export default function CreateWaterDataForm({
     Partial<WaterDataFormData>
   >({
     measurementTime: new Date(),
+    timeOfDay: undefined,
+    locationType: undefined,
   });
   const [errors, setErrors] = useState<any>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -192,7 +200,7 @@ export default function CreateWaterDataForm({
         createWaterDataMutation.mutate(result.data);
       } else {
         setErrors(result.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the water quality data.");
+        toast.error("Please correct errors in the water data.");
       }
     },
     onError: (error: any) => {
@@ -213,6 +221,14 @@ export default function CreateWaterDataForm({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
+  };
+
+  const handleTimeOfDayChange = (value: TimeOfDay) => {
+    setSingleWaterData((prev) => ({ ...prev, timeOfDay: value }));
+  };
+
+  const handleLocationTypeChange = (value: LocationType) => {
+    setSingleWaterData((prev) => ({ ...prev, locationType: value }));
   };
 
   const handleAddSingleWaterData = () => {
@@ -245,9 +261,10 @@ export default function CreateWaterDataForm({
       "cod",
       "totalDissolvedSolids",
       "temperature",
-      "conductivity",
       "waterSource",
       "notes",
+      "timeOfDay",
+      "locationType",
     ];
 
     const newData = data.map((row, index) => {
@@ -346,6 +363,7 @@ export default function CreateWaterDataForm({
     { value: data.locationType || "" },
   ]);
 
+  // Fixed handleFileUpload for Water Form
   const handleFileUpload = useCallback(
     (file: File) => {
       if (
@@ -374,36 +392,85 @@ export default function CreateWaterDataForm({
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
           );
-          // Add waterSource to headers if not present
-          if (!headers.includes("watersource")) headers.push("watersource");
-          if (!headers.includes("conductivity")) headers.push("conductivity");
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: WaterDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<WaterDataFormData> =
-              index < waterDataFormData.length
-                ? { ...waterDataFormData[index] }
-                : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
+          const hasTimeOfDay = headers.includes("timeofday");
+          const hasLocationType = headers.includes("locationtype");
+          const hasWaterSource = headers.includes("watersource");
+
+          const mappedData: Partial<WaterDataFormData>[] = rows
+            .map((row) => {
+              if (
+                !row ||
+                row.every(
+                  (cell) => cell === null || cell === undefined || cell === "",
+                )
+              ) {
+                return null;
+              }
+
+              const rowData: Partial<WaterDataFormData> = {};
+              let hasValidData = false;
+
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+
+                if (value === null || value === undefined || value === "") {
+                  return;
+                }
+
                 if (mappedKey) {
                   if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
+                    let date: Date;
+                    if (value instanceof Date) {
+                      date = value;
+                    } else if (typeof value === "number") {
+                      date = new Date((value - 25569) * 86400 * 1000);
+                    } else {
+                      date = new Date(value);
+                    }
+
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
-                    } else {
-                      toast.error(
-                        `Invalid date format in uploaded file: ${value}`,
-                      );
+                      hasValidData = true;
                     }
-                  } else if (mappedKey === "timeOfDay") {
-                    rowData[mappedKey] = value as TimeOfDay;
-                  } else if (mappedKey === "locationType") {
-                    rowData[mappedKey] = value as LocationType;
-                  } else if (mappedKey === "waterSource") {
-                    rowData[mappedKey] = value as WaterSource;
+                  } else if (mappedKey === "timeOfDay" && hasTimeOfDay) {
+                    const timeValue = String(value).toLowerCase();
+                    if (["day", "morning", "afternoon"].includes(timeValue)) {
+                      rowData[mappedKey] = "day" as TimeOfDay;
+                    } else if (["evening"].includes(timeValue)) {
+                      rowData[mappedKey] = "evening" as TimeOfDay;
+                    } else if (["night"].includes(timeValue)) {
+                      rowData[mappedKey] = "night" as TimeOfDay;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "locationType" && hasLocationType) {
+                    const locValue = String(value).toLowerCase();
+                    if (["industrial"].includes(locValue)) {
+                      rowData[mappedKey] = "industrial" as LocationType;
+                    } else if (
+                      ["residential", "residence"].includes(locValue)
+                    ) {
+                      rowData[mappedKey] = "residential" as LocationType;
+                    } else if (["commercial"].includes(locValue)) {
+                      rowData[mappedKey] = "commercial" as LocationType;
+                    } else if (["rural"].includes(locValue)) {
+                      rowData[mappedKey] = "rural" as LocationType;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "waterSource" && hasWaterSource) {
+                    const sourceValue = String(value).toLowerCase();
+                    if (["surface"].includes(sourceValue)) {
+                      rowData[mappedKey] = "surface" as WaterSource;
+                    } else if (
+                      ["underground", "ground", "groundwater"].includes(
+                        sourceValue,
+                      )
+                    ) {
+                      rowData[mappedKey] = "underground" as WaterSource;
+                    }
+                    hasValidData = true;
                   } else if (
                     [
                       "ph",
@@ -423,19 +490,30 @@ export default function CreateWaterDataForm({
                       "temperature",
                     ].includes(mappedKey)
                   ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                      rowData[mappedKey] = numValue as any;
+                      hasValidData = true;
+                    }
+                  } else if (mappedKey === "notes") {
+                    rowData[mappedKey] = String(value);
+                    hasValidData = true;
                   }
                 }
-              }
-            });
-            return rowData as WaterDataFormData;
-          });
+              });
 
-          // Validate uploaded data
+              return hasValidData ? rowData : null;
+            })
+            .filter((row): row is Partial<WaterDataFormData> => row !== null);
+
+          if (mappedData.length === 0) {
+            toast.error("No valid data found in the Excel file");
+            return;
+          }
+
           const validatedData: WaterDataFormData[] = [];
           const newErrors: any = {};
+
           mappedData.forEach((row, index) => {
             const result = updatedWaterDto.safeParse(row);
             if (result.success) {
@@ -446,15 +524,31 @@ export default function CreateWaterDataForm({
           });
 
           if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error("Please correct errors in the uploaded data.");
+            const errorCount = Object.keys(newErrors).length;
+            const successCount = validatedData.length;
+
+            if (successCount > 0) {
+              setWaterDataFormData(validatedData);
+              toast.warning(
+                `Imported ${successCount} valid rows. ${errorCount} rows had errors and were skipped.`,
+              );
+            } else {
+              setErrors(newErrors);
+              toast.error(
+                "All rows contain errors. Please check your data format.",
+              );
+            }
           } else {
-            setErrors({}); // Clear previous errors
+            setErrors({});
             setWaterDataFormData(validatedData);
-            toast.success("Excel data imported successfully!");
+            toast.success(
+              `Successfully imported ${validatedData.length} rows!`,
+            );
           }
         } catch (error) {
-          toast.error("Error reading Excel file");
+          toast.error(
+            "Error reading Excel file. Please check the file format.",
+          );
         }
       };
       reader.readAsArrayBuffer(file);
@@ -529,7 +623,7 @@ export default function CreateWaterDataForm({
         createWaterDataMutation.mutate(waterDataResult.data);
       } else {
         setErrors(waterDataResult.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the water quality data.");
+        toast.error("Please correct errors in the water data.");
       }
     }
   };
@@ -636,7 +730,7 @@ export default function CreateWaterDataForm({
                         onValueChange={(value) =>
                           setLocationFormData((prev) => ({
                             ...prev,
-                            locationType: value as any,
+                            locationType: value as LocationType,
                           }))
                         }
                         value={locationFormData.locationType || ""}
@@ -686,7 +780,7 @@ export default function CreateWaterDataForm({
 
         {/* Water Data Section */}
         <div className="flex-1 space-y-6">
-          <h2 className="text-xl font-semibold mb-4">Water Quality Data</h2>
+          <h2 className="text-xl font-semibold mb-4">Water Data</h2>
 
           {/* File Upload Section */}
           <div className="space-y-2">
@@ -724,7 +818,7 @@ export default function CreateWaterDataForm({
           {/* Spreadsheet Section */}
           {!!spreadsheetData.length && (
             <div className="space-y-2">
-              <Label>Water Quality Data Entries</Label>
+              <Label>Water Data Entries</Label>
               <div className="max-w-[60rem] overflow-auto rounded">
                 <Spreadsheet
                   data={spreadsheetData}
@@ -996,20 +1090,23 @@ export default function CreateWaterDataForm({
                 <div className="space-y-2">
                   <Label className="text-sm">Water Source</Label>
                   <Select
-                    onValueChange={(value) =>
+                    value={singleWaterData.waterSource || ""}
+                    onValueChange={(value: WaterSource) =>
                       setSingleWaterData((prev) => ({
                         ...prev,
-                        waterSource: value as any,
+                        waterSource: value,
                       }))
                     }
-                    value={singleWaterData.waterSource || ""}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Source" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="surface">Surface</SelectItem>
-                      <SelectItem value="underground">Underground</SelectItem>
+                      {Object.values(WaterSource).map((source) => (
+                        <SelectItem key={source} value={source}>
+                          {source.charAt(0).toUpperCase() + source.slice(1)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   {errors.waterSource && (
@@ -1023,10 +1120,7 @@ export default function CreateWaterDataForm({
                   <Select
                     value={singleWaterData.timeOfDay || ""}
                     onValueChange={(value: TimeOfDay) =>
-                      setSingleWaterData((prev) => ({
-                        ...prev,
-                        timeOfDay: value,
-                      }))
+                      handleTimeOfDayChange(value)
                     }
                   >
                     <SelectTrigger>
@@ -1035,7 +1129,7 @@ export default function CreateWaterDataForm({
                     <SelectContent>
                       {Object.values(TimeOfDay).map((time) => (
                         <SelectItem key={time} value={time}>
-                          {time}
+                          {time.charAt(0).toUpperCase() + time.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1051,10 +1145,7 @@ export default function CreateWaterDataForm({
                   <Select
                     value={singleWaterData.locationType || ""}
                     onValueChange={(value: LocationType) =>
-                      setSingleWaterData((prev) => ({
-                        ...prev,
-                        locationType: value,
-                      }))
+                      handleLocationTypeChange(value)
                     }
                   >
                     <SelectTrigger>
@@ -1063,7 +1154,7 @@ export default function CreateWaterDataForm({
                     <SelectContent>
                       {Object.values(LocationType).map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>

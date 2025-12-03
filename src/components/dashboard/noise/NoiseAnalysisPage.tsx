@@ -11,7 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { NoiseData, Location, LocationType, TimeOfDay } from "@/types/common.types";
+import {
+  NoiseData,
+  Location,
+  LocationType,
+  TimeOfDay,
+} from "@/types/common.types";
 import { NoiseDataFilterDto } from "@/dtos/noise.dto";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -212,7 +217,10 @@ export default function NoiseAnalysisPage() {
           locationTypeFilter === "All"
             ? undefined
             : (locationTypeFilter as LocationType),
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
       };
 
       const response = await noiseService.findAllNoiseData(
@@ -627,343 +635,340 @@ export default function NoiseAnalysisPage() {
           </Button>
         </div>
 
-          {/* Selected locations */}
-          {locationIdsFilter.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {locationIdsFilter.map((locationId, index) => {
-                const location = locations.find(
-                  (loc) => loc.locationId === locationId,
-                );
-                return (
-                  <div
-                    key={locationId}
-                    className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
-                    style={{
-                      backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`,
-                      borderColor: CHART_COLORS[index % CHART_COLORS.length],
-                      borderWidth: "1px",
-                    }}
+        {/* Selected locations */}
+        {locationIdsFilter.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {locationIdsFilter.map((locationId, index) => {
+              const location = locations.find(
+                (loc) => loc.locationId === locationId,
+              );
+              return (
+                <div
+                  key={locationId}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
+                  style={{
+                    backgroundColor: `${CHART_COLORS[index % CHART_COLORS.length]}20`,
+                    borderColor: CHART_COLORS[index % CHART_COLORS.length],
+                    borderWidth: "1px",
+                  }}
+                >
+                  <span>{location ? location.name : "Unknown"}</span>
+                  <button
+                    onClick={() =>
+                      setLocationIdsFilter(
+                        locationIdsFilter.filter((id) => id !== locationId),
+                      )
+                    }
+                    className="hover:text-red-600 ml-1"
                   >
-                    <span>{location ? location.name : "Unknown"}</span>
-                    <button
-                      onClick={() =>
-                        setLocationIdsFilter(
-                          locationIdsFilter.filter((id) => id !== locationId),
-                        )
-                      }
-                      className="hover:text-red-600 ml-1"
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLocationIdsFilter([])}
-                className="h-6"
-              >
-                Clear All
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Map Toggle */}
-        <Collapsible open={isMapOpen} onOpenChange={setIsMapOpen}>
-          <CollapsibleTrigger asChild>
+                    ×
+                  </button>
+                </div>
+              );
+            })}
             <Button
               variant="outline"
-              className="flex items-center justify-between w-full"
+              size="sm"
+              onClick={() => setLocationIdsFilter([])}
+              className="h-6"
             >
-              <span>{isMapOpen ? "Hide Map" : "Show Map"}</span>
-              {isMapOpen ? <ChevronUp /> : <ChevronDown />}
+              Clear All
             </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-4">
-            <MapComponent
-              locations={locations}
-              activeLocationId={
-                locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
-              }
-            />
-          </CollapsibleContent>
-        </Collapsible>
-
-        {/* Loading / Error / Charts */}
-        {isLoading ? (
-          <Card>
-            <CardContent className="flex items-center justify-center h-64">
-              <LoaderIcon className="h-12 w-12 animate-spin text-primary" />
-            </CardContent>
-          </Card>
-        ) : isError ? (
-          <div className="flex flex-col items-center justify-center h-32 space-y-4">
-            <p className="text-red-600">
-              Failed to load data. Please try again.
-            </p>
-            <Button onClick={() => refetch()} variant="outline">
-              <RefreshCcw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {/* Parameter Selection */}
-            <div className="w-full ">
-              <label className="block text-sm font-medium mb-2">
-                Paramter Selection
-              </label>
-              <Select
-                value={selectedParameter}
-                onValueChange={(value) =>
-                  setSelectedParameter(value as keyof NoiseData)
-                }
-              >
-                <SelectTrigger className="bg-background border-border max-w-sm">
-                  <SelectValue placeholder="Select Parameter" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parameterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Statistics Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                  Statistical Summary -{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }
-                  {statistics && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ({statistics.count} data points)
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {statistics ? (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                    <div className="text-center p-4 bg-green-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-green-600">
-                        {statistics.mean}
-                      </p>
-                      <p className="text-sm">Mean</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-blue-600">
-                        {statistics.median}
-                      </p>
-                      <p className="text-sm">Median</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {statistics.stdDev}
-                      </p>
-                      <p className="text-sm">Std Dev</p>
-                    </div>
-                    <div className="text-center p-4 bg-orange-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-orange-600">
-                        {statistics.min}
-                      </p>
-                      <p className="text-sm">Minimum</p>
-                    </div>
-                    <div className="text-center p-4 bg-red-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-red-600">
-                        {statistics.max}
-                      </p>
-                      <p className="text-sm">Maximum</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-slate-500">
-                    No data available for analysis
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Trend Analysis Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LineChart className="h-6 w-6 text-blue-600" />
-                  Trend Analysis -{" "}
-                  {chartType.charAt(0).toUpperCase() + chartType.slice(1)}{" "}
-                  Averages
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {timeSeriesData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <RechartsLineChart data={timeSeriesData}>
-                      <XAxis
-                        dataKey="period"
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
-                      />
-                      <YAxis
-                        label={{
-                          value: currentGuidelines?.unit || "",
-                          angle: -90,
-                          position: "insideLeft",
-                        }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-
-                      {Object.entries(groupedData).map(
-                        ([locationId, data], index) => {
-                          const location = locations.find(
-                            (loc) => loc.locationId === locationId,
-                          );
-                          const locationName =
-                            location?.name || `Location ${index + 1}`;
-                          const color =
-                            CHART_COLORS[index % CHART_COLORS.length];
-
-                          return (
-                            <Line
-                              key={locationId}
-                              type="monotone"
-                              dataKey={locationName}
-                              stroke={color}
-                              strokeWidth={2}
-                              dot={{ r: 4 }}
-                              connectNulls={false}
-                            />
-                          );
-                        },
-                      )}
-
-                      {/* Reference Lines for Guidelines */}
-                      {currentGuidelines?.residential && (
-                        <ReferenceLine
-                          y={currentGuidelines.residential}
-                          label={{
-                            value: "Residential Limit",
-                            position: "insideTopRight",
-                          }}
-                          stroke="#22c55e"
-                          strokeDasharray="8 8"
-                          strokeWidth={2}
-                        />
-                      )}
-                      {currentGuidelines?.industrial && (
-                        <ReferenceLine
-                          y={currentGuidelines.industrial}
-                          label={{
-                            value: "Industrial Limit",
-                            position: "insideTopRight",
-                          }}
-                          stroke="#ef4444"
-                          strokeDasharray="8 8"
-                          strokeWidth={2}
-                        />
-                      )}
-                    </RechartsLineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    No data available for the selected filters
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Comparison Bar Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart className="h-6 w-6 text-green-600" />
-                  Location Comparison -{" "}
-                  {chartType.charAt(0).toUpperCase() + chartType.slice(1)}{" "}
-                  Averages
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {barChartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={400}>
-                    <RechartsBarChart
-                      data={barChartData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
-                    >
-                      <XAxis
-                        dataKey="locationName"
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                        interval={0}
-                      />
-                      <YAxis
-                        label={{
-                          value: currentGuidelines?.unit || "",
-                          angle: -90,
-                          position: "insideLeft",
-                        }}
-                      />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-
-                      {timePeriods.map((period, index) => (
-                        <Bar
-                          key={period}
-                          dataKey={period}
-                          name={period}
-                          fill={CHART_COLORS[index % CHART_COLORS.length]}
-                          opacity={0.8}
-                        />
-                      ))}
-
-                      {/* Reference Lines */}
-                      {currentGuidelines?.residential && (
-                        <ReferenceLine
-                          y={currentGuidelines.residential}
-                          label={{
-                            value: "Residential Limit",
-                            position: "insideTopRight",
-                          }}
-                          stroke="#22c55e"
-                          strokeDasharray="8 8"
-                          strokeWidth={2}
-                        />
-                      )}
-                      {currentGuidelines?.industrial && (
-                        <ReferenceLine
-                          y={currentGuidelines.industrial}
-                          label={{
-                            value: "Industrial Limit",
-                            position: "insideTopRight",
-                          }}
-                          stroke="#ef4444"
-                          strokeDasharray="8 8"
-                          strokeWidth={2}
-                        />
-                      )}
-                    </RechartsBarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    No data available for the selected filters
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         )}
       </div>
+
+      {/* Map Toggle */}
+      <Collapsible open={isMapOpen} onOpenChange={setIsMapOpen}>
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex items-center justify-between w-full"
+          >
+            <span>{isMapOpen ? "Hide Map" : "Show Map"}</span>
+            {isMapOpen ? <ChevronUp /> : <ChevronDown />}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-4">
+          <MapComponent
+            locations={locations}
+            activeLocationId={
+              locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
+            }
+          />
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Loading / Error / Charts */}
+      {isLoading ? (
+        <Card>
+          <CardContent className="flex items-center justify-center h-64">
+            <LoaderIcon className="h-12 w-12 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      ) : isError ? (
+        <div className="flex flex-col items-center justify-center h-32 space-y-4">
+          <p className="text-red-600">Failed to load data. Please try again.</p>
+          <Button onClick={() => refetch()} variant="outline">
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {/* Parameter Selection */}
+          <div className="w-full ">
+            <label className="block text-sm font-medium mb-2">
+              Paramter Selection
+            </label>
+            <Select
+              value={selectedParameter}
+              onValueChange={(value) =>
+                setSelectedParameter(value as keyof NoiseData)
+              }
+            >
+              <SelectTrigger className="bg-background border-border max-w-sm">
+                <SelectValue placeholder="Select Parameter" />
+              </SelectTrigger>
+              <SelectContent>
+                {parameterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Statistics Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+                Statistical Summary -{" "}
+                {
+                  parameterOptions.find((p) => p.value === selectedParameter)
+                    ?.label
+                }
+                {statistics && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({statistics.count} data points)
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {statistics ? (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                  <div className="text-center p-4 bg-green-600/10 rounded-xl">
+                    <p className="text-2xl font-bold text-green-600">
+                      {statistics.mean}
+                    </p>
+                    <p className="text-sm">Mean</p>
+                  </div>
+                  <div className="text-center p-4 bg-blue-600/10 rounded-xl">
+                    <p className="text-2xl font-bold text-blue-600">
+                      {statistics.median}
+                    </p>
+                    <p className="text-sm">Median</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-600/10 rounded-xl">
+                    <p className="text-2xl font-bold text-purple-600">
+                      {statistics.stdDev}
+                    </p>
+                    <p className="text-sm">Std Dev</p>
+                  </div>
+                  <div className="text-center p-4 bg-orange-600/10 rounded-xl">
+                    <p className="text-2xl font-bold text-orange-600">
+                      {statistics.min}
+                    </p>
+                    <p className="text-sm">Minimum</p>
+                  </div>
+                  <div className="text-center p-4 bg-red-600/10 rounded-xl">
+                    <p className="text-2xl font-bold text-red-600">
+                      {statistics.max}
+                    </p>
+                    <p className="text-sm">Maximum</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center text-slate-500">
+                  No data available for analysis
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Trend Analysis Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LineChart className="h-6 w-6 text-blue-600" />
+                Trend Analysis -{" "}
+                {chartType.charAt(0).toUpperCase() + chartType.slice(1)}{" "}
+                Averages
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {timeSeriesData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <RechartsLineChart data={timeSeriesData}>
+                    <XAxis
+                      dataKey="period"
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis
+                      label={{
+                        value: currentGuidelines?.unit || "",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+
+                    {Object.entries(groupedData).map(
+                      ([locationId, data], index) => {
+                        const location = locations.find(
+                          (loc) => loc.locationId === locationId,
+                        );
+                        const locationName =
+                          location?.name || `Location ${index + 1}`;
+                        const color = CHART_COLORS[index % CHART_COLORS.length];
+
+                        return (
+                          <Line
+                            key={locationId}
+                            type="monotone"
+                            dataKey={locationName}
+                            stroke={color}
+                            strokeWidth={2}
+                            dot={{ r: 4 }}
+                            connectNulls={false}
+                          />
+                        );
+                      },
+                    )}
+
+                    {/* Reference Lines for Guidelines */}
+                    {currentGuidelines?.residential && (
+                      <ReferenceLine
+                        y={currentGuidelines.residential}
+                        label={{
+                          value: "Residential Limit",
+                          position: "insideTopRight",
+                        }}
+                        stroke="#22c55e"
+                        strokeDasharray="8 8"
+                        strokeWidth={2}
+                      />
+                    )}
+                    {currentGuidelines?.industrial && (
+                      <ReferenceLine
+                        y={currentGuidelines.industrial}
+                        label={{
+                          value: "Industrial Limit",
+                          position: "insideTopRight",
+                        }}
+                        stroke="#ef4444"
+                        strokeDasharray="8 8"
+                        strokeWidth={2}
+                      />
+                    )}
+                  </RechartsLineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                  No data available for the selected filters
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Comparison Bar Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart className="h-6 w-6 text-green-600" />
+                Location Comparison -{" "}
+                {chartType.charAt(0).toUpperCase() + chartType.slice(1)}{" "}
+                Averages
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {barChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={400}>
+                  <RechartsBarChart
+                    data={barChartData}
+                    margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
+                  >
+                    <XAxis
+                      dataKey="locationName"
+                      tick={{ fontSize: 12 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      interval={0}
+                    />
+                    <YAxis
+                      label={{
+                        value: currentGuidelines?.unit || "",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+
+                    {timePeriods.map((period, index) => (
+                      <Bar
+                        key={period}
+                        dataKey={period}
+                        name={period}
+                        fill={CHART_COLORS[index % CHART_COLORS.length]}
+                        opacity={0.8}
+                      />
+                    ))}
+
+                    {/* Reference Lines */}
+                    {currentGuidelines?.residential && (
+                      <ReferenceLine
+                        y={currentGuidelines.residential}
+                        label={{
+                          value: "Residential Limit",
+                          position: "insideTopRight",
+                        }}
+                        stroke="#22c55e"
+                        strokeDasharray="8 8"
+                        strokeWidth={2}
+                      />
+                    )}
+                    {currentGuidelines?.industrial && (
+                      <ReferenceLine
+                        y={currentGuidelines.industrial}
+                        label={{
+                          value: "Industrial Limit",
+                          position: "insideTopRight",
+                        }}
+                        stroke="#ef4444"
+                        strokeDasharray="8 8"
+                        strokeWidth={2}
+                      />
+                    )}
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                  No data available for the selected filters
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 }

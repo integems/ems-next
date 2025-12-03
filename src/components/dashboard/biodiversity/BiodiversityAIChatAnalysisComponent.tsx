@@ -178,7 +178,8 @@ export default function BiodiversityAIChatAnalysis({
 
     if (locationIdsFilter.length > 0) {
       data = data.filter(
-        (item) => item.locationId && locationIdsFilter.includes(item.locationId),
+        (item) =>
+          item.locationId && locationIdsFilter.includes(item.locationId),
       );
     }
 

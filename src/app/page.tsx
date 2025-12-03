@@ -1,12 +1,22 @@
 "use client";
 import DashboardPage from "@/components/dashboard/DashboardPage";
 import EnvironmentalMonitoringSection from "@/components/EnvironmentalMonitoringSection";
-import Galaxy from "@/components/Galaxy";
+import { HeroCarousel } from "@/components/HeroCarousel";
 import NavComponent from "@/components/NavComponent";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+interface Slide {
+  type: "image" | "video";
+  media: string;
+  badge?: string;
+  title: string;
+  description: string;
+  cta?: {
+    primary: string;
+    secondary?: string;
+  };
+}
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -21,56 +31,73 @@ export default function HomePage() {
     }
   };
 
+  const handleLearnMore = () => {
+    // Scroll to environmental monitoring section
+    const section = document.getElementById("environmental-monitoring");
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const slides: Slide[] = [
+    {
+      type: "image",
+      media:"images/caroucel1.jpg",
+      badge: "Real-Time Monitoring",
+      title: "Environmental Monitoring System",
+      description:
+        "Monitor, analyze, and visualize environmental data with cutting-edge technology and real-time insights.",
+      cta: {
+        primary: "Get Started",
+        secondary: "Learn More",
+      },
+    },
+    {
+      type: "image",
+     media:"images/caroucel4.jpg",
+      badge: "Advanced Analytics",
+      title: "Data-Driven Insights",
+      description:
+        "Transform raw environmental data into actionable insights with powerful analytics and visualization tools.",
+      cta: {
+        primary: "Explore Features",
+        secondary: "View Demo",
+      },
+    },
+    {
+      type: "image",
+     media:"images/caroucel3.jpg",
+      badge: "Sustainable Future",
+      title: "Protect Our Planet",
+      description:
+        "Join the mission to create a sustainable future through comprehensive environmental monitoring and conservation.",
+      cta: {
+        primary: "Join Now",
+        secondary: "Our Mission",
+      },
+    },
+  ];
+
   return (
     <>
-      <div className="z-50">
+      <div className="z-50 relative">
         <NavComponent />
       </div>
 
       <div>
         <main className="flex-1 mx-auto">
-          <section className="w-full h-[80vh] min-h-[500px] relative flex items-center justify-center">
-            <div className="absolute inset-0 z-0 w-full h-full">
-              <Galaxy
-                mouseRepulsion={true}
-                mouseInteraction={true}
-                density={1.5}
-                glowIntensity={0.5}
-                saturation={0.8}
-                hueShift={240}
-              />
-            </div>
-            <div className="absolute inset-0 z-5 bg-black/5  pointer-events-none"></div>
-            <div className="relative z-10 text-center pointer-events-auto">
-              <div className="w-full">
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="space-y-2">
-                    <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                      <span>Environmental</span>{" "}
-                      <span className="text-primary">Monitoring</span>{" "}
-                      <span>System</span>
-                    </h1>
-                    <p className="max-w-[600px] md:text-xl mx-auto">
-                      Monitor, analyze, and visualize environmental data with
-                      ease.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 min-[400px]:flex-row pointer-events-auto">
-                    <Button
-                      variant="outline"
-                      onClick={handleGetStarted}
-                      className="text-primary outline-primary pointer-events-auto"
-                    >
-                      <span>Get Started</span>
-                      <ArrowRight className="animate-caret-blink ml-2" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <section className="w-full h-[90vh] min-h-[500px] relative">
+            <HeroCarousel
+              slides={slides}
+              onPrimaryClick={handleGetStarted}
+              onSecondaryClick={handleLearnMore}
+            />
           </section>
-          <div className="max-w-6xl mx-auto mb-20">
-            <EnvironmentalMonitoringSection/>
+          <div
+            className="max-w-6xl mx-auto mb-20"
+            id="environmental-monitoring"
+          >
+            <EnvironmentalMonitoringSection />
             <DashboardPage />
           </div>
         </main>

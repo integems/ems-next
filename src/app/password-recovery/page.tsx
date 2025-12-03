@@ -1,34 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  Stepper,
-  StepperItem,
-  StepperTrigger,
-  StepperIndicator,
-  StepperSeparator,
-  StepperTitle,
-} from "@/components/ui/stepper";
-import { FrontendAuthService } from "@/frontend-services/auth.service";
-import { ForgotPasswordDto, NewPasswordDto } from "@/dtos/auth.dto";
-import { toast } from "sonner";
 import {
   ForgotPasswordForm,
-  forgotPasswordSchema,
   ForgotPasswordFormData,
+  forgotPasswordSchema,
 } from "@/components/ForgotPasswordForm";
 import {
   ResetPasswordForm,
-  resetPasswordSchema,
   ResetPasswordFormData,
+  resetPasswordSchema,
 } from "@/components/ResetPasswordForm";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperTitle,
+  StepperTrigger,
+} from "@/components/ui/stepper";
+import { ForgotPasswordDto, NewPasswordDto } from "@/dtos/auth.dto";
+import { FrontendAuthService } from "@/frontend-services/auth.service";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const authService = new FrontendAuthService();
 
-export default function PasswordRecoveryPage() {
+function PasswordRecoveryContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(1);
@@ -207,5 +207,19 @@ export default function PasswordRecoveryPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PasswordRecoveryPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">Loading...</div>
+        </div>
+      }
+    >
+      <PasswordRecoveryContent />
+    </Suspense>
   );
 }

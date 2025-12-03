@@ -7,7 +7,7 @@ const noiseService = new NoiseService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { noiseDataId: string } },
+  { params }: { params: Promise<{ noiseDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -22,7 +22,7 @@ export async function GET(
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { noiseDataId } = params;
+    const { noiseDataId } = await params;
     const noiseData = await noiseService.findNoiseDataById(noiseDataId);
     return NextResponse.json(noiseData);
   } catch (error: any) {
@@ -32,7 +32,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { noiseDataId: string } },
+  { params }: { params: Promise<{ noiseDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -48,7 +48,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { noiseDataId } = params;
+    const { noiseDataId } = await params;
     const noiseDataDto: UpdateNoiseDataDto = await request.json();
     const updatedNoiseData = await noiseService.updateNoiseData(
       noiseDataId,
@@ -63,7 +63,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { noiseDataId: string } },
+  { params }: { params: Promise<{ noiseDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -79,7 +79,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { noiseDataId } = params;
+    const { noiseDataId } = await params;
     await noiseService.deleteNoiseData(noiseDataId, auth.user);
     return NextResponse.json({ message: "Noise data deleted successfully" });
   } catch (error: any) {

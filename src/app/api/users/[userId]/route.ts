@@ -9,7 +9,7 @@ import { authenticateRequest } from "@/utils/util";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }
 
 const userService = new UserService();
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { userId } = params;
+    const { userId } = await params;
     const userResponse = await userService.findUserById(userId);
     return NextResponse.json(userResponse, { status: 200 });
   } catch (error: any) {
@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { userId } = params;
+    const { userId } = await params;
     const body = await request.json();
     const userDto = updateUserDto.parse(body);
     const updatedUserResponse = await userService.updateUser(
@@ -96,7 +96,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { userId } = params;
+    const { userId } = await params;
     const deleteResponse = await userService.deleteUser(userId, auth.user);
     return NextResponse.json(deleteResponse, { status: 200 });
   } catch (error: any) {

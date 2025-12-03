@@ -11,7 +11,7 @@ import {
   type PromptInputMessage,
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputToolbar
+  PromptInputToolbar,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
 import AirAIChatAnalysis from "@/components/dashboard/air/AirAIChatAnalysisComponent";
@@ -20,6 +20,7 @@ import NoiseAIChatAnalysis from "@/components/dashboard/noise/NoiseAIChatAnalysi
 import SoilAIChatAnalysis from "@/components/dashboard/soil/SoilAIChatAnalysisComponent";
 import WasteAIChatAnalysis from "@/components/dashboard/waste/WasteAIChatAnalysisComponent";
 import WaterAIChatAnalysis from "@/components/dashboard/water/WaterAIChatAnalysisComponent";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,7 +31,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useChat } from "@ai-sdk/react";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import {
+  ArrowLeft,
+  BarChart3,
+  Bird,
+  Droplets,
+  MapPin,
+  Sparkles,
+  Sprout,
+  Trash2,
+  Volume2,
+  Wind,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -38,6 +50,7 @@ const AIChatbotPage = () => {
   const [text, setText] = useState<string>("");
   const { messages, status, sendMessage } = useChat();
   const router = useRouter();
+
   const handleSubmit = (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
     const hasAttachments = Boolean(message.files?.length);
@@ -46,81 +59,177 @@ const AIChatbotPage = () => {
       return;
     }
 
-    sendMessage(
-      {
-        text: message.text || "Sent with attachments",
-        files: message.files,
-      }
-    );
+    sendMessage({
+      text: message.text || "Sent with attachments",
+      files: message.files,
+    });
     setText("");
   };
 
+  const handleGoback = () => {
+    router.back();
+  };
 
-  const handleGoback = ()=>{
-    router.back()
-  }
+  const getAnalysisIcon = (type: string) => {
+    switch (type) {
+      case "air":
+        return Wind;
+      case "water":
+        return Droplets;
+      case "soil":
+        return Sprout;
+      case "noise":
+        return Volume2;
+      case "biodiversity":
+        return Bird;
+      case "waste":
+        return Trash2;
+      default:
+        return BarChart3;
+    }
+  };
+
+  const renderAnalysisButton = (type: string, label: string, icon: any) => {
+    const Icon = icon;
+    return (
+      <Button
+        variant="outline"
+        className="group hover:bg-primary/5 hover:border-primary/50 transition-all"
+        size="sm"
+      >
+        <Icon className="mr-2 h-4 w-4 text-primary" />
+        <span className="font-medium">View {label} Analysis</span>
+      </Button>
+    );
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header */}
-      <div className="border-b bg-card p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <Button onClick={handleGoback} variant="ghost" size="sm" className="flex items-center gap-2">
+      <div className="bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between px-4 py-3">
+          <Button
+            onClick={handleGoback}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2 hover:bg-muted"
+          >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <span className="font-medium">Back</span>
           </Button>
-          <div className="w-10" /> {/* Spacer for balance */}
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h1 className="text-lg font-semibold">
+              Environmental AI Assistant
+            </h1>
+          </div>
+          <div className="w-20" /> {/* Spacer for balance */}
         </div>
       </div>
 
       {/* Main Chat Container */}
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl flex flex-col h-[calc(100vh-8rem)] rounded-lg overflow-hidden">
+        <div className="w-full max-w-5xl flex flex-col h-[calc(100vh-8rem)]">
           {/* Messages Area */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <Conversation className="flex-1 bg-background">
-              <ConversationContent className="flex-1 overflow-y-auto">
+          <div className="flex-1 flex flex-col overflow-hidden rounded-t-xl bg-card shadow-lg">
+            <Conversation className="flex-1">
+              <ConversationContent className="flex-1 overflow-y-auto p-4">
+                {messages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8">
+                    <div className="p-4 bg-primary/10 rounded-full">
+                      <Sparkles className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-bold">
+                        Welcome to Environmental AI
+                      </h2>
+                      <p className="text-muted-foreground max-w-md">
+                        Ask me anything about environmental monitoring data,
+                        analysis, or insights.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 justify-center mt-4">
+                      <Badge variant="secondary" className="text-xs">
+                        Air Quality
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Water Analysis
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Soil Health
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Biodiversity
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+
                 {messages.map((message) => (
-                  <Message from={message.role} key={message.id}>
-                    <MessageContent>
+                  <Message
+                    from={message.role}
+                    key={message.id}
+                    className={`mb-4 ${message.role === "assistant" ? "bg-transparent" : ""}`}
+                  >
+                    <MessageContent className="rounded-lg">
                       {message.parts.map((part, i) => {
-                        console.log({ part });
                         switch (part.type) {
                           case "text":
                             return (
-                              <Response key={`${message.id}-${i}`}>
+                              <Response
+                                key={`${message.id}-${i}`}
+                                className="prose prose-sm max-w-none"
+                              >
                                 {part.text}
                               </Response>
                             );
+
                           case "tool-displayLocationData":
-                            if((part.output as any)?.data.length < 1){
-                              return <Response key={`${message.id}-${i}`}>
-                                Couldn't get locations, try again
-                              </Response>
+                            if ((part.output as any)?.data.length < 1) {
+                              return (
+                                <Response
+                                  key={`${message.id}-${i}`}
+                                  className="text-muted-foreground"
+                                >
+                                  Couldn't retrieve locations. Please try again.
+                                </Response>
+                              );
                             }
-                            return(
-                              <div key={`${message.id}-${i}-locations`} className="flex flex-row gap-2">
-                              {
-                                (part.output as any)?.data?.map((data:any,index:number) =>{
-                                  return(<span key={`${message.id}-${i}-location-${index}`}>{data?.name}</span>)
-                              })
-                            }
+                            return (
+                              <div
+                                key={`${message.id}-${i}-locations`}
+                                className="flex flex-wrap gap-2 mt-2"
+                              >
+                                {(part.output as any)?.data?.map(
+                                  (data: any, index: number) => (
+                                    <Badge
+                                      key={`${message.id}-${i}-location-${index}`}
+                                      variant="outline"
+                                      className="gap-1"
+                                    >
+                                      <MapPin className="h-3 w-3" />
+                                      {data?.name}
+                                    </Badge>
+                                  ),
+                                )}
                               </div>
-                            )
-                         
+                            );
 
                           case "tool-displayAirData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Air Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "air",
+                                    "Air Quality",
+                                    Wind,
+                                  )}
                                 </DialogTrigger>
-                            <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle className="sr-only">Air Quality Analysis</DialogTitle>
+                                    <DialogTitle className="sr-only">
+                                      Air Quality Analysis
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <AirAIChatAnalysis
                                     airData={part.output as any}
@@ -128,18 +237,22 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           case "tool-displayWaterData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Water Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "water",
+                                    "Water Quality",
+                                    Droplets,
+                                  )}
                                 </DialogTrigger>
                                 <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle className="sr-only">Water Quality Analysis</DialogTitle>
+                                    <DialogTitle className="sr-only">
+                                      Water Quality Analysis
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <WaterAIChatAnalysis
                                     waterData={part.output as any}
@@ -147,18 +260,22 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           case "tool-displaySoilData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Soil Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "soil",
+                                    "Soil Health",
+                                    Sprout,
+                                  )}
                                 </DialogTrigger>
-                                            <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle className="sr-only">Soil Quality Analysis</DialogTitle>
+                                    <DialogTitle className="sr-only">
+                                      Soil Quality Analysis
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <SoilAIChatAnalysis
                                     soilData={part.output as any}
@@ -166,18 +283,22 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           case "tool-displayNoiseData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Noise Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "noise",
+                                    "Noise Level",
+                                    Volume2,
+                                  )}
                                 </DialogTrigger>
-                                              <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle className="sr-only">Noise Level Analysis</DialogTitle>
+                                    <DialogTitle className="sr-only">
+                                      Noise Level Analysis
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <NoiseAIChatAnalysis
                                     noiseData={part.output as any}
@@ -185,18 +306,22 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           case "tool-displayBiodiversityData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Biodiversity Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "biodiversity",
+                                    "Biodiversity",
+                                    Bird,
+                                  )}
                                 </DialogTrigger>
-                                          <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle className="sr-only">Biodiversity Analysis</DialogTitle>
+                                    <DialogTitle className="sr-only">
+                                      Biodiversity Analysis
+                                    </DialogTitle>
                                   </DialogHeader>
                                   <BiodiversityAIChatAnalysis
                                     biodiversityData={part.output as any}
@@ -204,20 +329,25 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           case "tool-displayWasteData":
                             return (
                               <Dialog key={`${message.id}-${i}-dialog`}>
                                 <DialogTrigger asChild>
-                                   <Button variant="link" className="mt-2">
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Waste Analysis
-                                  </Button>
+                                  {renderAnalysisButton(
+                                    "waste",
+                                    "Waste Management",
+                                    Trash2,
+                                  )}
                                 </DialogTrigger>
-                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
+                                <DialogContent className="min-w-fit md:min-w-6xl max-h-[90vh] overflow-y-auto">
                                   <DialogHeader>
-                                    <DialogTitle>Waste Management Analysis</DialogTitle>
+                                    <DialogTitle>
+                                      Waste Management Analysis
+                                    </DialogTitle>
                                     <DialogDescription>
-                                      Detailed analysis of waste management data.
+                                      Detailed analysis of waste management
+                                      data.
                                     </DialogDescription>
                                   </DialogHeader>
                                   <WasteAIChatAnalysis
@@ -226,6 +356,7 @@ const AIChatbotPage = () => {
                                 </DialogContent>
                               </Dialog>
                             );
+
                           default:
                             return null;
                         }
@@ -239,22 +370,27 @@ const AIChatbotPage = () => {
           </div>
 
           {/* Input Area */}
-          <div className="border-t p-4 bg-background">
+          <div className="bg-card rounded-b-xl shadow-lg p-4">
             <PromptInput
               onSubmit={handleSubmit}
-              className="max-w-2xl mx-auto"
+              className="max-w-3xl mx-auto"
               globalDrop
               multiple
             >
-              <PromptInputBody>
+              <PromptInputBody className="rounded-lg">
                 <PromptInputTextarea
                   onChange={(e) => setText(e.target.value)}
                   value={text}
-                  placeholder="Type your message..."
+                  placeholder="Ask about environmental data, trends, or insights..."
+                  className="min-h-[60px] resize-none focus:outline-none focus:ring-0"
                 />
               </PromptInputBody>
-              <PromptInputToolbar className="flex flex-row justify-end gap-2">
-                <PromptInputSubmit disabled={!text && !status} status={status} />
+              <PromptInputToolbar className="flex flex-row justify-end gap-2 mt-2">
+                <PromptInputSubmit
+                  disabled={!text && !status}
+                  status={status}
+                  className="bg-primary hover:bg-primary/90"
+                />
               </PromptInputToolbar>
             </PromptInput>
           </div>

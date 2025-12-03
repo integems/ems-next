@@ -7,7 +7,7 @@ const wasteService = new WasteService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { wasteDataId: string } },
+  { params }: { params: Promise<{ wasteDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -22,7 +22,7 @@ export async function GET(
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { wasteDataId } = params;
+    const { wasteDataId } = await params;
     const wasteData = await wasteService.findWasteDataById(wasteDataId);
     return NextResponse.json(wasteData);
   } catch (error: any) {
@@ -32,7 +32,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { wasteDataId: string } },
+  { params }: { params: Promise<{ wasteDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -47,11 +47,8 @@ export async function PUT(
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    if (!auth.user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
 
-    const { wasteDataId } = params;
+    const { wasteDataId } = await params;
     const wasteDataDto: UpdateWasteDataDto = await request.json();
     const updatedWasteData = await wasteService.updateWasteData(
       wasteDataId,
@@ -66,7 +63,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { wasteDataId: string } },
+  { params }: { params: Promise<{ wasteDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -82,7 +79,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { wasteDataId } = params;
+    const { wasteDataId } = await params;
     await wasteService.deleteWasteData(wasteDataId, auth.user);
     return NextResponse.json({ message: "Waste data deleted successfully" });
   } catch (error: any) {

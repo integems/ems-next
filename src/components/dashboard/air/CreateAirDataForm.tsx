@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,35 +11,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FrontendLocationService } from "@/frontend-services/location.service";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  singleAirData as airDto,
+  createAirDataDto,
+  CreateAirDataDto,
+} from "@/dtos/air.dto";
+import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
+import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Category,
   Location,
-  TimeOfDay,
   LocationType,
+  TimeOfDay,
 } from "@/types/common.types";
-import {
-  createAirDataDto,
-  CreateAirDataDto,
-  singleAirData as airDto,
-} from "@/dtos/air.dto";
-import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import LocationPickerMap from "@/components/LocationPickerMap";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { Spreadsheet } from "react-spreadsheet";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { Spreadsheet } from "react-spreadsheet";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { z } from "zod";
 
 const locationService = new FrontendLocationService();
 const airService = new FrontendAirService();
-
-// Updated airDto schema with validation for at least one measurement
 const updatedAirDto = airDto
   .extend({
     pm25: z.number().optional(),
@@ -49,8 +47,13 @@ const updatedAirDto = airDto
     o3: z.number().optional(),
     co: z.number().optional(),
     so2: z.number().optional(),
+    timeOfDay: z.enum(["day", "evening", "night"]).optional(),
+    locationType: z
+      .enum(["industrial", "residential", "commercial", "rural"])
+      .optional(),
     temperature: z.number().optional(),
     humidity: z.number().optional(),
+    measurementTime: z.date().optional(),
   })
   .refine(
     (data) =>
@@ -68,7 +71,6 @@ const updatedAirDto = airDto
       path: ["measurements"],
     },
   );
-
 interface CreateAirDataFormProps {
   onClose: () => void;
 }
@@ -279,6 +281,7 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
         validatedData.push(result.data);
       } else {
         newErrors[index] = result.error.flatten().fieldErrors;
+        // console.error(result.error)
       }
     });
 
@@ -339,34 +342,81 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
           );
-          // Add timeOfDay and locationType to headers if not present
-          if (!headers.includes("timeofday")) headers.push("timeofday");
-          if (!headers.includes("locationtype")) headers.push("locationtype");
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: AirDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<AirDataFormData> =
-              index < airDataFormData.length
-                ? { ...airDataFormData[index] }
-                : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
+          // Check which optional fields are present
+          const hasTimeOfDay = headers.includes("timeofday");
+          const hasLocationType = headers.includes("locationtype");
+
+          const mappedData: Partial<AirDataFormData>[] = rows
+            .map((row) => {
+              // Skip completely empty rows
+              if (
+                !row ||
+                row.every(
+                  (cell) => cell === null || cell === undefined || cell === "",
+                )
+              ) {
+                return null;
+              }
+
+              const rowData: Partial<AirDataFormData> = {};
+              let hasValidData = false;
+
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+
+                // Skip empty cells
+                if (value === null || value === undefined || value === "") {
+                  return;
+                }
+
                 if (mappedKey) {
                   if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
+                    // Handle different date formats
+                    let date: Date;
+                    if (value instanceof Date) {
+                      date = value;
+                    } else if (typeof value === "number") {
+                      // Excel serial date number
+                      date = new Date((value - 25569) * 86400 * 1000);
+                    } else {
+                      date = new Date(value);
+                    }
+
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
+                      hasValidData = true;
                     } else {
-                      toast.error(
-                        `Invalid date format in uploaded file: ${value}`,
-                      );
+                      console.warn(`Invalid date format: ${value}`);
                     }
-                  } else if (mappedKey === "timeOfDay") {
-                    rowData[mappedKey] = value as TimeOfDay;
-                  } else if (mappedKey === "locationType") {
-                    rowData[mappedKey] = value as LocationType;
+                  } else if (mappedKey === "timeOfDay" && hasTimeOfDay) {
+                    const timeValue = String(value).toLowerCase();
+                    // Map common time values to valid TimeOfDay enum
+                    if (["day", "morning", "afternoon"].includes(timeValue)) {
+                      rowData[mappedKey] = "day" as TimeOfDay;
+                    } else if (["evening"].includes(timeValue)) {
+                      rowData[mappedKey] = "evening" as TimeOfDay;
+                    } else if (["night"].includes(timeValue)) {
+                      rowData[mappedKey] = "night" as TimeOfDay;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "locationType" && hasLocationType) {
+                    const locValue = String(value).toLowerCase();
+                    // Map common location values to valid LocationType enum
+                    if (["industrial"].includes(locValue)) {
+                      rowData[mappedKey] = "industrial" as LocationType;
+                    } else if (
+                      ["residential", "residence"].includes(locValue)
+                    ) {
+                      rowData[mappedKey] = "residential" as LocationType;
+                    } else if (["commercial"].includes(locValue)) {
+                      rowData[mappedKey] = "commercial" as LocationType;
+                    } else if (["rural"].includes(locValue)) {
+                      rowData[mappedKey] = "rural" as LocationType;
+                    }
+                    hasValidData = true;
                   } else if (
                     [
                       "pm25",
@@ -379,38 +429,69 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                       "humidity",
                     ].includes(mappedKey)
                   ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                      rowData[mappedKey] = numValue as any;
+                      hasValidData = true;
+                    }
+                  } else if (mappedKey === "notes") {
+                    rowData[mappedKey] = String(value);
+                    hasValidData = true;
                   }
                 }
-              }
-            });
-            return rowData as AirDataFormData;
-          });
+              });
+
+              // Only return rows that have at least one valid data point
+              return hasValidData ? rowData : null;
+            })
+            .filter((row): row is Partial<AirDataFormData> => row !== null);
+
+          if (mappedData.length === 0) {
+            toast.error("No valid data found in the Excel file");
+            return;
+          }
 
           // Validate uploaded data
           const validatedData: AirDataFormData[] = [];
           const newErrors: any = {};
+
           mappedData.forEach((row, index) => {
             const result = updatedAirDto.safeParse(row);
             if (result.success) {
               validatedData.push(result.data);
             } else {
               newErrors[index] = result.error.flatten().fieldErrors;
+              // console.error(`Row ${index + 2} validation error:`, result.error.format());
             }
           });
 
           if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error("Please correct errors in the uploaded data.");
+            const errorCount = Object.keys(newErrors).length;
+            const successCount = validatedData.length;
+
+            if (successCount > 0) {
+              setAirDataFormData(validatedData);
+              toast.warning(
+                `Imported ${successCount} valid rows. ${errorCount} rows had errors and were skipped.`,
+              );
+            } else {
+              setErrors(newErrors);
+              toast.error(
+                "All rows contain errors. Please check your data format.",
+              );
+            }
           } else {
-            setErrors({}); // Clear previous errors
+            setErrors({});
             setAirDataFormData(validatedData);
-            toast.success("Excel data imported successfully!");
+            toast.success(
+              `Successfully imported ${validatedData.length} rows!`,
+            );
           }
         } catch (error) {
-          toast.error("Error reading Excel file");
+          // console.error("Error reading Excel file:", error);
+          toast.error(
+            "Error reading Excel file. Please check the file format.",
+          );
         }
       };
       reader.readAsArrayBuffer(file);

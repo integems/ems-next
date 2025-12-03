@@ -11,7 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SoilData, Location, LocationType, TimeOfDay } from "@/types/common.types";
+import {
+  SoilData,
+  Location,
+  LocationType,
+  TimeOfDay,
+} from "@/types/common.types";
 import { SoilDataFilterDto } from "@/dtos/soil.dto";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -210,7 +215,10 @@ export default function SoilAnalysisPage() {
           locationTypeFilter === "All"
             ? undefined
             : (locationTypeFilter as LocationType),
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
       };
       const response = await soilService.findAllSoilData(
         currentUser.token,

@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,29 +11,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
+import {
+  createNoiseDataDto,
+  singleNoiseData as noiseDto,
+} from "@/dtos/noise.dto";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendNoiseService } from "@/frontend-services/noise.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Category,
   Location,
-  TimeOfDay,
   LocationType,
+  TimeOfDay,
 } from "@/types/common.types";
-import {
-  createNoiseDataDto,
-  singleNoiseData as noiseDto,
-} from "@/dtos/noise.dto";
-import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import LocationPickerMap from "@/components/LocationPickerMap";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { Spreadsheet } from "react-spreadsheet";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { Spreadsheet } from "react-spreadsheet";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { z } from "zod";
 
 const locationService = new FrontendLocationService();
 const noiseService = new FrontendNoiseService();
@@ -48,6 +48,10 @@ const updatedNoiseDto = noiseDto
     la10: z.number().optional(),
     la90: z.number().optional(),
     lafMin: z.number().optional(),
+    timeOfDay: z.enum(["day", "evening", "night"]).optional(),
+    locationType: z
+      .enum(["industrial", "residential", "commercial", "rural"])
+      .optional(),
   })
   .refine(
     (data) =>
@@ -294,7 +298,7 @@ export default function CreateNoiseDataForm({
     { value: data.timeOfDay || "" },
     { value: data.locationType || "" },
   ]);
-
+  // Fixed handleFileUpload for Noise Form
   const handleFileUpload = useCallback(
     (file: File) => {
       if (
@@ -323,34 +327,72 @@ export default function CreateNoiseDataForm({
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
           );
-          // Add timeOfDay and locationType to headers if not present
-          if (!headers.includes("timeofday")) headers.push("timeofday");
-          if (!headers.includes("locationtype")) headers.push("locationtype");
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: NoiseDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<NoiseDataFormData> =
-              index < noiseDataFormData.length
-                ? { ...noiseDataFormData[index] }
-                : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
+          const hasTimeOfDay = headers.includes("timeofday");
+          const hasLocationType = headers.includes("locationtype");
+
+          const mappedData: Partial<NoiseDataFormData>[] = rows
+            .map((row) => {
+              if (
+                !row ||
+                row.every(
+                  (cell) => cell === null || cell === undefined || cell === "",
+                )
+              ) {
+                return null;
+              }
+
+              const rowData: Partial<NoiseDataFormData> = {};
+              let hasValidData = false;
+
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+
+                if (value === null || value === undefined || value === "") {
+                  return;
+                }
+
                 if (mappedKey) {
                   if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
+                    let date: Date;
+                    if (value instanceof Date) {
+                      date = value;
+                    } else if (typeof value === "number") {
+                      date = new Date((value - 25569) * 86400 * 1000);
+                    } else {
+                      date = new Date(value);
+                    }
+
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
-                    } else {
-                      toast.error(
-                        `Invalid date format in uploaded file: ${value}`,
-                      );
+                      hasValidData = true;
                     }
-                  } else if (mappedKey === "timeOfDay") {
-                    rowData[mappedKey] = value as TimeOfDay;
-                  } else if (mappedKey === "locationType") {
-                    rowData[mappedKey] = value as LocationType;
+                  } else if (mappedKey === "timeOfDay" && hasTimeOfDay) {
+                    const timeValue = String(value).toLowerCase();
+                    if (["day", "morning", "afternoon"].includes(timeValue)) {
+                      rowData[mappedKey] = "day" as TimeOfDay;
+                    } else if (["evening"].includes(timeValue)) {
+                      rowData[mappedKey] = "evening" as TimeOfDay;
+                    } else if (["night"].includes(timeValue)) {
+                      rowData[mappedKey] = "night" as TimeOfDay;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "locationType" && hasLocationType) {
+                    const locValue = String(value).toLowerCase();
+                    if (["industrial"].includes(locValue)) {
+                      rowData[mappedKey] = "industrial" as LocationType;
+                    } else if (
+                      ["residential", "residence"].includes(locValue)
+                    ) {
+                      rowData[mappedKey] = "residential" as LocationType;
+                    } else if (["commercial"].includes(locValue)) {
+                      rowData[mappedKey] = "commercial" as LocationType;
+                    } else if (["rural"].includes(locValue)) {
+                      rowData[mappedKey] = "rural" as LocationType;
+                    }
+                    hasValidData = true;
                   } else if (
                     [
                       "laeq",
@@ -361,19 +403,33 @@ export default function CreateNoiseDataForm({
                       "lafMin",
                     ].includes(mappedKey)
                   ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                      rowData[mappedKey] = numValue as any;
+                      hasValidData = true;
+                    }
+                  } else if (
+                    mappedKey === "duration" ||
+                    mappedKey === "notes"
+                  ) {
+                    rowData[mappedKey] = String(value);
+                    hasValidData = true;
                   }
                 }
-              }
-            });
-            return rowData as NoiseDataFormData;
-          });
+              });
 
-          // Validate uploaded data
+              return hasValidData ? rowData : null;
+            })
+            .filter((row): row is Partial<NoiseDataFormData> => row !== null);
+
+          if (mappedData.length === 0) {
+            toast.error("No valid data found in the Excel file");
+            return;
+          }
+
           const validatedData: NoiseDataFormData[] = [];
           const newErrors: any = {};
+
           mappedData.forEach((row, index) => {
             const result = updatedNoiseDto.safeParse(row);
             if (result.success) {
@@ -384,15 +440,31 @@ export default function CreateNoiseDataForm({
           });
 
           if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error("Please correct errors in the uploaded data.");
+            const errorCount = Object.keys(newErrors).length;
+            const successCount = validatedData.length;
+
+            if (successCount > 0) {
+              setNoiseDataFormData(validatedData);
+              toast.warning(
+                `Imported ${successCount} valid rows. ${errorCount} rows had errors and were skipped.`,
+              );
+            } else {
+              setErrors(newErrors);
+              toast.error(
+                "All rows contain errors. Please check your data format.",
+              );
+            }
           } else {
-            setErrors({}); // Clear previous errors
+            setErrors({});
             setNoiseDataFormData(validatedData);
-            toast.success("Excel data imported successfully!");
+            toast.success(
+              `Successfully imported ${validatedData.length} rows!`,
+            );
           }
         } catch (error) {
-          toast.error("Error reading Excel file");
+          toast.error(
+            "Error reading Excel file. Please check the file format.",
+          );
         }
       };
       reader.readAsArrayBuffer(file);
@@ -828,7 +900,7 @@ export default function CreateNoiseDataForm({
                     <SelectContent>
                       {Object.values(TimeOfDay).map((time) => (
                         <SelectItem key={time} value={time}>
-                          {time}
+                          {time.charAt(0).toUpperCase() + time.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -853,7 +925,7 @@ export default function CreateNoiseDataForm({
                     <SelectContent>
                       {Object.values(LocationType).map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>

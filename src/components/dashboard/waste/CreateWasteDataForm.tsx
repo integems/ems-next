@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,7 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
+import {
+  createWasteDataDto,
+  CreateWasteDataDto,
+  singleWasteData as wasteDto,
+} from "@/dtos/waste.dto";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,20 +28,14 @@ import {
   LocationType,
   TimeOfDay,
 } from "@/types/common.types";
-import {
-  createWasteDataDto,
-  CreateWasteDataDto,
-  singleWasteData as wasteDto,
-} from "@/dtos/waste.dto";
-import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import LocationPickerMap from "@/components/LocationPickerMap";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { Spreadsheet } from "react-spreadsheet";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { Spreadsheet } from "react-spreadsheet";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { z } from "zod";
 
 const locationService = new FrontendLocationService();
 const wasteService = new FrontendWasteService();
@@ -53,6 +53,10 @@ const updatedWasteDto = wasteDto
     bottlesWasteKg: z.number().optional(),
     eWasteKg: z.number().optional(),
     scrapMetalKg: z.number().optional(),
+    timeOfDay: z.enum(["day", "evening", "night"]).optional(),
+    locationType: z
+      .enum(["industrial", "residential", "commercial", "rural"])
+      .optional(),
   })
   .refine(
     (data) =>
@@ -106,7 +110,9 @@ export default function CreateWasteDataForm({
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
   );
-  const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
+  const [locationFormData, setLocationFormData] = useState<
+    CreateLocationDto & { locationType?: LocationType }
+  >({
     name: "",
     description: "",
     category: Category.Waste,
@@ -119,6 +125,8 @@ export default function CreateWasteDataForm({
     Partial<WasteDataFormData>
   >({
     measurementTime: new Date(),
+    timeOfDay: undefined,
+    locationType: undefined,
   });
   const [errors, setErrors] = useState<any>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -174,7 +182,7 @@ export default function CreateWasteDataForm({
         createWasteDataMutation.mutate(result.data);
       } else {
         setErrors(result.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the waste quality data.");
+        toast.error("Please correct errors in the waste data.");
       }
     },
     onError: (error: any) => {
@@ -195,6 +203,14 @@ export default function CreateWasteDataForm({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
+  };
+
+  const handleTimeOfDayChange = (value: TimeOfDay) => {
+    setSingleWasteData((prev) => ({ ...prev, timeOfDay: value }));
+  };
+
+  const handleLocationTypeChange = (value: LocationType) => {
+    setSingleWasteData((prev) => ({ ...prev, locationType: value }));
   };
 
   const handleAddSingleWasteData = () => {
@@ -240,6 +256,10 @@ export default function CreateWasteDataForm({
             } else {
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
+          } else if (header === "timeOfDay") {
+            rowData.timeOfDay = value as TimeOfDay;
+          } else if (header === "locationType") {
+            rowData.locationType = value as LocationType;
           } else if (
             [
               "solidWasteKg",
@@ -254,11 +274,6 @@ export default function CreateWasteDataForm({
               "scrapMetalKg",
             ].includes(header)
           ) {
-            rowData[header as keyof WasteDataFormData] = Number(value) as any;
-          } else if (header === "timeOfDay") {
-            rowData.timeOfDay = value as TimeOfDay;
-          } else if (header === "locationType") {
-            rowData.locationType = value as LocationType;
             rowData[header as keyof WasteDataFormData] = Number(value) as any;
           } else {
             rowData[header as keyof WasteDataFormData] = value as any;
@@ -311,6 +326,7 @@ export default function CreateWasteDataForm({
     { value: data.notes || "" },
   ]);
 
+  // Fixed handleFileUpload for Waste Form
   const handleFileUpload = useCallback(
     (file: File) => {
       if (
@@ -339,30 +355,72 @@ export default function CreateWasteDataForm({
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
           );
-          // Add timeOfDay and locationType to headers if not present
-          if (!headers.includes("timeofday")) headers.push("timeofday");
-          if (!headers.includes("locationtype")) headers.push("locationtype");
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: WasteDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<WasteDataFormData> =
-              index < wasteDataFormData.length
-                ? { ...wasteDataFormData[index] }
-                : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
+          const hasTimeOfDay = headers.includes("timeofday");
+          const hasLocationType = headers.includes("locationtype");
+
+          const mappedData: Partial<WasteDataFormData>[] = rows
+            .map((row) => {
+              if (
+                !row ||
+                row.every(
+                  (cell) => cell === null || cell === undefined || cell === "",
+                )
+              ) {
+                return null;
+              }
+
+              const rowData: Partial<WasteDataFormData> = {};
+              let hasValidData = false;
+
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+
+                if (value === null || value === undefined || value === "") {
+                  return;
+                }
+
                 if (mappedKey) {
                   if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
+                    let date: Date;
+                    if (value instanceof Date) {
+                      date = value;
+                    } else if (typeof value === "number") {
+                      date = new Date((value - 25569) * 86400 * 1000);
+                    } else {
+                      date = new Date(value);
+                    }
+
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
-                    } else {
-                      toast.error(
-                        `Invalid date format in uploaded file: ${value}`,
-                      );
+                      hasValidData = true;
                     }
+                  } else if (mappedKey === "timeOfDay" && hasTimeOfDay) {
+                    const timeValue = String(value).toLowerCase();
+                    if (["day", "morning", "afternoon"].includes(timeValue)) {
+                      rowData[mappedKey] = "day" as TimeOfDay;
+                    } else if (["evening"].includes(timeValue)) {
+                      rowData[mappedKey] = "evening" as TimeOfDay;
+                    } else if (["night"].includes(timeValue)) {
+                      rowData[mappedKey] = "night" as TimeOfDay;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "locationType" && hasLocationType) {
+                    const locValue = String(value).toLowerCase();
+                    if (["industrial"].includes(locValue)) {
+                      rowData[mappedKey] = "industrial" as LocationType;
+                    } else if (
+                      ["residential", "residence"].includes(locValue)
+                    ) {
+                      rowData[mappedKey] = "residential" as LocationType;
+                    } else if (["commercial"].includes(locValue)) {
+                      rowData[mappedKey] = "commercial" as LocationType;
+                    } else if (["rural"].includes(locValue)) {
+                      rowData[mappedKey] = "rural" as LocationType;
+                    }
+                    hasValidData = true;
                   } else if (
                     [
                       "solidWasteKg",
@@ -377,24 +435,30 @@ export default function CreateWasteDataForm({
                       "scrapMetalKg",
                     ].includes(mappedKey)
                   ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else if (mappedKey === "timeOfDay") {
-                    rowData[mappedKey] = value as TimeOfDay;
-                  } else if (mappedKey === "locationType") {
-                    rowData[mappedKey] = value as LocationType;
-                    rowData[mappedKey] = Number(value) as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                      rowData[mappedKey] = numValue as any;
+                      hasValidData = true;
+                    }
+                  } else if (mappedKey === "notes") {
+                    rowData[mappedKey] = String(value);
+                    hasValidData = true;
                   }
                 }
-              }
-            });
-            return rowData as WasteDataFormData;
-          });
+              });
 
-          // Validate uploaded data
+              return hasValidData ? rowData : null;
+            })
+            .filter((row): row is Partial<WasteDataFormData> => row !== null);
+
+          if (mappedData.length === 0) {
+            toast.error("No valid data found in the Excel file");
+            return;
+          }
+
           const validatedData: WasteDataFormData[] = [];
           const newErrors: any = {};
+
           mappedData.forEach((row, index) => {
             const result = updatedWasteDto.safeParse(row);
             if (result.success) {
@@ -405,22 +469,37 @@ export default function CreateWasteDataForm({
           });
 
           if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error("Please correct errors in the uploaded data.");
+            const errorCount = Object.keys(newErrors).length;
+            const successCount = validatedData.length;
+
+            if (successCount > 0) {
+              setWasteDataFormData(validatedData);
+              toast.warning(
+                `Imported ${successCount} valid rows. ${errorCount} rows had errors and were skipped.`,
+              );
+            } else {
+              setErrors(newErrors);
+              toast.error(
+                "All rows contain errors. Please check your data format.",
+              );
+            }
           } else {
-            setErrors({}); // Clear previous errors
+            setErrors({});
             setWasteDataFormData(validatedData);
-            toast.success("Excel data imported successfully!");
+            toast.success(
+              `Successfully imported ${validatedData.length} rows!`,
+            );
           }
         } catch (error) {
-          toast.error("Error reading Excel file");
+          toast.error(
+            "Error reading Excel file. Please check the file format.",
+          );
         }
       };
       reader.readAsArrayBuffer(file);
     },
     [wasteDataFormData],
   );
-
   const handleDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -488,7 +567,7 @@ export default function CreateWasteDataForm({
         createWasteDataMutation.mutate(wasteDataResult.data);
       } else {
         setErrors(wasteDataResult.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the waste quality data.");
+        toast.error("Please correct errors in the waste data.");
       }
     }
   };
@@ -595,7 +674,7 @@ export default function CreateWasteDataForm({
                         onValueChange={(value) =>
                           setLocationFormData((prev) => ({
                             ...prev,
-                            locationType: value as any,
+                            locationType: value as LocationType,
                           }))
                         }
                         value={locationFormData.locationType || ""}
@@ -645,7 +724,7 @@ export default function CreateWasteDataForm({
 
         {/* Waste Data Section */}
         <div className="flex-1 space-y-6">
-          <h2 className="text-xl font-semibold mb-4">Waste Quality Data</h2>
+          <h2 className="text-xl font-semibold mb-4">Waste Data</h2>
 
           {/* File Upload Section */}
           <div className="space-y-2">
@@ -683,7 +762,7 @@ export default function CreateWasteDataForm({
           {/* Spreadsheet Section */}
           {!!spreadsheetData.length && (
             <div className="space-y-2">
-              <Label>Waste Quality Data Entries</Label>
+              <Label>Waste Data Entries</Label>
               <div className="max-w-[60rem] overflow-auto rounded">
                 <Spreadsheet
                   data={spreadsheetData}
@@ -892,10 +971,7 @@ export default function CreateWasteDataForm({
                   <Select
                     value={singleWasteData.timeOfDay || ""}
                     onValueChange={(value: TimeOfDay) =>
-                      setSingleWasteData((prev) => ({
-                        ...prev,
-                        timeOfDay: value,
-                      }))
+                      handleTimeOfDayChange(value)
                     }
                   >
                     <SelectTrigger>
@@ -904,7 +980,7 @@ export default function CreateWasteDataForm({
                     <SelectContent>
                       {Object.values(TimeOfDay).map((time) => (
                         <SelectItem key={time} value={time}>
-                          {time}
+                          {time.charAt(0).toUpperCase() + time.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -920,10 +996,7 @@ export default function CreateWasteDataForm({
                   <Select
                     value={singleWasteData.locationType || ""}
                     onValueChange={(value: LocationType) =>
-                      setSingleWasteData((prev) => ({
-                        ...prev,
-                        locationType: value,
-                      }))
+                      handleLocationTypeChange(value)
                     }
                   >
                     <SelectTrigger>
@@ -932,7 +1005,7 @@ export default function CreateWasteDataForm({
                     <SelectContent>
                       {Object.values(LocationType).map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>

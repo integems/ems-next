@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     model: google("gemini-2.5-flash-lite"),
     messages: convertToModelMessages(messages),
     tools,
- system: `You are an environmental monitoring analysis assistant. 
+    system: `You are an environmental monitoring analysis assistant. 
 Your purpose is to provide environmental data and insights based on user queries that may involve one or more locations.
 
 Follow these steps to fulfill user requests:
@@ -49,8 +49,7 @@ Guidelines:
   
 This is how findAllLocations is implemented...
 
-`
-
+`,
   });
   return result.toUIMessageStreamResponse();
 }

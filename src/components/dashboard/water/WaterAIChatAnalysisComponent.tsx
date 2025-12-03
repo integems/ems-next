@@ -22,7 +22,7 @@ import {
   LocationType,
   PaginationResponse,
   WaterData,
-  WaterSource
+  WaterSource,
 } from "@/types/common.types";
 import { format } from "date-fns";
 import {
@@ -195,7 +195,8 @@ export default function WaterAIChatAnalysis({
 
     if (locationIdsFilter.length > 0) {
       data = data.filter(
-        (item) => item.locationId && locationIdsFilter.includes(item.locationId),
+        (item) =>
+          item.locationId && locationIdsFilter.includes(item.locationId),
       );
     }
 

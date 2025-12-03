@@ -11,7 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WasteData, Location, LocationType, TimeOfDay } from "@/types/common.types";
+import {
+  WasteData,
+  Location,
+  LocationType,
+  TimeOfDay,
+} from "@/types/common.types";
 import { WasteDataFilterDto } from "@/dtos/waste.dto";
 import { FrontendWasteService } from "@/frontend-services/waste.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -214,7 +219,10 @@ export default function WasteAnalysisPage() {
           locationTypeFilter === "All"
             ? undefined
             : (locationTypeFilter as LocationType),
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
       };
 
       // console.log({ filters });
@@ -231,7 +239,6 @@ export default function WasteAnalysisPage() {
     setActiveSearchQuery(searchQuery || "");
     refetch();
   };
-
 
   // const wasteData = useMemo(() => {
   //   if (!wasteData) return [];

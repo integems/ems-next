@@ -7,7 +7,7 @@ const locationService = new LocationService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { locationId: string } },
+  { params }: { params: Promise<{ locationId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -19,7 +19,7 @@ export async function GET(
         { status: auth.statusCode },
       );
     }
-    const { locationId } = params;
+    const { locationId } = await params;
     const location = await locationService.findLocationById(locationId);
     return NextResponse.json(location);
   } catch (error: any) {
@@ -29,7 +29,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { locationId: string } },
+  { params }: { params: Promise<{ locationId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -45,7 +45,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { locationId } = params;
+    const { locationId } = await params;
     const locationDto: UpdateLocationDto = await request.json();
     const updatedLocation = await locationService.updateLocation(
       locationId,
@@ -60,7 +60,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { locationId: string } },
+  { params }: { params: Promise<{ locationId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -76,7 +76,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { locationId } = params;
+    const { locationId } = await params;
     await locationService.deleteLocation(locationId, auth.user);
     return NextResponse.json({ message: "Location deleted successfully" });
   } catch (error: any) {

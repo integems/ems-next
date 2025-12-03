@@ -1,10 +1,9 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import LocationPickerMap from "@/components/LocationPickerMap";
 import { Button } from "@/components/ui/button";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -12,25 +11,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FrontendLocationService } from "@/frontend-services/location.service";
-import { FrontendSoilService } from "@/frontend-services/soil.service";
-import { useAuth } from "@/hooks/use-auth";
-import { Category, Location } from "@/types/common.types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import {
   createSoilDataDto,
   CreateSoilDataDto,
   singleSoilData as soilDto,
 } from "@/dtos/soil.dto";
-import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
-import { LoaderIcon, Upload, MapPin, Plus, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-import LocationPickerMap from "@/components/LocationPickerMap";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { z } from "zod";
-import * as XLSX from "xlsx";
-import { Spreadsheet } from "react-spreadsheet";
+import { FrontendLocationService } from "@/frontend-services/location.service";
+import { FrontendSoilService } from "@/frontend-services/soil.service";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  Category,
+  Location,
+  LocationType,
+  TimeOfDay,
+} from "@/types/common.types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import React, { useCallback, useState } from "react";
+import { Spreadsheet } from "react-spreadsheet";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import { z } from "zod";
 
 const locationService = new FrontendLocationService();
 const soilService = new FrontendSoilService();
@@ -44,6 +49,10 @@ const updatedSoilDto = soilDto
     phosphorus: z.number().optional(),
     potassium: z.number().optional(),
     organicMatter: z.number().optional(),
+    timeOfDay: z.enum(["day", "evening", "night"]).optional(),
+    locationType: z
+      .enum(["industrial", "residential", "commercial", "rural"])
+      .optional(),
   })
   .refine(
     (data) =>
@@ -75,6 +84,8 @@ const parameterMappings: { [key: string]: keyof SoilDataFormData } = {
   organicmatter: "organicMatter",
   measurementtime: "measurementTime",
   notes: "notes",
+  timeofday: "timeOfDay",
+  locationtype: "locationType",
 };
 
 export default function CreateSoilDataForm({
@@ -87,7 +98,9 @@ export default function CreateSoilDataForm({
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
   );
-  const [locationFormData, setLocationFormData] = useState<CreateLocationDto>({
+  const [locationFormData, setLocationFormData] = useState<
+    CreateLocationDto & { locationType?: LocationType }
+  >({
     name: "",
     description: "",
     category: Category.Soil,
@@ -100,6 +113,8 @@ export default function CreateSoilDataForm({
     Partial<SoilDataFormData>
   >({
     measurementTime: new Date(),
+    timeOfDay: undefined,
+    locationType: undefined,
   });
   const [errors, setErrors] = useState<any>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -155,7 +170,7 @@ export default function CreateSoilDataForm({
         createSoilDataMutation.mutate(result.data);
       } else {
         setErrors(result.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the soil quality data.");
+        toast.error("Please correct errors in the soil data.");
       }
     },
     onError: (error: any) => {
@@ -176,6 +191,14 @@ export default function CreateSoilDataForm({
       ...prev,
       [name]: type === "number" ? (value ? Number(value) : undefined) : value,
     }));
+  };
+
+  const handleTimeOfDayChange = (value: TimeOfDay) => {
+    setSingleSoilData((prev) => ({ ...prev, timeOfDay: value }));
+  };
+
+  const handleLocationTypeChange = (value: LocationType) => {
+    setSingleSoilData((prev) => ({ ...prev, locationType: value }));
   };
 
   const handleAddSingleSoilData = () => {
@@ -199,6 +222,8 @@ export default function CreateSoilDataForm({
       "phosphorus",
       "potassium",
       "organicMatter",
+      "timeOfDay",
+      "locationType",
       "notes",
     ];
 
@@ -215,6 +240,10 @@ export default function CreateSoilDataForm({
             } else {
               toast.error(`Invalid date format for measurementTime: ${value}`);
             }
+          } else if (header === "timeOfDay") {
+            rowData.timeOfDay = value as TimeOfDay;
+          } else if (header === "locationType") {
+            rowData.locationType = value as LocationType;
           } else if (
             [
               "ph",
@@ -268,9 +297,12 @@ export default function CreateSoilDataForm({
     { value: data.phosphorus?.toString() || "" },
     { value: data.potassium?.toString() || "" },
     { value: data.organicMatter?.toString() || "" },
+    { value: data.timeOfDay || "" },
+    { value: data.locationType || "" },
     { value: data.notes || "" },
   ]);
 
+  // Fixed handleFileUpload for Soil Form
   const handleFileUpload = useCallback(
     (file: File) => {
       if (
@@ -301,25 +333,71 @@ export default function CreateSoilDataForm({
           );
           const rows = jsonData.slice(1) as any[][];
 
-          const mappedData: SoilDataFormData[] = rows.map((row, index) => {
-            const rowData: Partial<SoilDataFormData> =
-              index < soilDataFormData.length
-                ? { ...soilDataFormData[index] }
-                : {};
-            headers.forEach((header, colIndex) => {
-              const mappedKey = parameterMappings[header];
-              const value = row[colIndex];
-              if (value) {
+          // Check which optional fields are present
+          const hasTimeOfDay = headers.includes("timeofday");
+          const hasLocationType = headers.includes("locationtype");
+
+          const mappedData: Partial<SoilDataFormData>[] = rows
+            .map((row) => {
+              if (
+                !row ||
+                row.every(
+                  (cell) => cell === null || cell === undefined || cell === "",
+                )
+              ) {
+                return null;
+              }
+
+              const rowData: Partial<SoilDataFormData> = {};
+              let hasValidData = false;
+
+              headers.forEach((header, colIndex) => {
+                const mappedKey = parameterMappings[header];
+                const value = row[colIndex];
+
+                if (value === null || value === undefined || value === "") {
+                  return;
+                }
+
                 if (mappedKey) {
                   if (mappedKey === "measurementTime") {
-                    const date = new Date(value);
+                    let date: Date;
+                    if (value instanceof Date) {
+                      date = value;
+                    } else if (typeof value === "number") {
+                      date = new Date((value - 25569) * 86400 * 1000);
+                    } else {
+                      date = new Date(value);
+                    }
+
                     if (!isNaN(date.getTime())) {
                       rowData[mappedKey] = date;
-                    } else {
-                      toast.error(
-                        `Invalid date format in uploaded file: ${value}`,
-                      );
+                      hasValidData = true;
                     }
+                  } else if (mappedKey === "timeOfDay" && hasTimeOfDay) {
+                    const timeValue = String(value).toLowerCase();
+                    if (["day", "morning", "afternoon"].includes(timeValue)) {
+                      rowData[mappedKey] = "day" as TimeOfDay;
+                    } else if (["evening"].includes(timeValue)) {
+                      rowData[mappedKey] = "evening" as TimeOfDay;
+                    } else if (["night"].includes(timeValue)) {
+                      rowData[mappedKey] = "night" as TimeOfDay;
+                    }
+                    hasValidData = true;
+                  } else if (mappedKey === "locationType" && hasLocationType) {
+                    const locValue = String(value).toLowerCase();
+                    if (["industrial"].includes(locValue)) {
+                      rowData[mappedKey] = "industrial" as LocationType;
+                    } else if (
+                      ["residential", "residence"].includes(locValue)
+                    ) {
+                      rowData[mappedKey] = "residential" as LocationType;
+                    } else if (["commercial"].includes(locValue)) {
+                      rowData[mappedKey] = "commercial" as LocationType;
+                    } else if (["rural"].includes(locValue)) {
+                      rowData[mappedKey] = "rural" as LocationType;
+                    }
+                    hasValidData = true;
                   } else if (
                     [
                       "ph",
@@ -330,19 +408,30 @@ export default function CreateSoilDataForm({
                       "organicMatter",
                     ].includes(mappedKey)
                   ) {
-                    rowData[mappedKey] = Number(value) as any;
-                  } else {
-                    rowData[mappedKey] = value as any;
+                    const numValue = Number(value);
+                    if (!isNaN(numValue)) {
+                      rowData[mappedKey] = numValue as any;
+                      hasValidData = true;
+                    }
+                  } else if (mappedKey === "notes") {
+                    rowData[mappedKey] = String(value);
+                    hasValidData = true;
                   }
                 }
-              }
-            });
-            return rowData as SoilDataFormData;
-          });
+              });
 
-          // Validate uploaded data
+              return hasValidData ? rowData : null;
+            })
+            .filter((row): row is Partial<SoilDataFormData> => row !== null);
+
+          if (mappedData.length === 0) {
+            toast.error("No valid data found in the Excel file");
+            return;
+          }
+
           const validatedData: SoilDataFormData[] = [];
           const newErrors: any = {};
+
           mappedData.forEach((row, index) => {
             const result = updatedSoilDto.safeParse(row);
             if (result.success) {
@@ -353,15 +442,31 @@ export default function CreateSoilDataForm({
           });
 
           if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error("Please correct errors in the uploaded data.");
+            const errorCount = Object.keys(newErrors).length;
+            const successCount = validatedData.length;
+
+            if (successCount > 0) {
+              setSoilDataFormData(validatedData);
+              toast.warning(
+                `Imported ${successCount} valid rows. ${errorCount} rows had errors and were skipped.`,
+              );
+            } else {
+              setErrors(newErrors);
+              toast.error(
+                "All rows contain errors. Please check your data format.",
+              );
+            }
           } else {
-            setErrors({}); // Clear previous errors
+            setErrors({});
             setSoilDataFormData(validatedData);
-            toast.success("Excel data imported successfully!");
+            toast.success(
+              `Successfully imported ${validatedData.length} rows!`,
+            );
           }
         } catch (error) {
-          toast.error("Error reading Excel file");
+          toast.error(
+            "Error reading Excel file. Please check the file format.",
+          );
         }
       };
       reader.readAsArrayBuffer(file);
@@ -434,7 +539,7 @@ export default function CreateSoilDataForm({
         createSoilDataMutation.mutate(soilDataResult.data);
       } else {
         setErrors(soilDataResult.error.flatten().fieldErrors);
-        toast.error("Please correct errors in the soil quality data.");
+        toast.error("Please correct errors in the soil data.");
       }
     }
   };
@@ -541,7 +646,7 @@ export default function CreateSoilDataForm({
                         onValueChange={(value) =>
                           setLocationFormData((prev) => ({
                             ...prev,
-                            locationType: value as any,
+                            locationType: value as LocationType,
                           }))
                         }
                         value={locationFormData.locationType || ""}
@@ -591,7 +696,7 @@ export default function CreateSoilDataForm({
 
         {/* Soil Data Section */}
         <div className="flex-1 space-y-6">
-          <h2 className="text-xl font-semibold mb-4">Soil Quality Data</h2>
+          <h2 className="text-xl font-semibold mb-4">Soil Data</h2>
 
           {/* File Upload Section */}
           <div className="space-y-2">
@@ -629,7 +734,7 @@ export default function CreateSoilDataForm({
           {/* Spreadsheet Section */}
           {!!spreadsheetData.length && (
             <div className="space-y-2">
-              <Label>Soil Quality Data Entries</Label>
+              <Label>Soil Data Entries</Label>
               <div className="max-w-[60rem] overflow-auto rounded">
                 <Spreadsheet
                   data={spreadsheetData}
@@ -641,6 +746,8 @@ export default function CreateSoilDataForm({
                     "Phosphorus Level (ppm)",
                     "Potassium Level (ppm)",
                     "Organic Matter (%)",
+                    "Time of Day",
+                    "Location Type",
                     "Notes",
                   ]}
                   onChange={(data) => handleSpreadsheetChange(data as any)}
@@ -760,6 +867,56 @@ export default function CreateSoilDataForm({
                   {errors.organicMatter && (
                     <p className="text-xs text-red-500">
                       {errors.organicMatter[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Time of Day</Label>
+                  <Select
+                    value={singleSoilData.timeOfDay || ""}
+                    onValueChange={(value: TimeOfDay) =>
+                      handleTimeOfDayChange(value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Time of Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(TimeOfDay).map((time) => (
+                        <SelectItem key={time} value={time}>
+                          {time.charAt(0).toUpperCase() + time.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.timeOfDay && (
+                    <p className="text-xs text-red-500">
+                      {errors.timeOfDay[0]}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm">Location Type</Label>
+                  <Select
+                    value={singleSoilData.locationType || ""}
+                    onValueChange={(value: LocationType) =>
+                      handleLocationTypeChange(value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Location Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.values(LocationType).map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.locationType && (
+                    <p className="text-xs text-red-500">
+                      {errors.locationType[0]}
                     </p>
                   )}
                 </div>

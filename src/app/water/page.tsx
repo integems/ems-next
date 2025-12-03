@@ -1,40 +1,43 @@
 "use client";
-import React from "react";
+import MonitoringDetailPage from "@/components/MonitoringDetailPage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NavComponent from "@/components/NavComponent";
 
 const WaterPage = () => {
+  const waterQualityData = {
+    title: "Water Quality",
+    description:
+      "Track water parameters such as pH, turbidity, and dissolved oxygen.",
+    image:"images/water1.jpg",
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <NavComponent />
-      <h1 className="text-3xl font-bold mb-4 mt-20 text-center">
-        {" "}
-        <span className="text-primary mr-2">Water Quality</span>
-        <span>Parameters</span>
-      </h1>
-      <p className="mb-8">
+    <MonitoringDetailPage
+      title={waterQualityData.title}
+      description={waterQualityData.description}
+      image={waterQualityData.image}
+    >
+      <h2 className="text-2xl font-bold mb-4 text-foreground">
+        Water Quality Parameters
+      </h2>
+      <p className="mb-6 text-muted-foreground">
         This page provides a detailed explanation of each parameter used in our
         water quality monitoring process. These parameters are essential for
         assessing water health for various purposes, including drinking,
         agriculture, and aquatic life support.
       </p>
-
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>pH</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> pH units
+            <p className="font-semibold">
+              Unit: <span className="font-normal">pH units</span>
             </p>
-            <p>
-              pH is a measure of how acidic or basic water is. The range goes
-              from 0 to 14, with 7 being neutral. A pH of less than 7 indicates
-              acidity, whereas a pH of greater than 7 indicates a base. pH is a
-              critical parameter as it affects the solubility and biological
-              availability of chemical constituents, including nutrients and
-              heavy metals.
+            <p className="text-muted-foreground mt-2">
+              Measures how acidic or basic water is, affecting nutrient
+              solubility and the biological availability of chemical
+              constituents.
             </p>
           </CardContent>
         </Card>
@@ -44,14 +47,12 @@ const WaterPage = () => {
             <CardTitle>Dissolved Oxygen (DO)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm (parts per million) or % saturation
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm or % saturation</span>
             </p>
-            <p>
-              Dissolved oxygen is the amount of gaseous oxygen dissolved in the
-              water. Adequate dissolved oxygen is necessary for good water
-              quality and is a critical indicator of a water body's ability to
-              support aquatic life. Low DO levels can be a sign of pollution.
+            <p className="text-muted-foreground mt-2">
+              Indicates the amount of oxygen dissolved in water, crucial for
+              supporting aquatic life. Low levels can signal pollution.
             </p>
           </CardContent>
         </Card>
@@ -61,15 +62,12 @@ const WaterPage = () => {
             <CardTitle>Turbidity</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> FNU (Formazin Nephelometric Units)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">FNU</span>
             </p>
-            <p>
-              Turbidity is the measure of the relative clarity of a liquid. It
-              is a measurement of the amount of light that is scattered by
-              suspended particles in the water. High turbidity can be caused by
-              sediment, algae, or other organic matter and can harm aquatic life
-              by reducing sunlight penetration and clogging gills.
+            <p className="text-muted-foreground mt-2">
+              Measures water clarity. High turbidity from suspended particles
+              can harm aquatic life by reducing sunlight and clogging gills.
             </p>
           </CardContent>
         </Card>
@@ -79,15 +77,12 @@ const WaterPage = () => {
             <CardTitle>Total Dissolved Solids (TDS)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm (parts per million)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm</span>
             </p>
-            <p>
-              TDS is the total amount of mobile charged ions, including
-              minerals, salts, or metals dissolved in a given volume of water.
-              It is directly related to the purity of water and the quality of
-              water purification systems and affects the taste of drinking
-              water.
+            <p className="text-muted-foreground mt-2">
+              Represents the total amount of dissolved minerals, salts, or
+              metals in water, affecting its purity and taste.
             </p>
           </CardContent>
         </Card>
@@ -97,15 +92,12 @@ const WaterPage = () => {
             <CardTitle>Biochemical Oxygen Demand (BOD)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> mg/L
+            <p className="font-semibold">
+              Unit: <span className="font-normal">mg/L</span>
             </p>
-            <p>
-              BOD is a measure of the amount of dissolved oxygen required by
-              aerobic biological organisms to break down organic material
-              present in a given water sample at certain temperature over a
-              specific time period. It is widely used as an indication of the
-              organic quality of water.
+            <p className="text-muted-foreground mt-2">
+              The amount of oxygen needed by aerobic organisms to break down
+              organic material, indicating the organic quality of water.
             </p>
           </CardContent>
         </Card>
@@ -115,15 +107,12 @@ const WaterPage = () => {
             <CardTitle>Chemical Oxygen Demand (COD)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> mg/L
+            <p className="font-semibold">
+              Unit: <span className="font-normal">mg/L</span>
             </p>
-            <p>
-              COD is a measure of the capacity of water to consume oxygen during
-              the decomposition of organic matter and the oxidation of inorganic
-              chemicals such as ammonia and nitrite. It is a measure of the
-              total quantity of oxygen-consuming substances in the water,
-              providing an index of the degree of pollution.
+            <p className="text-muted-foreground mt-2">
+              Measures the total oxygen-consuming substances in water, providing
+              an index of the degree of pollution.
             </p>
           </CardContent>
         </Card>
@@ -133,14 +122,12 @@ const WaterPage = () => {
             <CardTitle>Electrical Conductivity (EC)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> µS/cm (microsiemens per centimeter)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">µS/cm</span>
             </p>
-            <p>
-              EC is a measure of the water's ability to conduct electricity,
-              which is directly related to the concentration of dissolved salts.
-              It is a useful indicator of the overall salinity and dissolved
-              nutrient levels in the water.
+            <p className="text-muted-foreground mt-2">
+              Indicates the water's ability to conduct electricity, which is
+              related to the concentration of dissolved salts and nutrients.
             </p>
           </CardContent>
         </Card>
@@ -150,20 +137,17 @@ const WaterPage = () => {
             <CardTitle>Temperature</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> Degrees Celsius (°C)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">°C</span>
             </p>
-            <p>
-              Water temperature is a critical parameter that affects the rate of
-              biological and chemical processes. It can influence the amount of
-              dissolved oxygen, the metabolic rates of aquatic organisms, and
-              the sensitivity of organisms to toxic wastes, parasites, and
-              diseases.
+            <p className="text-muted-foreground mt-2">
+              Affects the rate of biological and chemical processes, dissolved
+              oxygen levels, and the sensitivity of organisms to toxins.
             </p>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MonitoringDetailPage>
   );
 };
 

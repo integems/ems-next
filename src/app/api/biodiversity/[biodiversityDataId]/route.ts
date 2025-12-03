@@ -7,7 +7,7 @@ const biodiversityService = new BiodiversityService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { biodiversityDataId: string } },
+  { params }: { params: Promise<{ biodiversityDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -19,7 +19,7 @@ export async function GET(
         { status: auth.statusCode },
       );
     }
-    const { biodiversityDataId } = params;
+    const { biodiversityDataId } = await params;
     const biodiversityData =
       await biodiversityService.findBiodiversityDataById(biodiversityDataId);
     return NextResponse.json(biodiversityData);
@@ -30,7 +30,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { biodiversityDataId: string } },
+  { params }: { params: Promise<{ biodiversityDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -46,7 +46,7 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { biodiversityDataId } = params;
+    const { biodiversityDataId } = await params;
     const biodiversityDataDto: UpdateBiodiversityDataDto = await request.json();
     const updatedBiodiversityData =
       await biodiversityService.updateBiodiversityData(
@@ -62,7 +62,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { biodiversityDataId: string } },
+  { params }: { params: Promise<{ biodiversityDataId: string }> },
 ) {
   try {
     const authHeader = request.headers.get("authorization");
@@ -78,7 +78,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { biodiversityDataId } = params;
+    const { biodiversityDataId } = await params;
     await biodiversityService.deleteBiodiversityData(
       biodiversityDataId,
       auth.user,

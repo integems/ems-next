@@ -1,33 +1,42 @@
-"use client";
-import React from "react";
+import MonitoringDetailPage from "@/components/MonitoringDetailPage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const AirPage = () => {
+  const airQualityData = {
+    title: "Air Quality",
+    description: "Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.",
+    image:"images/air1.JPG",
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Air Quality Parameters</h1>
-      <p className="mb-8">
+    <MonitoringDetailPage
+      title={airQualityData.title}
+      description={airQualityData.description}
+      image={airQualityData.image}
+    >
+      <h2 className="text-2xl font-bold mb-4 text-foreground">
+        Air Quality Parameters
+      </h2>
+      <p className="mb-6 text-muted-foreground">
         This page provides a detailed explanation of each parameter used in our
         air quality monitoring process. A deeper understanding of these terms is
         essential for assessing air pollution and its impact on health and the
         environment.
       </p>
-
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>PM2.5 - Particulate Matter 2.5</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> µg/m³
+            <p className="font-semibold">
+              Unit: <span className="font-normal">µg/m³</span>
             </p>
-            <p>
-              PM2.5 refers to fine inhalable particles, with diameters that are
-              generally 2.5 micrometers and smaller. These particles can
-              penetrate deep into the lungs and even enter the bloodstream,
-              posing the greatest risk to health. Sources include combustion
-              engines, power plants, and forest fires.
+            <p className="text-muted-foreground mt-2">
+              Fine inhalable particles (2.5 micrometers or smaller) that can
+              penetrate deep into the lungs and enter the bloodstream, posing
+              significant health risks. Sources include combustion engines and
+              forest fires.
             </p>
           </CardContent>
         </Card>
@@ -37,14 +46,13 @@ const AirPage = () => {
             <CardTitle>PM10 - Particulate Matter 10</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> µg/m³
+            <p className="font-semibold">
+              Unit: <span className="font-normal">µg/m³</span>
             </p>
-            <p>
-              PM10 are inhalable particles, with diameters that are generally 10
-              micrometers and smaller. These particles are smaller than the
-              width of a human hair and can be inhaled into the lungs. Sources
-              include dust from roads, construction sites, and farming.
+            <p className="text-muted-foreground mt-2">
+              Inhalable particles (10 micrometers or smaller) that can be
+              inhaled into the lungs. Sources include dust from roads,
+              construction, and farming.
             </p>
           </CardContent>
         </Card>
@@ -54,14 +62,13 @@ const AirPage = () => {
             <CardTitle>NO₂ - Nitrogen Dioxide</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppb (parts per billion)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppb</span>
             </p>
-            <p>
-              Nitrogen Dioxide is a highly reactive gas primarily formed from
-              the burning of fuel. It can cause respiratory problems and
-              contributes to the formation of acid rain and ozone. Major sources
-              are vehicles, power plants, and industrial emissions.
+            <p className="text-muted-foreground mt-2">
+              A reactive gas formed from burning fuel. It causes respiratory
+              issues and contributes to acid rain. Major sources are vehicles
+              and industrial emissions.
             </p>
           </CardContent>
         </Card>
@@ -71,14 +78,12 @@ const AirPage = () => {
             <CardTitle>O₃ - Ozone</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppb
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppb</span>
             </p>
-            <p>
-              Ground-level ozone is not emitted directly into the air but is
-              created by chemical reactions between oxides of nitrogen (NOx) and
-              volatile organic compounds (VOC) in the presence of sunlight. It
-              is a major component of smog and can cause breathing difficulties.
+            <p className="text-muted-foreground mt-2">
+              Ground-level ozone formed by chemical reactions in sunlight. It is
+              a major component of smog and can cause breathing difficulties.
             </p>
           </CardContent>
         </Card>
@@ -88,15 +93,12 @@ const AirPage = () => {
             <CardTitle>CO - Carbon Monoxide</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppm (parts per million)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppm</span>
             </p>
-            <p>
-              Carbon Monoxide is a colorless, odorless gas produced by the
-              incomplete burning of carbon-containing fuels. It is harmful when
-              inhaled because it reduces the amount of oxygen that can be
-              transported in the bloodstream to critical organs. The majority of
-              CO emissions come from vehicles.
+            <p className="text-muted-foreground mt-2">
+              A harmful gas from incomplete combustion that reduces oxygen in
+              the bloodstream. Most emissions come from vehicles.
             </p>
           </CardContent>
         </Card>
@@ -106,14 +108,12 @@ const AirPage = () => {
             <CardTitle>SO₂ - Sulfur Dioxide</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> ppb
+            <p className="font-semibold">
+              Unit: <span className="font-normal">ppb</span>
             </p>
-            <p>
-              Sulfur Dioxide is a gas primarily produced from the burning of
-              fossil fuels (coal and oil) by power plants and other industrial
-              facilities. It can harm the respiratory system and contributes to
-              the formation of acid rain.
+            <p className="text-muted-foreground mt-2">
+              A gas from burning fossil fuels that harms the respiratory system
+              and contributes to acid rain.
             </p>
           </CardContent>
         </Card>
@@ -123,13 +123,13 @@ const AirPage = () => {
             <CardTitle>Temperature</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> Degrees Celsius (°C)
+            .
+            <p className="font-semibold">
+              Unit: <span className="font-normal">°C</span>
             </p>
-            <p>
-              Ambient air temperature is a crucial factor in the formation of
-              certain pollutants, such as ozone, and can influence the
-              dispersion and concentration of others.
+            <p className="text-muted-foreground mt-2">
+              Ambient temperature affects the formation and dispersion of
+              pollutants like ozone.
             </p>
           </CardContent>
         </Card>
@@ -139,18 +139,17 @@ const AirPage = () => {
             <CardTitle>Humidity</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>
-              <strong>Unit:</strong> Percent (%)
+            <p className="font-semibold">
+              Unit: <span className="font-normal">%</span>
             </p>
-            <p>
-              Relative humidity is the amount of moisture in the air. It can
-              affect the transformation of gaseous pollutants into secondary
-              particles and can also influence the deposition of pollutants.
+            <p className="text-muted-foreground mt-2">
+              The amount of moisture in the air, which can influence pollutant
+              transformation and deposition.
             </p>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </MonitoringDetailPage>
   );
 };
 

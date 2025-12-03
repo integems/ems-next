@@ -233,7 +233,10 @@ export default function WaterAnalysisPage() {
           waterSourceFilter === "All"
             ? undefined
             : (waterSourceFilter as "surface" | "underground"),
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
       };
 
       const response = await waterService.findAllWaterData(

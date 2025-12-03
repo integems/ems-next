@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { Map, Marker } from "pigeon-maps";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { Expand, Minimize } from "lucide-react";
+import { Map, Marker } from "pigeon-maps";
+import React, { useState } from "react";
 
 interface LocationPickerMapProps {
   onLocationSelect: (lat: number, lng: number) => void;
@@ -79,7 +79,7 @@ const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
       </div>
       <div className="rounded-lg overflow-hidden shadow-md relative">
         <Button
-          variant="ghost"
+          variant="secondary"
           size="icon"
           type="button"
           className="absolute top-2 right-2 z-10"

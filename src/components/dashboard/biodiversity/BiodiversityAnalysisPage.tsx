@@ -11,7 +11,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BiodiversityData, Location, LocationType, TimeOfDay } from "@/types/common.types";
+import {
+  BiodiversityData,
+  Location,
+  LocationType,
+  TimeOfDay,
+} from "@/types/common.types";
 import { BiodiversityDataFilterDto } from "@/dtos/biodiversity.dto";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
@@ -212,7 +217,10 @@ export default function BiodiversityAnalysisPage() {
           locationTypeFilter === "All"
             ? undefined
             : (locationTypeFilter as LocationType),
-        timeOfDay: timeOfDayFilter === "All" ? undefined : timeOfDayFilter as TimeOfDay,
+        timeOfDay:
+          timeOfDayFilter === "All"
+            ? undefined
+            : (timeOfDayFilter as TimeOfDay),
       };
       const response = await biodiversityService.findAllBiodiversityData(
         currentUser.token,

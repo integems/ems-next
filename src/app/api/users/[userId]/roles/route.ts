@@ -8,7 +8,7 @@ import { authenticateRequest } from "@/utils/util";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }
 
 const userService = new UserService();
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-    const { userId } = params;
+    const { userId } = await params;
     const body = await request.json();
     const { roleId } = assignRoleDto.parse(body);
     const newUserRoleResponse = await userService.assignRoleToUser(

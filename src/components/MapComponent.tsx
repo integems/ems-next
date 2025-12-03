@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
-import { Location } from "@/types/common.types";
-import { Map } from "pigeon-maps";
-import { Expand, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Location } from "@/types/common.types";
+import { Expand, Minimize } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Map } from "pigeon-maps";
+import React, { useState } from "react";
 
 interface MapComponentProps {
   locations: Location[];
@@ -37,7 +37,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <div className="rounded-lg overflow-hidden shadow-md relative">
       <Button
-        variant="ghost"
+        variant="secondary"
         size="icon"
         className="absolute top-2 right-2 z-10"
         onClick={toggleExpand}
