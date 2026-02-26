@@ -1,7 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import MapComponent from "@/components/MapComponent";
+import AirAnalysisSection from "@/components/dashboard/air/AirAnalysisSection";
+import BiodiversityAnalysisSection from "@/components/dashboard/biodiversity/BiodiversityAnalysisSection";
+import NoiseAnalysisSection from "@/components/dashboard/noise/NoiseAnalysisSection";
+import SoilAnalysisSection from "@/components/dashboard/soil/SoilAnalysisSection";
+import WasteAnalysisSection from "@/components/dashboard/waste/WasteAnalysisSection";
+import WaterAnalysisSection from "@/components/dashboard/water/WaterAnalysisSection";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -9,19 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Location } from "@/types/common.types";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
-import { Activity, LoaderIcon, MapPin } from "lucide-react";
-import MapComponent from "@/components/MapComponent";
-import AirAnalysisSection from "@/components/dashboard/air/AirAnalysisSection";
-import WaterAnalysisSection from "@/components/dashboard/water/WaterAnalysisSection";
-import NoiseAnalysisSection from "@/components/dashboard/noise/NoiseAnalysisSection";
-import SoilAnalysisSection from "@/components/dashboard/soil/SoilAnalysisSection";
-import WasteAnalysisSection from "@/components/dashboard/waste/WasteAnalysisSection";
-import BiodiversityAnalysisSection from "@/components/dashboard/biodiversity/BiodiversityAnalysisSection";
 import { cn } from "@/lib/utils";
+import { Location } from "@/types/common.types";
+import { useQuery } from "@tanstack/react-query";
+import { Activity, LoaderIcon, MapPin } from "lucide-react";
+import { useState } from "react";
 
 const locationService = new FrontendLocationService();
 
@@ -51,7 +51,7 @@ export default function DashboardPage() {
   const locations: Location[] = locationsData || [];
 
   return (
-    <div className="space-y-8">
+    <div className="w-full space-y-8">
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
           <Activity className="h-10 w-10 text-primary" />
@@ -95,7 +95,10 @@ export default function DashboardPage() {
       </div>
       {locationId && (
         <>
-          <MapComponent locations={locations} activeLocationId={locationId} />
+          <MapComponent
+            locations={locations}
+            activeLocationIds={[locationId]}
+          />
           <div className="grid grid-cols-1 gap-8">
             <AirAnalysisSection locationId={locationId} />
             <WaterAnalysisSection locationId={locationId} />

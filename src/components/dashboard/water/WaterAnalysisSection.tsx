@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   Select,
   SelectContent,
@@ -7,24 +8,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WaterData } from "@/types/common.types";
 import { WaterDataFilterDto } from "@/dtos/water.dto";
 import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
-import { LoaderIcon, Activity, TrendingUp } from "lucide-react";
+import { WaterData } from "@/types/common.types";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Activity, LoaderIcon, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
-  ResponsiveContainer,
-  LineChart as RechartsLineChart,
-  XAxis,
-  YAxis,
-  Tooltip,
   Legend,
   Line,
+  LineChart as RechartsLineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { format } from "date-fns";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import { Button } from "@/components/ui/button";
 
 const waterService = new FrontendWaterService();
 
@@ -131,7 +131,7 @@ export default function WaterAnalysisSection({
   ];
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-3 text-xl">
           <Activity className="h-6 w-6 text-primary" />

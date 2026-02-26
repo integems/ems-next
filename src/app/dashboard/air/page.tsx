@@ -1,20 +1,27 @@
 "use client";
-import React, { useState } from "react";
-import AirManagementPage from "@/components/dashboard/air/AirManagementPage";
 import AirAnalysisPage from "@/components/dashboard/air/AirAnalysisPage";
+import AirManagementPage from "@/components/dashboard/air/AirManagementPage";
 import CreateAirDataForm from "@/components/dashboard/air/CreateAirDataForm";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const AirPage = () => {
   const [activeView, setActiveView] = useState("management");
+  const [locationId, setLocationId] = useState<string | undefined>(undefined);
 
   return (
     <>
       {activeView === "management" && (
-        <AirManagementPage setActiveView={setActiveView} />
+        <AirManagementPage
+          setActiveView={setActiveView}
+          locationId={locationId}
+          setLocationId={setLocationId}
+        />
       )}
       {activeView === "create" && (
-        <CreateAirDataForm onClose={() => setActiveView("management")} />
+        <CreateAirDataForm
+          onClose={() => setActiveView("management")}
+          locationId={locationId}
+        />
       )}
       {activeView === "analysis" && <AirAnalysisPage />}
     </>

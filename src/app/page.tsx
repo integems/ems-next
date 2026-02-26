@@ -42,7 +42,7 @@ export default function HomePage() {
   const slides: Slide[] = [
     {
       type: "image",
-      media:"images/caroucel1.jpg",
+      media: "images/caroucel1.jpg",
       badge: "Real-Time Monitoring",
       title: "Environmental Monitoring System",
       description:
@@ -54,7 +54,7 @@ export default function HomePage() {
     },
     {
       type: "image",
-     media:"images/caroucel4.jpg",
+      media: "images/caroucel4.jpg",
       badge: "Advanced Analytics",
       title: "Data-Driven Insights",
       description:
@@ -66,7 +66,7 @@ export default function HomePage() {
     },
     {
       type: "image",
-     media:"images/caroucel3.jpg",
+      media: "images/caroucel3.jpg",
       badge: "Sustainable Future",
       title: "Protect Our Planet",
       description:

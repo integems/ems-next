@@ -1,20 +1,26 @@
 "use client";
-import React, { useState } from "react";
-import WaterManagementPage from "@/components/dashboard/water/WaterManagementPage";
-import WaterAnalysisPage from "@/components/dashboard/water/WaterAnalysisPage";
 import CreateWaterDataForm from "@/components/dashboard/water/CreateWaterDataForm";
-import { Button } from "@/components/ui/button";
+import WaterManagementPage from "@/components/dashboard/water/WaterManagementPage";
+import { useState } from "react";
 
 const WaterPage = () => {
   const [activeView, setActiveView] = useState("management");
+  const [locationId, setLocationId] = useState<string | undefined>(undefined);
 
   return (
     <>
       {activeView === "management" && (
-        <WaterManagementPage setActiveView={setActiveView} />
+        <WaterManagementPage
+          setActiveView={setActiveView}
+          locationId={locationId}
+          setLocationId={setLocationId}
+        />
       )}
       {activeView === "create" && (
-        <CreateWaterDataForm onClose={() => setActiveView("management")} />
+        <CreateWaterDataForm
+          onClose={() => setActiveView("management")}
+          locationId={locationId}
+        />
       )}
     </>
   );

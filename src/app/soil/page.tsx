@@ -6,7 +6,7 @@ const SoilPage = () => {
   const soilQualityData = {
     title: "Soil Quality",
     description: "Analyze soil composition, moisture, and nutrient levels.",
-    image:"images/soil1.jpg",
+    image: "images/soil1.jpg",
   };
 
   return (

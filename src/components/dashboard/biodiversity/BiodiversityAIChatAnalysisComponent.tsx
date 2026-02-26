@@ -1,7 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import MapComponent from "@/components/MapComponent";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,14 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BiodiversityData,
   Location,
-  PaginationResponse,
   LocationType,
-  TimeOfDay,
+  PaginationResponse,
 } from "@/types/common.types";
+import { format } from "date-fns";
 import {
   Activity,
   BarChart as BarChartIcon,
@@ -27,28 +34,18 @@ import {
   Search,
   TrendingUp,
 } from "lucide-react";
-import { format } from "date-fns";
+import { useMemo, useState } from "react";
 import {
-  LineChart,
+  Bar,
+  BarChart,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  ReferenceLine,
 } from "recharts";
-import MapComponent from "@/components/MapComponent";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Input } from "@/components/ui/input";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 
 // Guideline thresholds
 const PARAMETER_GUIDELINES: Record<
@@ -645,9 +642,7 @@ export default function BiodiversityAIChatAnalysis({
           <CollapsibleContent className="mt-4">
             <MapComponent
               locations={displayedLocations}
-              activeLocationId={
-                locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
-              }
+              activeLocationIds={locationIdsFilter}
             />
           </CollapsibleContent>
         </Collapsible>
@@ -747,7 +742,6 @@ export default function BiodiversityAIChatAnalysis({
               {timeSeriesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={timeSeriesData}>
-                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="period"
                       tick={{ fontSize: 12 }}
@@ -802,7 +796,6 @@ export default function BiodiversityAIChatAnalysis({
                     data={barChartData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="locationName"
                       tick={{ fontSize: 12 }}

@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import MapComponent from "@/components/MapComponent";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -10,52 +17,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  WaterData,
-  Location,
-  LocationType,
-  WaterSource,
-  TimeOfDay,
-} from "@/types/common.types";
 import { WaterDataFilterDto } from "@/dtos/water.dto";
-import { FrontendWaterService } from "@/frontend-services/water.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
+import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  LoaderIcon,
-  MapPin,
-  LineChart,
-  BarChart,
-  TrendingUp,
+  Location,
+  LocationType,
+  TimeOfDay,
+  WaterData,
+  WaterSource,
+} from "@/types/common.types";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import {
   Activity,
-  RefreshCcw,
-  Search,
+  BarChart,
   ChevronDown,
   ChevronUp,
+  LineChart,
+  LoaderIcon,
+  MapPin,
+  RefreshCcw,
+  Search,
+  TrendingUp,
 } from "lucide-react";
-import MapComponent from "@/components/MapComponent";
-import { DatePicker } from "@/components/ui/date-picker";
+import { useMemo, useState } from "react";
 import {
-  ResponsiveContainer,
-  LineChart as RechartsLineChart,
-  BarChart as RechartsBarChart,
-  XAxis,
-  YAxis,
-  Tooltip,
+  Bar,
   Legend,
   Line,
-  Bar,
-  ReferenceLine,
+  BarChart as RechartsBarChart,
+  LineChart as RechartsLineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { format, parseISO } from "date-fns";
-import { Input } from "@/components/ui/input";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Label } from "@/components/ui/label";
 
 // Services
 const waterService = new FrontendWaterService();
@@ -476,7 +474,7 @@ export default function WaterAnalysisPage() {
   const currentGuidelines = PARAMETER_GUIDELINES[selectedParameter as string];
 
   return (
-    <div className="w-full max-w-[70rem] mx-auto">
+    <div className="w-full">
       <div className="py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -747,9 +745,7 @@ export default function WaterAnalysisPage() {
           <CollapsibleContent className="mt-4">
             <MapComponent
               locations={locations}
-              activeLocationId={
-                locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
-              }
+              activeLocationIds={locationIdsFilter}
             />
           </CollapsibleContent>
         </Collapsible>

@@ -6,7 +6,7 @@ const WastePage = () => {
   const wasteData = {
     title: "Waste Management",
     description: "Track and manage different types of waste.",
-    image:"images/waste1.jpg",
+    image: "images/waste1.jpg",
   };
 
   return (

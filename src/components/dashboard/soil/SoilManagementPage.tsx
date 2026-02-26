@@ -1,17 +1,24 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { ExportButton } from "@/components/ExportButton";
+import MapComponent from "@/components/MapComponent";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -20,41 +27,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  SoilData,
-  Location,
-  TimeOfDay,
-  LocationType,
-} from "@/types/common.types";
-import { ExportButton } from "@/components/ExportButton";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { SoilDataFilterDto } from "@/dtos/soil.dto";
-import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
+import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
+import { Location, LocationType, TimeOfDay } from "@/types/common.types";
+import { useQuery } from "@tanstack/react-query";
 import {
-  LoaderIcon,
-  Search,
-  MapPin,
+  ArrowRight,
   ChevronDown,
   ChevronUp,
-  ArrowRight,
+  LoaderIcon,
+  MapPin,
+  Search,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import MapComponent from "@/components/MapComponent";
+import React, { useCallback, useState } from "react";
 import SoilDataTableRow from "./SoilDataTableRow";
 
 const soilService = new FrontendSoilService();
@@ -80,8 +75,12 @@ const soilDataColumns = [
 
 export default function SoilManagementPage({
   setActiveView,
+  locationId,
+  setLocationId,
 }: {
   setActiveView: (view: string) => void;
+  locationId?: string;
+  setLocationId?: (id: string | undefined) => void;
 }) {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -90,11 +89,11 @@ export default function SoilManagementPage({
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [locationIdFilter, setLocationIdFilter] = useState<string | undefined>(
-    undefined,
+    locationId,
   );
   const [activeLocationIdFilter, setActiveLocationIdFilter] = useState<
     string | undefined
-  >(undefined);
+  >(locationId);
   const [startDateFilter, setStartDateFilter] = useState<Date | undefined>(
     undefined,
   );
@@ -200,6 +199,9 @@ export default function SoilManagementPage({
     setActiveEndDateFilter(endDateFilter);
     setActiveTimeOfDayFilter(timeOfDayFilter);
     setActiveLocationTypeFilter(locationTypeFilter);
+    if (setLocationId) {
+      setLocationId(locationIdFilter);
+    }
     refetch();
   }, [
     searchQuery,
@@ -209,6 +211,7 @@ export default function SoilManagementPage({
     timeOfDayFilter,
     locationTypeFilter,
     refetch,
+    setLocationId,
   ]);
 
   const handlePageChange = (newPage: number) => {
@@ -304,7 +307,7 @@ export default function SoilManagementPage({
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">
           Soil Data Overview
@@ -488,7 +491,7 @@ export default function SoilManagementPage({
         <CollapsibleContent className="mt-4">
           <MapComponent
             locations={locations}
-            activeLocationId={locationIdFilter}
+            activeLocationIds={locationIdFilter ? [locationIdFilter] : []}
           />
         </CollapsibleContent>
       </Collapsible>

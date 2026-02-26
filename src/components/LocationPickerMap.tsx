@@ -77,13 +77,14 @@ const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
           />
         </div>
       </div>
-      <div className="rounded-lg overflow-hidden shadow-md relative">
+      <div className="rounded-lg overflow-hidden shadow-md relative transition-all duration-300 ease-in-out">
         <Button
           variant="secondary"
           size="icon"
           type="button"
-          className="absolute top-2 right-2 z-10"
+          className="absolute top-2 right-2 z-20 hover:scale-110 transition-transform duration-200"
           onClick={toggleExpand}
+          title={isExpanded ? "Minimize map" : "Expand map"}
         >
           {isExpanded ? (
             <Minimize className="h-4 w-4" />
@@ -91,14 +92,22 @@ const LocationPickerMap: React.FC<LocationPickerMapProps> = ({
             <Expand className="h-4 w-4" />
           )}
         </Button>
-        <Map
-          height={isExpanded ? 500 : 250}
-          defaultCenter={[8.460555, -13.228111]} // Freetown
-          defaultZoom={7}
-          onClick={handleMapClick}
+        <div
+          style={{
+            height: isExpanded ? 500 : 250,
+            transition: "height 0.3s ease-in-out",
+          }}
+          className="overflow-hidden"
         >
-          {marker && <Marker anchor={marker} color="#22c55e" />}
-        </Map>
+          <Map
+            height={isExpanded ? 500 : 250}
+            defaultCenter={[8.460555, -13.228111]} // Freetown
+            defaultZoom={7}
+            onClick={handleMapClick}
+          >
+            {marker && <Marker anchor={marker} color="#22c55e" />}
+          </Map>
+        </div>
       </div>
     </div>
   );

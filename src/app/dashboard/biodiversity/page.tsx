@@ -1,21 +1,25 @@
 "use client";
-import React, { useState } from "react";
 import BiodiversityManagementPage from "@/components/dashboard/biodiversity/BiodiversityManagementPage";
-import BiodiversityAnalysisPage from "@/components/dashboard/biodiversity/BiodiversityAnalysisPage";
 import CreateBiodiversityDataForm from "@/components/dashboard/biodiversity/CreateBiodiversityDataForm";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 const BiodiversityPage = () => {
   const [activeView, setActiveView] = useState("management");
+  const [locationId, setLocationId] = useState<string | undefined>(undefined);
 
   return (
     <>
       {activeView === "management" && (
-        <BiodiversityManagementPage setActiveView={setActiveView} />
+        <BiodiversityManagementPage
+          setActiveView={setActiveView}
+          locationId={locationId}
+          setLocationId={setLocationId}
+        />
       )}
       {activeView === "create" && (
         <CreateBiodiversityDataForm
           onClose={() => setActiveView("management")}
+          locationId={locationId}
         />
       )}
     </>

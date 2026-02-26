@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
+import UpdateUserForm from "@/components/dashboard/users/UpdateUserForm";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import UpdateUserForm from "@/components/dashboard/users/UpdateUserForm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoaderIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { frontendUserService } from "@/frontend-services/user.service";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { LoaderIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function ProfilePage() {
   const { currentUser } = useAuth();
@@ -71,7 +71,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div className="w-full p-4 sm:p-6 lg:p-8">
       <Card>
         <CardHeader className="flex flex-row items-center gap-4">
           <Avatar className="h-20 w-20 text-3xl">

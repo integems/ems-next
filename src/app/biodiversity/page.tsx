@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const BiodiversityPage = () => {
   const biodiversityData = {
     title: "Biodiversity",
-    description: "Record and monitor the variety of life in a particular habitat.",
-    image:"images/biodiversity1.jpg",
+    description:
+      "Record and monitor the variety of life in a particular habitat.",
+    image: "images/biodiversity1.jpg",
   };
 
   return (
@@ -29,10 +30,12 @@ const BiodiversityPage = () => {
             <CardTitle>Species Count</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">Unit: <span className="font-normal">Integer</span></p>
+            <p className="font-semibold">
+              Unit: <span className="font-normal">Integer</span>
+            </p>
             <p className="text-muted-foreground mt-2">
-              A simple count of the number of different species in a given
-              area, indicating the richness of an ecosystem.
+              A simple count of the number of different species in a given area,
+              indicating the richness of an ecosystem.
             </p>
           </CardContent>
         </Card>
@@ -42,7 +45,9 @@ const BiodiversityPage = () => {
             <CardTitle>Shannon-Wiener Diversity Index (H')</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">Unit: <span className="font-normal">Dimensionless</span></p>
+            <p className="font-semibold">
+              Unit: <span className="font-normal">Dimensionless</span>
+            </p>
             <p className="text-muted-foreground mt-2">
               Characterizes species diversity by accounting for both species
               abundance and evenness. Higher values indicate greater diversity.
@@ -55,7 +60,9 @@ const BiodiversityPage = () => {
             <CardTitle>Observations</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="font-semibold">Unit: <span className="font-normal">JSON object</span></p>
+            <p className="font-semibold">
+              Unit: <span className="font-normal">JSON object</span>
+            </p>
             <p className="text-muted-foreground mt-2">
               Detailed observational data, including species lists and counts,
               crucial for in-depth analysis and tracking changes over time.

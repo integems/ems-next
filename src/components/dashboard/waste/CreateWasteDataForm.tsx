@@ -79,6 +79,7 @@ const updatedWasteDto = wasteDto
 
 interface CreateWasteDataFormProps {
   onClose: () => void;
+  locationId?: string;
 }
 
 type WasteDataFormData = z.infer<typeof updatedWasteDto>;
@@ -102,13 +103,14 @@ const parameterMappings: { [key: string]: keyof WasteDataFormData } = {
 
 export default function CreateWasteDataForm({
   onClose,
+  locationId,
 }: CreateWasteDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    null,
+    locationId || null,
   );
   const [locationFormData, setLocationFormData] = useState<
     CreateLocationDto & { locationType?: LocationType }
@@ -700,16 +702,16 @@ export default function CreateWasteDataForm({
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
-                    <div className="h-64 border rounded-lg overflow-hidden">
-                      <LocationPickerMap
-                        onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({
-                            ...prev,
-                            pointGeom: [lat, lng],
-                          }))
-                        }
-                      />
-                    </div>
+
+                    <LocationPickerMap
+                      onLocationSelect={(lat, lng) =>
+                        setLocationFormData((prev) => ({
+                          ...prev,
+                          pointGeom: [lat, lng],
+                        }))
+                      }
+                    />
+
                     {errors.pointGeom && (
                       <p className="text-xs text-red-500">
                         {errors.pointGeom[0]}

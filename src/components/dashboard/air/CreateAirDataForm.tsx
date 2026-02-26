@@ -73,6 +73,7 @@ const updatedAirDto = airDto
   );
 interface CreateAirDataFormProps {
   onClose: () => void;
+  locationId?: string;
 }
 
 type AirDataFormData = z.infer<typeof updatedAirDto>;
@@ -99,13 +100,16 @@ const parameterMappings: { [key: string]: keyof AirDataFormData } = {
   locationtype: "locationType",
 };
 
-export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
+export default function CreateAirDataForm({
+  onClose,
+  locationId,
+}: CreateAirDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    null,
+    locationId || null,
   );
   const [locationFormData, setLocationFormData] = useState<
     CreateLocationDto & { locationType?: LocationType }
@@ -697,16 +701,16 @@ export default function CreateAirDataForm({ onClose }: CreateAirDataFormProps) {
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
-                    <div className="h-64 border rounded-lg overflow-hidden">
-                      <LocationPickerMap
-                        onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({
-                            ...prev,
-                            pointGeom: [lat, lng],
-                          }))
-                        }
-                      />
-                    </div>
+
+                    <LocationPickerMap
+                      onLocationSelect={(lat, lng) =>
+                        setLocationFormData((prev) => ({
+                          ...prev,
+                          pointGeom: [lat, lng],
+                        }))
+                      }
+                    />
+
                     {errors.pointGeom && (
                       <p className="text-xs text-red-500">
                         {errors.pointGeom[0]}

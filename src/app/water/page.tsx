@@ -7,7 +7,7 @@ const WaterPage = () => {
     title: "Water Quality",
     description:
       "Track water parameters such as pH, turbidity, and dissolved oxygen.",
-    image:"images/water1.jpg",
+    image: "images/water1.jpg",
   };
 
   return (

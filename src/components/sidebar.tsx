@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,31 +10,26 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import {
-  Home,
-  Menu,
-  Settings,
-  Users,
-  User,
+  BarChart2,
+  Bot,
+  ChevronRight,
   Cloud,
   Droplet,
-  Leaf,
-  Volume2,
   Flower,
-  Trash2,
+  Home,
+  Leaf,
+  Settings,
   Settings2,
-  BarChart2,
-  ChevronRight,
-  Bot,
+  Trash2,
+  User,
+  Users,
+  Volume2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -278,7 +270,7 @@ export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-1 font-black text-3xl">
       <span className="text-primary">E</span>
-      <span className="text-xl relative top-[-0.5rem]">M</span>
+      <span className="text-primary">M</span>
       <span className="text-primary">S</span>
     </Link>
   );

@@ -70,6 +70,7 @@ const updatedNoiseDto = noiseDto
 
 interface CreateNoiseDataFormProps {
   onClose: () => void;
+  locationId?: string;
 }
 
 type NoiseDataFormData = z.infer<typeof updatedNoiseDto>;
@@ -90,13 +91,14 @@ const parameterMappings: { [key: string]: keyof NoiseDataFormData } = {
 
 export default function CreateNoiseDataForm({
   onClose,
+  locationId,
 }: CreateNoiseDataFormProps) {
   const { currentUser } = useAuth();
   const queryClient = useQueryClient();
 
   const [isCreatingLocation, setIsCreatingLocation] = useState(false);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    null,
+    locationId || null,
   );
   const [locationFormData, setLocationFormData] = useState<
     CreateLocationDto & { locationType?: LocationType }
@@ -672,16 +674,16 @@ export default function CreateNoiseDataForm({
                   </div>
                   <div className="space-y-2">
                     <Label>Select Location on Map</Label>
-                    <div className="h-64 border rounded-lg overflow-hidden">
-                      <LocationPickerMap
-                        onLocationSelect={(lat, lng) =>
-                          setLocationFormData((prev) => ({
-                            ...prev,
-                            pointGeom: [lat, lng],
-                          }))
-                        }
-                      />
-                    </div>
+
+                    <LocationPickerMap
+                      onLocationSelect={(lat, lng) =>
+                        setLocationFormData((prev) => ({
+                          ...prev,
+                          pointGeom: [lat, lng],
+                        }))
+                      }
+                    />
+
                     {errors.pointGeom && (
                       <p className="text-xs text-red-500">
                         {errors.pointGeom[0]}

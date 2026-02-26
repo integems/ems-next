@@ -1,5 +1,4 @@
 "use client";
-import { Card } from "@/components/ui/card";
 import { motion, useInView } from "framer-motion";
 import {
   ArrowRight,
@@ -19,10 +18,9 @@ const monitoringFeatures = [
     title: "Air Quality",
     description: "Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.",
     href: "/air",
-    gradient: "from-blue-500/10 to-cyan-500/10",
-    iconColor: "text-blue-500",
-    borderColor: "hover:border-blue-500/50",
-    image:"images/air1.JPG",
+    accent: "from-blue-500/20 to-sky-500/5",
+    iconBg: "bg-blue-500/10 text-blue-500",
+    image: "images/air1.JPG",
   },
   {
     icon: Droplets,
@@ -30,20 +28,18 @@ const monitoringFeatures = [
     description:
       "Track water parameters such as pH, turbidity, and dissolved oxygen.",
     href: "/water",
-    gradient: "from-cyan-500/10 to-teal-500/10",
-    iconColor: "text-cyan-500",
-    borderColor: "hover:border-cyan-500/50",
-    image:"images/water1.jpg",
+    accent: "from-cyan-500/20 to-cyan-500/5",
+    iconBg: "bg-cyan-500/10 text-cyan-500",
+    image: "images/water1.jpg",
   },
   {
     icon: Sprout,
     title: "Soil Quality",
     description: "Analyze soil composition, moisture, and nutrient levels.",
     href: "/soil",
-    gradient: "from-green-500/10 to-emerald-500/10",
-    iconColor: "text-green-500",
-    borderColor: "hover:border-green-500/50",
-    image:"images/soil1.jpg",
+    accent: "from-green-500/20 to-green-500/5",
+    iconBg: "bg-green-500/10 text-green-500",
+    image: "images/soil1.jpg",
   },
   {
     icon: Bird,
@@ -51,103 +47,105 @@ const monitoringFeatures = [
     description:
       "Record and monitor the variety of life in a particular habitat.",
     href: "/biodiversity",
-    gradient: "from-emerald-500/10 to-lime-500/10",
-    iconColor: "text-emerald-500",
-    borderColor: "hover:border-emerald-500/50",
-    image:"images/biodiversity1.jpg",
+    accent: "from-emerald-500/20 to-emerald-500/5",
+    iconBg: "bg-emerald-500/10 text-emerald-500",
+    image: "images/biodiversity1.jpg",
   },
   {
     icon: Volume2,
     title: "Noise",
     description: "Monitor noise pollution levels in various environments.",
     href: "/noise",
-    gradient: "from-purple-500/10 to-pink-500/10",
-    iconColor: "text-purple-500",
-    borderColor: "hover:border-purple-500/50",
-    image:"images/noise1.jpg",
+    accent: "from-purple-500/20 to-purple-500/5",
+    iconBg: "bg-purple-500/10 text-purple-500",
+    image: "images/noise1.jpg",
   },
   {
     icon: Trash2,
     title: "Waste",
     description: "Track and manage different types of waste.",
     href: "/waste",
-    gradient: "from-orange-500/10 to-red-500/10",
-    iconColor: "text-orange-500",
-    borderColor: "hover:border-orange-500/50",
-    image:"images/waste1.jpg",
+    accent: "from-orange-500/20 to-orange-500/5",
+    iconBg: "bg-orange-500/10 text-orange-500",
+    image: "images/waste1.jpg",
   },
 ];
 
 export default function EnvironmentalMonitoringSection() {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section
-      id="features"
-      ref={ref}
-      className="py-12 md:py-24 lg:py-32 bg-background"
-    >
+    <section id="features" ref={ref} className="py-16 md:py-28 bg-background">
       <div className="container mx-auto px-4 md:px-6">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.6 }}
+          className="max-w-2xl mb-14"
         >
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Environmental <span className="text-primary">Monitoring</span>
+          <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
+            What we monitor
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            Environmental Monitoring
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
-            Comprehensive monitoring solutions for tracking and analyzing
-            environmental data across multiple domains
+          <p className="mt-3 text-base text-muted-foreground leading-relaxed">
+            Comprehensive solutions for tracking and analyzing environmental
+            data across multiple domains.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {monitoringFeatures.map((feature, index) => {
             const Icon = feature.icon;
             return (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
               >
-                <Link href={feature.href} className="block h-full">
-                  <Card
-                    className={`h-full bg-card border-border hover:border-muted-foreground/30 transition-all duration-300 hover:shadow-lg group overflow-hidden flex flex-col p-0`}
-                  >
-                    {/* Image Header */}
-                    <div className="relative h-64 overflow-hidden flex-shrink-0">
+                <Link href={feature.href} className="block h-full group">
+                  <div className="relative h-full rounded-2xl border border-border bg-card overflow-hidden flex flex-col transition-all duration-300 hover:border-border/80 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
+                    {/* Image */}
+                    <div className="relative h-52 overflow-hidden flex-shrink-0 bg-muted">
                       <img
                         src={feature.image}
                         alt={feature.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-
-                      {/* Icon Badge */}
-                      <div
-                        className={`absolute top-4 left-4 flex h-10 w-10 items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm shadow-lg border border-border`}
-                      >
-                        <Icon className={`h-5 w-5 ${feature.iconColor}`} />
-                      </div>
+                      {/* Subtle bottom scrim — dark only so it doesn't bleach images in light mode */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent dark:from-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
-                    <div className="p-4 flex flex-col flex-grow">
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                        {feature.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm leading-relaxed mb-3 flex-grow">
+                    {/* Body */}
+                    <div className="flex flex-col flex-grow p-5 gap-3">
+                      {/* Icon + Title row */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${feature.iconBg}`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <h3 className="text-sm font-semibold text-foreground">
+                          {feature.title}
+                        </h3>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground leading-relaxed flex-grow">
                         {feature.description}
                       </p>
-                      <div className="inline-flex items-center text-foreground font-medium text-sm group/link">
-                        <span>Learn More</span>
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+
+                      {/* CTA */}
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors pt-1">
+                        <span>Explore</span>
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               </motion.div>
             );

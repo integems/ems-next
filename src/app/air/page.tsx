@@ -5,7 +5,7 @@ const AirPage = () => {
   const airQualityData = {
     title: "Air Quality",
     description: "Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.",
-    image:"images/air1.JPG",
+    image: "images/air1.JPG",
   };
 
   return (

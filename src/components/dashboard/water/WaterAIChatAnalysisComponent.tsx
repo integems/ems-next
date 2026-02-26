@@ -39,7 +39,6 @@ import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   Legend,
   Line,
   LineChart,
@@ -711,9 +710,7 @@ export default function WaterAIChatAnalysis({
           <CollapsibleContent className="mt-4">
             <MapComponent
               locations={displayedLocations}
-              activeLocationId={
-                locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
-              }
+              activeLocationIds={locationIdsFilter}
             />
           </CollapsibleContent>
         </Collapsible>
@@ -813,7 +810,6 @@ export default function WaterAIChatAnalysis({
               {timeSeriesData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={timeSeriesData}>
-                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="period"
                       tick={{ fontSize: 12 }}
@@ -893,7 +889,6 @@ export default function WaterAIChatAnalysis({
                     data={barChartData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="locationName"
                       tick={{ fontSize: 12 }}

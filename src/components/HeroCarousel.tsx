@@ -1,4 +1,5 @@
 "use client";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
@@ -28,53 +29,66 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
+  const [progress, setProgress] = useState<number>(0);
+
+  const DURATION = 5000;
 
   useEffect(() => {
+    setProgress(0);
     if (!isAutoPlaying) return;
+
+    const startTime = Date.now();
+    const tick = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      setProgress(Math.min((elapsed / DURATION) * 100, 100));
+    }, 30);
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+      setProgress(0);
+    }, DURATION);
 
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, slides.length]);
+    return () => {
+      clearInterval(interval);
+      clearInterval(tick);
+    };
+  }, [isAutoPlaying, currentSlide, slides.length]);
 
-  const goToSlide = (index: number): void => {
+  const pause = () => {
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
+  };
+
+  const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+    pause();
   };
-
-  const nextSlide = (): void => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  const nextSlide = () => {
+    setCurrentSlide((p) => (p + 1) % slides.length);
+    pause();
   };
-
-  const prevSlide = (): void => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 10000);
+  const prevSlide = () => {
+    setCurrentSlide((p) => (p - 1 + slides.length) % slides.length);
+    pause();
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div className="relative w-full h-full overflow-hidden bg-black">
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-            index === currentSlide
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-105"
-          }`}
+          className={cn(
+            "absolute inset-0 transition-opacity duration-700 ease-in-out",
+            index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0",
+          )}
         >
-          {/* Media Background */}
+          {/* Media */}
           {slide.type === "image" && (
             <img
               src={slide.media}
               alt={slide.title}
-              className="absolute inset-0 w-full h-full object-fill brightness-90"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           )}
           {slide.type === "video" && (
@@ -84,69 +98,126 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover brightness-90"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           )}
 
-          {/* Lighter Gradient Overlay - More visible images */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+          {/* Scrim — bottom-weighted for text legibility, subtle on sides */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
 
-          {/* Content */}
-          <div className="absolute inset-0 flex items-center">
-            <div className="container mx-auto px-16 md:px-20 lg:px-24">
-              <div className="max-w-2xl">
-                <div className="space-y-6 animate-fade-in">
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight drop-shadow-2xl">
-                    {slide.title}
-                  </h1>
-                  <p className="text-lg md:text-xl text-white/95 leading-relaxed drop-shadow-lg font-medium">
-                    {slide.description}
-                  </p>
-                  {slide.cta && (
-                    <div className="flex flex-wrap gap-3 pt-4">
-                      <Button variant="outline" onClick={onPrimaryClick}>
-                        {slide.cta.primary}
+          {/* Content — anchored to bottom-left */}
+          <div className="absolute inset-0 flex items-end">
+            <div className="container mx-auto px-8 md:px-16 pb-20 md:pb-24">
+              <div
+                className={cn(
+                  "max-w-xl transition-all duration-700",
+                  index === currentSlide
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-4",
+                )}
+              >
+                {slide.badge && (
+                  <span className="inline-block mb-3 px-3 py-1 text-xs font-semibold tracking-widest uppercase text-white/90 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
+                    {slide.badge}
+                  </span>
+                )}
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
+                  {slide.title}
+                </h1>
+                <p className="mt-3 text-base md:text-lg text-white/75 leading-relaxed">
+                  {slide.description}
+                </p>
+                {slide.cta && (
+                  <div className="flex flex-wrap items-center gap-3 mt-6">
+                    <Button
+                      onClick={onPrimaryClick}
+                      className="bg-white text-black hover:bg-white/90 font-semibold px-6 shadow-none border-0"
+                    >
+                      {slide.cta.primary}
+                    </Button>
+                    {slide.cta.secondary && (
+                      <Button
+                        variant="ghost"
+                        onClick={onSecondaryClick}
+                        className="text-white hover:text-white hover:bg-white/10 font-medium px-6"
+                      >
+                        {slide.cta.secondary}
                       </Button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       ))}
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full transition-all border border-white/40 group shadow-lg"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full transition-all border border-white/40 group shadow-lg"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-      </button>
+      {/* Prev / Next arrows */}
+      {[
+        {
+          fn: prevSlide,
+          side: "left-4 md:left-6",
+          Icon: ChevronLeft,
+          label: "Previous slide",
+        },
+        {
+          fn: nextSlide,
+          side: "right-4 md:right-6",
+          Icon: ChevronRight,
+          label: "Next slide",
+        },
+      ].map(({ fn, side, Icon, label }) => (
+        <button
+          key={label}
+          onClick={fn}
+          aria-label={label}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 z-20",
+            "p-2.5 rounded-full",
+            "bg-white/10 hover:bg-white/20 backdrop-blur-md",
+            "border border-white/20 hover:border-white/40",
+            "text-white transition-all duration-200 group",
+            side,
+          )}
+        >
+          <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+        </button>
+      ))}
 
-      {/* Dot Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`transition-all shadow-lg ${
-              index === currentSlide
-                ? "w-8 bg-white"
-                : "w-2 bg-white/60 hover:bg-white/80"
-            } h-2 rounded-full`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+      {/* Bottom controls: slide counter + progress dots */}
+      <div className="absolute bottom-7 right-8 md:right-16 z-20 flex items-center gap-3">
+        {/* Slide counter */}
+        <span className="text-xs font-medium text-white/50 tabular-nums">
+          {currentSlide + 1} / {slides.length}
+        </span>
+
+        {/* Progress dots */}
+        <div className="flex items-center gap-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              className="relative h-0.5 rounded-full overflow-hidden transition-all duration-300"
+              style={{ width: index === currentSlide ? 32 : 16 }}
+            >
+              {/* Track */}
+              <span className="absolute inset-0 bg-white/30 rounded-full" />
+              {/* Fill */}
+              <span
+                className="absolute inset-y-0 left-0 bg-white rounded-full transition-none"
+                style={{
+                  width:
+                    index === currentSlide
+                      ? `${progress}%`
+                      : index < currentSlide
+                        ? "100%"
+                        : "0%",
+                }}
+              />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

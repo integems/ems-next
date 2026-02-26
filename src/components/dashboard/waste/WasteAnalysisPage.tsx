@@ -1,8 +1,15 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import MapComponent from "@/components/MapComponent";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -10,51 +17,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WasteDataFilterDto } from "@/dtos/waste.dto";
+import { FrontendLocationService } from "@/frontend-services/location.service";
+import { FrontendWasteService } from "@/frontend-services/waste.service";
+import { useAuth } from "@/hooks/use-auth";
 import {
-  WasteData,
   Location,
   LocationType,
   TimeOfDay,
+  WasteData,
 } from "@/types/common.types";
-import { WasteDataFilterDto } from "@/dtos/waste.dto";
-import { FrontendWasteService } from "@/frontend-services/waste.service";
-import { FrontendLocationService } from "@/frontend-services/location.service";
-import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
-  LoaderIcon,
-  MapPin,
-  LineChart,
-  BarChart,
-  TrendingUp,
   Activity,
-  RefreshCcw,
-  Search,
+  BarChart,
   ChevronDown,
   ChevronUp,
+  LineChart,
+  LoaderIcon,
+  MapPin,
+  RefreshCcw,
+  Search,
+  TrendingUp,
 } from "lucide-react";
-import MapComponent from "@/components/MapComponent";
-import { DatePicker } from "@/components/ui/date-picker";
+import { useMemo, useState } from "react";
 import {
-  ResponsiveContainer,
-  LineChart as RechartsLineChart,
-  BarChart as RechartsBarChart,
-  XAxis,
-  YAxis,
-  Tooltip,
+  Bar,
   Legend,
   Line,
-  Bar,
-  ReferenceLine,
+  BarChart as RechartsBarChart,
+  LineChart as RechartsLineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
-import { format, parseISO } from "date-fns";
-import { Input } from "@/components/ui/input";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Label } from "@/components/ui/label";
 
 // Services
 const wasteService = new FrontendWasteService();
@@ -456,7 +454,7 @@ export default function WasteAnalysisPage() {
   const currentGuidelines = PARAMETER_GUIDELINES[selectedParameter as string];
 
   return (
-    <div className="w-full max-w-[70rem] mx-auto">
+    <div className="w-full">
       <div className="py-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -694,9 +692,7 @@ export default function WasteAnalysisPage() {
           <CollapsibleContent className="mt-4">
             <MapComponent
               locations={locations}
-              activeLocationId={
-                locationIdsFilter.length > 0 ? locationIdsFilter[0] : undefined
-              }
+              activeLocationIds={locationIdsFilter}
             />
           </CollapsibleContent>
         </Collapsible>

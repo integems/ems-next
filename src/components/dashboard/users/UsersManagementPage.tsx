@@ -1,17 +1,24 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { ExportButton } from "@/components/ExportButton";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Select,
   SelectContent,
@@ -20,32 +27,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { User, UserStatus, RoleName } from "@/types/common.types";
-import { ExportButton } from "@/components/ExportButton";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { UserFilterDto } from "@/dtos/user.dto";
-import { FrontendUserService } from "@/frontend-services/user.service";
 import { RoleService } from "@/frontend-services/role.service";
+import { FrontendUserService } from "@/frontend-services/user.service";
 import { useAuth } from "@/hooks/use-auth";
+import { cn } from "@/lib/utils";
+import { RoleName, User, UserStatus } from "@/types/common.types";
+import { useQuery } from "@tanstack/react-query";
 import { LoaderIcon, Search, UserPlus } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
 import CreateUserForm from "./CreateUserForm";
 import UpdateUserForm from "./UpdateUserForm";
 import UserTableRow from "./UserTableRow";
-import { cn } from "@/lib/utils";
 
 const userService = new FrontendUserService();
 const roleService = new RoleService();
@@ -245,7 +245,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <div className="w-full max-w-[60rem] mx-auto">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">User Overview</h2>
         <div className="flex gap-2">
