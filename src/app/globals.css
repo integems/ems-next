@@ -147,3 +147,90 @@
   height: 100%;
   position: relative;
 }
+
+/* React Spreadsheet Dark Mode Support */
+.dark .react-spreadsheet-table {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.dark table {
+  background-color: transparent;
+  border-collapse: collapse;
+}
+
+.dark th,
+.dark td {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  padding: 0.5rem !important;
+}
+
+.dark th {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-weight: 600 !important;
+}
+
+.dark input[type="text"],
+.dark input[type="number"],
+.dark textarea {
+  background-color: hsl(var(--input)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.dark input[type="text"]:focus,
+.dark input[type="number"]:focus,
+.dark textarea:focus {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--ring)) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3) !important;
+}
+
+.dark tr:hover td {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Light mode defaults */
+table {
+  background-color: hsl(var(--card));
+  border-collapse: collapse;
+}
+
+th,
+td {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem;
+}
+
+th {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+  background-color: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus {
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--ring));
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
+}
+
+tr:hover td {
+  background-color: hsl(var(--muted));
+}

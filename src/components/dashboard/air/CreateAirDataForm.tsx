@@ -765,7 +765,7 @@ export default function CreateAirDataForm({
           {!!spreadsheetData.length && (
             <div className="space-y-2">
               <Label>Air Quality Data Entries</Label>
-              <div className="max-w-[60rem] overflow-auto rounded">
+              <div className="max-w-[60rem] overflow-auto rounded bg-card dark:bg-card">
                 <Spreadsheet
                   data={spreadsheetData}
                   columnLabels={[

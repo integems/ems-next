@@ -5,28 +5,28 @@ import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { createLocationDto, CreateLocationDto } from "@/dtos/location.dto";
 import {
-  createSoilDataDto,
-  CreateSoilDataDto,
-  singleSoilData as soilDto,
+    createSoilDataDto,
+    CreateSoilDataDto,
+    singleSoilData as soilDto,
 } from "@/dtos/soil.dto";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
 import {
-  Category,
-  Location,
-  LocationType,
-  TimeOfDay,
+    Category,
+    Location,
+    LocationType,
+    TimeOfDay,
 } from "@/types/common.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -737,7 +737,7 @@ export default function CreateSoilDataForm({
           {!!spreadsheetData.length && (
             <div className="space-y-2">
               <Label>Soil Data Entries</Label>
-              <div className="max-w-[60rem] overflow-auto rounded">
+              <div className="max-w-[60rem] overflow-auto rounded bg-card dark:bg-card">
                 <Spreadsheet
                   data={spreadsheetData}
                   columnLabels={[
