@@ -7,7 +7,7 @@ const BiodiversityPage = () => {
     title: "Biodiversity",
     description:
       "Record and monitor the variety of life in a particular habitat.",
-    image: "images/biodiversity1.jpg",
+    image: "images/bio1.jpeg",
   };
 
   return (

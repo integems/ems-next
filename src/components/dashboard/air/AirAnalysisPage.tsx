@@ -39,7 +39,6 @@ import {
   MapPin,
   RefreshCcw,
   Search,
-  TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -144,21 +143,6 @@ const CHART_COLORS = [
 const calculateMean = (data: number[]) =>
   data.reduce((a, b) => a + b, 0) / data.length;
 
-const calculateMedian = (data: number[]) => {
-  const sorted = [...data].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
-};
-
-const calculateStdDev = (data: number[]) => {
-  const mean = calculateMean(data);
-  const variance =
-    data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
-  return Math.sqrt(variance);
-};
-
 export default function AirAnalysisPage() {
   const { currentUser } = useAuth();
   const [isMapOpen, setIsMapOpen] = useState(false);
@@ -179,7 +163,7 @@ export default function AirAnalysisPage() {
   >("All");
   const [selectedParameter, setSelectedParameter] =
     useState<keyof AirData>("pm25");
-  const [chartType, setChartType] = useState<"monthly" | "daily" | "quarterly">(
+  const [chartType, setChartType] = useState<"monthly" | "daily" | "quarterly" | "biannually" | "yearly">(
     "monthly",
   );
 
@@ -303,26 +287,6 @@ export default function AirAnalysisPage() {
     );
   }, [airData]);
 
-  // Get numeric data for selected parameter
-  const numericData = useMemo(() => {
-    if (!airData) return [];
-    return airData
-      .map((item) => Number(item[selectedParameter]))
-      .filter((v) => !isNaN(v) && v !== null && v !== undefined);
-  }, [airData, selectedParameter]);
-
-  // Calculate statistics
-  const statistics = useMemo(() => {
-    if (numericData.length === 0) return null;
-    return {
-      mean: calculateMean(numericData).toFixed(2),
-      median: calculateMedian(numericData).toFixed(2),
-      stdDev: calculateStdDev(numericData).toFixed(2),
-      min: Math.min(...numericData).toFixed(2),
-      max: Math.max(...numericData).toFixed(2),
-      count: numericData.length,
-    };
-  }, [numericData]);
 
   // Generate time periods based on chart type
   const timePeriods = useMemo(() => {
@@ -341,6 +305,13 @@ export default function AirAnalysisPage() {
         case "quarterly":
           const quarter = Math.ceil((date.getMonth() + 1) / 3);
           periodKey = `Q${quarter}-${format(date, "yy")}`;
+          break;
+        case "biannually":
+          const half = date.getMonth() < 6 ? 1 : 2;
+          periodKey = `H${half}-${format(date, "yy")}`;
+          break;
+        case "yearly":
+          periodKey = format(date, "yyyy");
           break;
         case "daily":
           periodKey = format(date, "dd-MMM-yy");
@@ -386,6 +357,13 @@ export default function AirAnalysisPage() {
             case "quarterly":
               const quarter = Math.ceil((date.getMonth() + 1) / 3);
               itemPeriod = `Q${quarter}-${format(date, "yy")}`;
+              break;
+            case "biannually":
+              const half = date.getMonth() < 6 ? 1 : 2;
+              itemPeriod = `H${half}-${format(date, "yy")}`;
+              break;
+            case "yearly":
+              itemPeriod = format(date, "yyyy");
               break;
             case "daily":
               itemPeriod = format(date, "dd-MMM-yy");
@@ -444,6 +422,13 @@ export default function AirAnalysisPage() {
             case "quarterly":
               const quarter = Math.ceil((date.getMonth() + 1) / 3);
               itemPeriod = `Q${quarter}-${format(date, "yy")}`;
+              break;
+            case "biannually":
+              const half = date.getMonth() < 6 ? 1 : 2;
+              itemPeriod = `H${half}-${format(date, "yy")}`;
+              break;
+            case "yearly":
+              itemPeriod = format(date, "yyyy");
               break;
             case "daily":
               itemPeriod = format(date, "dd-MMM-yy");
@@ -506,7 +491,7 @@ export default function AirAnalysisPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 items-end">
           <DatePicker
             value={startDateFilter}
             onChange={setStartDateFilter}
@@ -563,7 +548,7 @@ export default function AirAnalysisPage() {
             </label>
             <Select
               value={chartType}
-              onValueChange={(value: "monthly" | "daily" | "quarterly") =>
+              onValueChange={(value: "monthly" | "daily" | "quarterly" | "biannually" | "yearly") =>
                 setChartType(value)
               }
             >
@@ -577,6 +562,8 @@ export default function AirAnalysisPage() {
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
                 <SelectItem value="quarterly">Quarterly</SelectItem>
+                <SelectItem value="biannually">Biannually</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -609,7 +596,7 @@ export default function AirAnalysisPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-          <div className="max-w-sm">
+          <div className="w-full">
             <label
               htmlFor="search"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -628,7 +615,7 @@ export default function AirAnalysisPage() {
               />
             </div>
           </div>
-          <div className="flex-1">
+          <div className="w-full">
             <label
               htmlFor="location"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -765,7 +752,7 @@ export default function AirAnalysisPage() {
                   setSelectedParameter(value as keyof AirData)
                 }
               >
-                <SelectTrigger className="bg-background border-border max-w-sm">
+                <SelectTrigger className="bg-background border-border w-full">
                   <SelectValue placeholder="Select Parameter" />
                 </SelectTrigger>
                 <SelectContent>
@@ -778,64 +765,7 @@ export default function AirAnalysisPage() {
               </Select>
             </div>
 
-            {/* Statistics Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                  Statistical Summary -{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }
-                  {statistics && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ({statistics.count} data points)
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {statistics ? (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                    <div className="text-center p-4 bg-green-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-green-600">
-                        {statistics.mean}
-                      </p>
-                      <p className="text-sm">Mean</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-blue-600">
-                        {statistics.median}
-                      </p>
-                      <p className="text-sm">Median</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {statistics.stdDev}
-                      </p>
-                      <p className="text-sm">Std Dev</p>
-                    </div>
-                    <div className="text-center p-4 bg-orange-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-orange-600">
-                        {statistics.min}
-                      </p>
-                      <p className="text-sm">Minimum</p>
-                    </div>
-                    <div className="text-center p-4 bg-red-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-red-600">
-                        {statistics.max}
-                      </p>
-                      <p className="text-sm">Maximum</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center text-slate-500">
-                    No data available for analysis
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+
 
             {/* Trend Analysis Chart */}
             <Card>

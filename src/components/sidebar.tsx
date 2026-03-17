@@ -34,12 +34,16 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 // Define NavLink interface for type safety
+import { RoleName } from "@/types/common.types";
+import { useAuth } from "@/hooks/use-auth";
+
 interface NavLink {
   href?: string;
   label: string;
   icon?: React.ElementType;
   type: "link" | "submenu";
   children?: NavLink[];
+  roles?: RoleName[];
 }
 
 // Sidebar navigation links
@@ -165,6 +169,7 @@ const sidebarLinks: NavLink[] = [
     icon: Users,
     href: "/dashboard/users",
     type: "link",
+    roles: [RoleName.SuperAdmin, RoleName.IntegemsAdmin, RoleName.Admin],
   },
   {
     label: "AI Analysis",
@@ -178,6 +183,7 @@ const sidebarLinks: NavLink[] = [
     label: "Settings",
     icon: Settings,
     type: "link",
+    roles: [RoleName.SuperAdmin, RoleName.IntegemsAdmin],
   },
 ];
 
@@ -250,12 +256,20 @@ function SidebarLink({ link, level = 0 }: { link: NavLink; level?: number }) {
 
 // Component for rendering sidebar content
 function SidebarContentUI({ className }: { className?: string }) {
+  const { currentUser } = useAuth();
+  const userRole = currentUser?.role as RoleName;
+
+  const filteredLinks = sidebarLinks.filter((link) => {
+    if (!link.roles) return true;
+    return link.roles.includes(userRole);
+  });
+
   return (
     <SidebarContent>
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu className={cn("text-sm font-medium", className)}>
-            {sidebarLinks.map((link, index) => (
+            {filteredLinks.map((link, index) => (
               <SidebarLink key={index} link={link} />
             ))}
           </SidebarMenu>

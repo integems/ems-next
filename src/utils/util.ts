@@ -103,3 +103,29 @@ export async function authenticateRequest(
     };
   }
 }
+
+/**
+ * Checks if the current user has one of the allowed roles.
+ * @param user - The current authenticated user.
+ * @param allowedRoles - An array of roles that are allowed to access the resource.
+ * @returns A boolean indicating if the user is authorized.
+ */
+export function authorizeRoles(user: CurrentUser | undefined, allowedRoles: RoleName[]): AuthResult | null {
+  if (!user) {
+    return {
+      error: "Unauthorized",
+      statusCode: 401,
+      status: "error",
+    };
+  }
+
+  if (!allowedRoles.includes(user.role as RoleName)) {
+    return {
+      error: "Forbidden",
+      statusCode: 403,
+      status: "error",
+    };
+  }
+
+  return null;
+}

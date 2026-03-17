@@ -120,7 +120,8 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
         </div>
       </div>
       {(currentUser.role === RoleName.SuperAdmin ||
-        currentUser.role === RoleName.IntegemsAdmin) && (
+        currentUser.role === RoleName.IntegemsAdmin ||
+        currentUser.role === RoleName.Admin) && (
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select
@@ -131,10 +132,12 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
               <SelectValue placeholder="Select a status" />
             </SelectTrigger>
             <SelectContent>
-              {Object.values(UserStatus).map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
+              {Object.values(UserStatus)
+                .filter((status) => status !== UserStatus.All)
+                .map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </SelectItem>
               ))}
             </SelectContent>
           </Select>

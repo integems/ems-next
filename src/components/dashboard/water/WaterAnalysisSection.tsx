@@ -1,20 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { WaterDataFilterDto } from "@/dtos/water.dto";
 import { FrontendWaterService } from "@/frontend-services/water.service";
 import { useAuth } from "@/hooks/use-auth";
 import { WaterData } from "@/types/common.types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Activity, LoaderIcon, TrendingUp } from "lucide-react";
+import { Activity, LoaderIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   Legend,
@@ -28,24 +22,23 @@ import {
 
 const waterService = new FrontendWaterService();
 
-// Helper functions
-const calculateMean = (data: number[]) =>
-  data.reduce((a, b) => a + b, 0) / data.length;
-
-const calculateMedian = (data: number[]) => {
-  const sorted = [...data].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 !== 0
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
-};
-
-const calculateStdDev = (data: number[]) => {
-  const mean = calculateMean(data);
-  const variance =
-    data.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / data.length;
-  return Math.sqrt(variance);
-};
+const CHART_COLORS = [
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7300",
+  "#0088fe",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#a4de6c",
+  "#d0ed57",
+  "#8dd1e1",
+  "#83a6ed",
+  "#8e4585",
+  "#e6194B",
+  "#3cb44b",
+];
 
 interface WaterAnalysisSectionProps {
   locationId: string | undefined;
@@ -61,8 +54,36 @@ export default function WaterAnalysisSection({
   const [endDateFilter, setEndDateFilter] = useState<Date | undefined>(
     undefined,
   );
-  const [selectedParameter, setSelectedParameter] =
-    useState<keyof WaterData>("ph");
+
+  const parameterOptions: { value: keyof WaterData; label: string }[] = [
+    { value: "ph", label: "pH Level" },
+    { value: "phMv", label: "pH (mV)" },
+    { value: "orp", label: "ORP (mV)" },
+    { value: "ec", label: "EC (µS/cm)" },
+    { value: "ecAbs", label: "EC Abs. (µS/cm)" },
+    { value: "resistivity", label: "Resistivity (Ohm-cm)" },
+    { value: "salinity", label: "Salinity (psu)" },
+    { value: "pressure", label: "Pressure (psi)" },
+    { value: "doPercent", label: "D.O. (%)" },
+    { value: "dissolvedOxygen", label: "D.O. (ppm)" },
+    { value: "turbidity", label: "Turbidity (FNU)" },
+    { value: "bod", label: "BOD (mg/L)" },
+    { value: "cod", label: "COD (mg/L)" },
+    { value: "totalDissolvedSolids", label: "Total Dissolved Solids (mg/L)" },
+    { value: "temperature", label: "Temperature (°C)" },
+  ];
+
+  const [selectedParameters, setSelectedParameters] = useState<
+    (keyof WaterData)[]
+  >(["ph"]);
+
+  const toggleParameter = (param: keyof WaterData) => {
+    setSelectedParameters((prev) =>
+      prev.includes(param)
+        ? prev.filter((p) => p !== param)
+        : [...prev, param],
+    );
+  };
 
   const {
     data: waterData,
@@ -93,42 +114,24 @@ export default function WaterAnalysisSection({
     enabled: !!locationId,
   });
 
-  const numericData = useMemo(() => {
+  const latestValues = useMemo(() => {
+    if (!waterData || waterData.length === 0) return null;
+    const latest = waterData[waterData.length - 1];
+    return parameterOptions.map((opt) => ({
+      label: opt.label,
+      value: latest[opt.value],
+    }));
+  }, [waterData]);
+
+  const chartData = useMemo(() => {
     if (!waterData) return [];
-    return waterData
-      .map((item) => Number(item[selectedParameter]))
-      .filter((v) => !isNaN(v) && v !== null && v !== undefined);
-  }, [waterData, selectedParameter]);
-
-  const statistics = useMemo(() => {
-    if (numericData.length === 0) return null;
-    return {
-      mean: calculateMean(numericData).toFixed(2),
-      median: calculateMedian(numericData).toFixed(2),
-      stdDev: calculateStdDev(numericData).toFixed(2),
-      min: Math.min(...numericData).toFixed(2),
-      max: Math.max(...numericData).toFixed(2),
-      count: numericData.length,
-    };
-  }, [numericData]);
-
-  const parameterOptions: { value: keyof WaterData; label: string }[] = [
-    { value: "ph", label: "pH Level" },
-    { value: "phMv", label: "pH (mV)" },
-    { value: "orp", label: "ORP (mV)" },
-    { value: "ec", label: "EC (µS/cm)" },
-    { value: "ecAbs", label: "EC Abs. (µS/cm)" },
-    { value: "resistivity", label: "Resistivity (Ohm-cm)" },
-    { value: "salinity", label: "Salinity (psu)" },
-    { value: "pressure", label: "Pressure (psi)" },
-    { value: "doPercent", label: "D.O. (%)" },
-    { value: "dissolvedOxygen", label: "D.O. (ppm)" },
-    { value: "turbidity", label: "Turbidity (FNU)" },
-    { value: "bod", label: "BOD (mg/L)" },
-    { value: "cod", label: "COD (mg/L)" },
-    { value: "totalDissolvedSolids", label: "Total Dissolved Solids (mg/L)" },
-    { value: "temperature", label: "Temperature (°C)" },
-  ];
+    return [...waterData]
+      .sort((a, b) => new Date(a.measurementTime).getTime() - new Date(b.measurementTime).getTime())
+      .map((i) => ({
+        ...i,
+        measurementTime: format(new Date(i.measurementTime), "MMM yyyy"),
+      }));
+  }, [waterData]);
 
   return (
     <Card className="w-full">
@@ -139,34 +142,41 @@ export default function WaterAnalysisSection({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <DateTimePicker
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DatePicker
             value={startDateFilter}
             onChange={setStartDateFilter}
             label="Start Date"
           />
-          <DateTimePicker
+          <DatePicker
             value={endDateFilter}
             onChange={setEndDateFilter}
             label="End Date"
           />
-          <Select
-            value={selectedParameter}
-            onValueChange={(value) =>
-              setSelectedParameter(value as keyof WaterData)
-            }
-          >
-            <SelectTrigger className="bg-background  text-primary border-primary">
-              <SelectValue placeholder="Select Parameter" />
-            </SelectTrigger>
-            <SelectContent>
-              {parameterOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        </div>
+
+        <div className="flex flex-wrap gap-4 pt-2">
+          {parameterOptions.map((option, idx) => (
+            <label
+              key={option.value}
+              className="flex items-center gap-2 cursor-pointer text-sm"
+            >
+              <Checkbox
+                checked={selectedParameters.includes(option.value)}
+                onCheckedChange={() => toggleParameter(option.value)}
+              />
+              <span
+                className="flex items-center gap-1"
+                style={{
+                  color: selectedParameters.includes(option.value)
+                    ? CHART_COLORS[idx % CHART_COLORS.length]
+                    : undefined,
+                }}
+              >
+                {option.label}
+              </span>
+            </label>
+          ))}
         </div>
 
         {isLoading ? (
@@ -189,88 +199,43 @@ export default function WaterAnalysisSection({
             No data available for the selected criteria.
           </div>
         ) : (
-          <div className="space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <TrendingUp className="h-6 w-6 text-green-600" />
-                  Statistical Summary -{" "}
-                  {
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }
-                  {statistics && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      ({statistics.count} data points)
-                    </span>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {statistics ? (
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-                    <div className="text-center p-4 bg-green-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-green-600">
-                        {statistics.mean}
-                      </p>
-                      <p className="text-sm">Mean</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-blue-600">
-                        {statistics.median}
-                      </p>
-                      <p className="text-sm">Median</p>
-                    </div>
-                    <div className="text-center p-4 bg-purple-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-purple-600">
-                        {statistics.stdDev}
-                      </p>
-                      <p className="text-sm">Std Dev</p>
-                    </div>
-                    <div className="text-center p-4 bg-orange-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-orange-600">
-                        {statistics.min}
-                      </p>
-                      <p className="text-sm">Minimum</p>
-                    </div>
-                    <div className="text-center p-4 bg-red-600/10 rounded-xl">
-                      <p className="text-2xl font-bold text-red-600">
-                        {statistics.max}
-                      </p>
-                      <p className="text-sm">Maximum</p>
-                    </div>
+          <div className="space-y-6">
+            {latestValues && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                {latestValues.map((item) => (
+                  <div
+                    key={item.label}
+                    className="text-center p-3 bg-muted/50 rounded-xl"
+                  >
+                    <p className="text-lg font-bold text-primary">
+                      {item.value != null ? String(item.value) : "N/A"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.label}
+                    </p>
                   </div>
-                ) : (
-                  <p className="text-center text-slate-500">
-                    No data available for analysis
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-            <ResponsiveContainer width="100%" height={300}>
-              <RechartsLineChart
-                data={waterData.map((i) => ({
-                  ...i,
-                  measurementTime: format(
-                    new Date(i.measurementTime),
-                    "yyyy-MM-dd HH:mm",
-                  ),
-                }))}
-              >
-                <XAxis dataKey="measurementTime" />
+                ))}
+              </div>
+            )}
+            <ResponsiveContainer width="100%" height={350}>
+              <RechartsLineChart data={chartData} margin={{ bottom: 60 }}>
+                <XAxis dataKey="measurementTime" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 12 }} />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey={selectedParameter}
-                  name={
-                    parameterOptions.find((p) => p.value === selectedParameter)
-                      ?.label
-                  }
-                  stroke="#82ca9d"
-                  activeDot={{ r: 8 }}
-                />
+                {selectedParameters.map((param) => (
+                  <Line
+                    key={param}
+                    type="monotone"
+                    dataKey={param}
+                    name={
+                      parameterOptions.find((p) => p.value === param)?.label
+                    }
+                    stroke={CHART_COLORS[parameterOptions.findIndex((p) => p.value === param) % CHART_COLORS.length]}
+                    activeDot={{ r: 6 }}
+                    dot={false}
+                  />
+                ))}
               </RechartsLineChart>
             </ResponsiveContainer>
           </div>

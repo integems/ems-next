@@ -155,28 +155,34 @@ export default function UserTableRow({
               <DropdownMenuLabel className="text-foreground">
                 Actions
               </DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => onEdit(user)}
-                className="text-foreground hover:bg-accent"
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit User
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setAssignRoleDialogOpen(true)}
-                className="text-foreground hover:bg-accent"
-              >
-                <UserCheck className="mr-2 h-4 w-4" />
-                Assign Role
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive hover:bg-destructive/10"
-                onClick={handleDeleteUser}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete User
-              </DropdownMenuItem>
+              {(currentUser?.role === RoleName.SuperAdmin ||
+                currentUser?.role === RoleName.IntegemsAdmin ||
+                currentUser?.role === RoleName.Admin) && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => onEdit(user)}
+                    className="text-foreground hover:bg-accent"
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit User
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setAssignRoleDialogOpen(true)}
+                    className="text-foreground hover:bg-accent"
+                  >
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Assign Role
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive hover:bg-destructive/10"
+                    onClick={handleDeleteUser}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete User
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>

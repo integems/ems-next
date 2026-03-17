@@ -5,7 +5,8 @@
 
 import { updateUserDto } from "@/dtos/user.dto";
 import { UserService } from "@/services/user.service";
-import { authenticateRequest } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
@@ -62,6 +63,18 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const authCheck = authorizeRoles(auth.user, [
+      RoleName.SuperAdmin,
+      RoleName.IntegemsAdmin,
+      RoleName.Admin,
+    ]);
+    if (authCheck) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.statusCode },
+      );
+    }
     const { userId } = await params;
     const body = await request.json();
     const userDto = updateUserDto.parse(body);
@@ -95,6 +108,18 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const authCheck = authorizeRoles(auth.user, [
+      RoleName.SuperAdmin,
+      RoleName.IntegemsAdmin,
+      RoleName.Admin,
+    ]);
+    if (authCheck) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.statusCode },
+      );
     }
     const { userId } = await params;
     const deleteResponse = await userService.deleteUser(userId, auth.user);

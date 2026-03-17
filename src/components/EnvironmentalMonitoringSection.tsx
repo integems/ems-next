@@ -30,7 +30,7 @@ const monitoringFeatures = [
     href: "/water",
     accent: "from-cyan-500/20 to-cyan-500/5",
     iconBg: "bg-cyan-500/10 text-cyan-500",
-    image: "images/water1.jpg",
+    image: "images/water1.png",
   },
   {
     icon: Sprout,
@@ -39,7 +39,7 @@ const monitoringFeatures = [
     href: "/soil",
     accent: "from-green-500/20 to-green-500/5",
     iconBg: "bg-green-500/10 text-green-500",
-    image: "images/soil1.jpg",
+    image: "images/soil.JPG",
   },
   {
     icon: Bird,
@@ -49,11 +49,11 @@ const monitoringFeatures = [
     href: "/biodiversity",
     accent: "from-emerald-500/20 to-emerald-500/5",
     iconBg: "bg-emerald-500/10 text-emerald-500",
-    image: "images/biodiversity1.jpg",
+    image: "images/bio1.jpeg",
   },
   {
     icon: Volume2,
-    title: "Noise",
+    title: "Noise Quality",
     description: "Monitor noise pollution levels in various environments.",
     href: "/noise",
     accent: "from-purple-500/20 to-purple-500/5",
@@ -62,7 +62,7 @@ const monitoringFeatures = [
   },
   {
     icon: Trash2,
-    title: "Waste",
+    title: "Waste Management",
     description: "Track and manage different types of waste.",
     href: "/waste",
     accent: "from-orange-500/20 to-orange-500/5",

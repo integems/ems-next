@@ -245,7 +245,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">User Overview</h2>
         <div className="flex gap-2">
@@ -260,17 +260,21 @@ export default function UsersManagementPage() {
             token={currentUser?.token || ""}
             columns={userDataColumns}
           />
-          <Button
-            size="icon"
-            onClick={handleOpenCreateUserDialog}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <UserPlus className="h-4 w-4" />
-          </Button>
+          {(currentUser?.role === RoleName.SuperAdmin ||
+            currentUser?.role === RoleName.IntegemsAdmin ||
+            currentUser?.role === RoleName.Admin) && (
+            <Button
+              size="icon"
+              onClick={handleOpenCreateUserDialog}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <UserPlus className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
       <div className="flex items-end gap-4 mb-6 flex-wrap">
-        <div className="flex-1 max-w-xs">
+        <div className="flex-1 w-full">
           <label
             htmlFor="role"
             className="block text-sm font-medium mb-1 text-foreground"
@@ -294,7 +298,7 @@ export default function UsersManagementPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 max-w-xs">
+        <div className="flex-1 w-full">
           <label
             htmlFor="status"
             className="block text-sm font-medium mb-1 text-foreground"
@@ -317,7 +321,7 @@ export default function UsersManagementPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex-1 max-w-md">
+        <div className="flex-1 w-full">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

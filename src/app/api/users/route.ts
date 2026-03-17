@@ -5,7 +5,8 @@
 
 import { createUserDto, userFilterDto } from "@/dtos/user.dto";
 import { UserService } from "@/services/user.service";
-import { authenticateRequest } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
 import { NextRequest, NextResponse } from "next/server";
 
 const userService = new UserService();
@@ -68,6 +69,18 @@ export async function POST(request: NextRequest) {
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const authCheck = authorizeRoles(auth.user, [
+      RoleName.SuperAdmin,
+      RoleName.IntegemsAdmin,
+      RoleName.Admin,
+    ]);
+    if (authCheck) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.statusCode },
+      );
     }
     const body = await request.json();
     const userDto = createUserDto.parse(body);

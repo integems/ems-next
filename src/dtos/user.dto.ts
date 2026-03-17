@@ -24,7 +24,7 @@ export const updateUserDto = z.object({
   middleName: z.string().optional(),
   phoneNumber: z.string().optional(),
   gender: z.string().optional(),
-  status: z.enum(UserStatus).optional(),
+  status: z.nativeEnum(UserStatus).optional(),
   profileImage: z.string().optional(),
 });
 
@@ -35,8 +35,8 @@ export const userFilterDto = z.object({
   page: z.preprocess((val) => Number(val), z.number().min(1)).default(1),
   limit: z.preprocess((val) => Number(val), z.number().min(1)).default(10),
   search: z.string().optional(),
-  role: z.enum(RoleName).optional(),
-  status: z.enum(UserStatus).optional(),
+  role: z.nativeEnum(RoleName).optional(),
+  status: z.nativeEnum(UserStatus).optional(),
 });
 
 /**

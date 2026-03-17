@@ -254,14 +254,30 @@ export class UserService {
   ) {
     const updatedBy = currentUser?.fullName || currentUser?.email || "system";
 
+    const updateData: any = {
+      ...userDto,
+      status: userDto.status === UserStatus.All ? undefined : userDto.status,
+      updatedAt: new Date(),
+      updatedBy,
+    };
+
+    // Reconstruct fullName if firstName or lastName is provided
+    if (userDto.firstName !== undefined || userDto.lastName !== undefined) {
+      // Fetch current user to get existing names if only one is updated
+      const existingUser = await db.query.users.findFirst({
+        where: eq(schema.users.userId, userId),
+      });
+      
+      if (existingUser) {
+        const newFirstName = userDto.firstName !== undefined ? userDto.firstName : existingUser.firstName;
+        const newLastName = userDto.lastName !== undefined ? userDto.lastName : existingUser.lastName;
+        updateData.fullName = `${newFirstName} ${newLastName}`;
+      }
+    }
+
     const [updatedUser] = await db
       .update(schema.users)
-      .set({
-        ...userDto,
-        status: userDto.status === UserStatus.All ? undefined : userDto.status,
-        updatedAt: new Date(),
-        updatedBy,
-      })
+      .set(updateData)
       .where(eq(schema.users.userId, userId))
       .returning();
 
