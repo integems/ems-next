@@ -309,7 +309,7 @@ export default function AirManagementPage({
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8">
+    <div className="w-full rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">
           Air Data Overview
@@ -338,7 +338,8 @@ export default function AirManagementPage({
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
+      <div className="mb-6 space-y-4 rounded-xl bg-card p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <DateTimePicker
           value={startDateFilter}
           onChange={setStartDateFilter}
@@ -405,8 +406,8 @@ export default function AirManagementPage({
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-        <div className="flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div className="flex-1 lg:col-span-2">
           <label
             htmlFor="search"
             className="block text-sm font-medium mb-2 text-foreground"
@@ -466,6 +467,7 @@ export default function AirManagementPage({
         >
           Apply Filters
         </Button>
+        </div>
       </div>
 
       <Collapsible

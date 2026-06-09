@@ -245,7 +245,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8">
+    <div className="w-full rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">User Overview</h2>
         <div className="flex gap-2">
@@ -273,7 +273,8 @@ export default function UsersManagementPage() {
           )}
         </div>
       </div>
-      <div className="flex items-end gap-4 mb-6 flex-wrap">
+      <div className="mb-6 rounded-xl bg-card p-4">
+        <div className="flex items-end gap-4 flex-wrap">
         <div className="flex-1 w-full">
           <label
             htmlFor="role"
@@ -340,6 +341,7 @@ export default function UsersManagementPage() {
         >
           Apply
         </Button>
+        </div>
       </div>
       {isLoading ? (
         <div className="flex items-center justify-center h-32">

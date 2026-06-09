@@ -62,13 +62,13 @@ export default function DashboardPage() {
         </p>
       </div>
       <div className="max-w-sm">
-        <CardHeader>
+        <CardHeader className="px-0">
           <CardTitle className="flex items-center gap-3 text-xl">
             <MapPin className="h-6 w-6 text-primary" />
             Location Filter
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0">
           {locationsLoading ? (
             <LoaderIcon className="h-8 w-8 animate-spin text-primary p-5" />
           ) : (

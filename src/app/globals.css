@@ -27,6 +27,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -67,13 +68,14 @@
 :root {
   --radius: 0.65rem;
   --background: oklch(1 0 0);
+  --surface: oklch(0.9594 0.0042 247.86); /* #f0f2f5 light dashboard surface */
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.723 0.219 149.579);
-  --primary-foreground: oklch(0.982 0.018 155.826);
+  --primary: oklch(0.45 0.12 150.5);
+  --primary-foreground: oklch(0.985 0.018 155.826);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.967 0.001 286.375);
@@ -83,7 +85,7 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.92 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.723 0.219 149.579);
+  --ring: oklch(0.45 0.12 150.5);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -91,16 +93,17 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.723 0.219 149.579);
-  --sidebar-primary-foreground: oklch(0.982 0.018 155.826);
+  --sidebar-primary: oklch(0.45 0.12 150.5);
+  --sidebar-primary-foreground: oklch(0.985 0.018 155.826);
   --sidebar-accent: oklch(0.967 0.001 286.375);
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.723 0.219 149.579);
+  --sidebar-ring: oklch(0.45 0.12 150.5);
 }
 
 .dark {
   --background: oklch(0.141 0.005 285.823);
+  --surface: oklch(0.18 0.006 285.885); /* dark dashboard surface, sits under cards */
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0.006 285.885);
   --card-foreground: oklch(0.985 0 0);
@@ -148,89 +151,47 @@
   position: relative;
 }
 
-/* React Spreadsheet Dark Mode Support */
-.dark .react-spreadsheet-table {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+/* React Spreadsheet theming — scoped to the spreadsheet so it never
+   leaks into the app's forms, inputs, or tables. */
+.Spreadsheet {
+  background-color: var(--card);
+  color: var(--foreground);
 }
 
-.dark table {
+.Spreadsheet table {
   background-color: transparent;
   border-collapse: collapse;
 }
 
-.dark th,
-.dark td {
-  background-color: hsl(var(--card)) !important;
-  color: hsl(var(--foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-  padding: 0.5rem !important;
-}
-
-.dark th {
-  background-color: hsl(var(--muted)) !important;
-  color: hsl(var(--muted-foreground)) !important;
-  font-weight: 600 !important;
-}
-
-.dark input[type="text"],
-.dark input[type="number"],
-.dark textarea {
-  background-color: hsl(var(--input)) !important;
-  color: hsl(var(--foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
-}
-
-.dark input[type="text"]:focus,
-.dark input[type="number"]:focus,
-.dark textarea:focus {
-  background-color: hsl(var(--card)) !important;
-  border-color: hsl(var(--ring)) !important;
-  outline: none !important;
-  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3) !important;
-}
-
-.dark tr:hover td {
-  background-color: hsl(var(--muted)) !important;
-}
-
-/* Light mode defaults */
-table {
-  background-color: hsl(var(--card));
-  border-collapse: collapse;
-}
-
-th,
-td {
-  background-color: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
+.Spreadsheet th,
+.Spreadsheet td {
+  background-color: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
   padding: 0.5rem;
 }
 
-th {
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
+.Spreadsheet th {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
   font-weight: 600;
 }
 
-input[type="text"],
-input[type="number"],
-textarea {
-  background-color: hsl(var(--input));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
+.Spreadsheet input,
+.Spreadsheet textarea {
+  background-color: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
-textarea:focus {
-  background-color: hsl(var(--card));
-  border-color: hsl(var(--ring));
+.Spreadsheet input:focus,
+.Spreadsheet textarea:focus {
+  background-color: var(--card);
+  border-color: var(--ring);
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 30%, transparent);
 }
 
-tr:hover td {
-  background-color: hsl(var(--muted));
+.Spreadsheet tr:hover td {
+  background-color: var(--muted);
 }

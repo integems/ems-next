@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 import { Mail, Lock, User, Eye, EyeOff, LoaderIcon } from "lucide-react";
 import { PasswordValidator } from "@/components/PasswordValidator";
 
@@ -52,90 +52,108 @@ export function SignUpForm({
   signUpMutation,
 }: SignUpFormProps) {
   return (
-    <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-4">
-      <div className="space-y-2">
-        <div className="relative flex items-center">
-          <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            value={signUpData.firstName}
-            onChange={handleInputChange}
-            className={cn("w-full pl-10", errors.firstName && "border-red-500")}
-          />
+    <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="firstName">First name</Label>
+          <div className="relative flex items-center">
+            <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="firstName"
+              type="text"
+              name="firstName"
+              placeholder="Jane"
+              value={signUpData.firstName}
+              onChange={handleInputChange}
+              aria-invalid={!!errors.firstName}
+              className="h-11 w-full pl-10"
+            />
+          </div>
+          {errors.firstName && (
+            <p className="text-sm text-red-500">{errors.firstName as string}</p>
+          )}
         </div>
-        {errors.firstName && (
-          <p className="text-sm text-red-500">{errors.firstName as string}</p>
-        )}
+        <div className="space-y-1.5">
+          <Label htmlFor="lastName">Last name</Label>
+          <div className="relative flex items-center">
+            <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="lastName"
+              type="text"
+              name="lastName"
+              placeholder="Doe"
+              value={signUpData.lastName}
+              onChange={handleInputChange}
+              aria-invalid={!!errors.lastName}
+              className="h-11 w-full pl-10"
+            />
+          </div>
+          {errors.lastName && (
+            <p className="text-sm text-red-500">{errors.lastName as string}</p>
+          )}
+        </div>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label htmlFor="middleName">
+          Middle name <span className="text-muted-foreground font-normal">(optional)</span>
+        </Label>
         <div className="relative flex items-center">
-          <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <User className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="middleName"
             type="text"
             name="middleName"
-            placeholder="Middle Name (Optional)"
+            placeholder="Middle name"
             value={signUpData.middleName}
             onChange={handleInputChange}
-            className={cn("w-full pl-10")}
+            className="h-11 w-full pl-10"
           />
         </div>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label htmlFor="email">Email</Label>
         <div className="relative flex items-center">
-          <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            value={signUpData.lastName}
-            onChange={handleInputChange}
-            className={cn("w-full pl-10", errors.lastName && "border-red-500")}
-          />
-        </div>
-        {errors.lastName && (
-          <p className="text-sm text-red-500">{errors.lastName as string}</p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <div className="relative flex items-center">
-          <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          <Input
+            id="email"
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="you@example.com"
             value={signUpData.email}
             onChange={handleInputChange}
-            className={cn("w-full pl-10", errors.email && "border-red-500")}
+            aria-invalid={!!errors.email}
+            className="h-11 w-full pl-10"
           />
         </div>
         {errors.email && (
           <p className="text-sm text-red-500">{errors.email as string}</p>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label htmlFor="password">Password</Label>
         <div className="relative flex items-center">
-          <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="password"
             type={showPassword ? "text" : "password"}
             name="password"
-            placeholder="Password"
+            placeholder="Create a password"
             value={signUpData.password}
             onChange={handleInputChange}
-            className={cn("w-full pl-10", errors.password && "border-red-500")}
+            aria-invalid={!!errors.password}
+            className="h-11 w-full pl-10 pr-11"
           />
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2"
+            className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-5 w-5 text-gray-400" />
+              <Eye className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -143,31 +161,31 @@ export function SignUpForm({
           <p className="text-sm text-red-500">{errors.password as string}</p>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
+        <Label htmlFor="confirmPassword">Confirm password</Label>
         <div className="relative flex items-center">
-          <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+          <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="confirmPassword"
             type={showPassword ? "text" : "password"}
             name="confirmPassword"
-            placeholder="Confirm Password"
+            placeholder="Re-enter your password"
             value={signUpData.confirmPassword}
             onChange={handleInputChange}
-            className={cn(
-              "w-full pl-10",
-              errors.confirmPassword && "border-red-500",
-            )}
+            aria-invalid={!!errors.confirmPassword}
+            className="h-11 w-full pl-10 pr-11"
           />
           <Button
             type="button"
             variant="ghost"
             size="icon"
-            className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2"
+            className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400" />
+              <EyeOff className="h-5 w-5" />
             ) : (
-              <Eye className="h-5 w-5 text-gray-400" />
+              <Eye className="h-5 w-5" />
             )}
           </Button>
         </div>
@@ -177,21 +195,19 @@ export function SignUpForm({
           </p>
         )}
       </div>
-      <div className="space-y-2">
-        <PasswordValidator
-          password={signUpData.password}
-          confirmPassword={signUpData.confirmPassword}
-        />
-      </div>
+      <PasswordValidator
+        password={signUpData.password}
+        confirmPassword={signUpData.confirmPassword}
+      />
       <Button
         type="submit"
-        className="w-full"
+        className="h-11 w-full text-base"
         disabled={signUpMutation.isPending}
       >
         {signUpMutation.isPending ? (
           <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          "Sign up"
+          "Create account"
         )}
       </Button>
     </form>

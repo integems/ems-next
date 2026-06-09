@@ -574,7 +574,7 @@ export default function CreateAirDataForm({
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <form onSubmit={handleSubmit} className="flex flex-col">
         {/* Location Section */}
         <div className="mb-8">

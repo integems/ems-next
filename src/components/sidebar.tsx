@@ -3,6 +3,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -20,6 +21,7 @@ import {
   Flower,
   Home,
   Leaf,
+  LogOut,
   Settings,
   Settings2,
   Trash2,
@@ -28,7 +30,7 @@ import {
   Volume2,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -279,6 +281,31 @@ function SidebarContentUI({ className }: { className?: string }) {
   );
 }
 
+// Logout action pinned to the sidebar footer
+function SidebarLogout() {
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push("/signin");
+  };
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+        >
+          <LogOut className="h-4 w-4" aria-hidden="true" />
+          <span>Logout</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
 // Main AppSidebar component
 export function Logo() {
   return (
@@ -300,6 +327,9 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContentUI />
+      <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarLogout />
+      </SidebarFooter>
     </Sidebar>
   );
 }

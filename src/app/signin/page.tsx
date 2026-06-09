@@ -6,11 +6,16 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { FrontendAuthService } from "@/frontend-services/auth.service";
 import { useAuth } from "@/hooks/use-auth";
 import { Mail, Lock, Eye, EyeOff, LoaderIcon } from "lucide-react";
@@ -115,64 +120,67 @@ export default function SignInPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Welcome
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center items-center text-center w-full mb-10">
+        <CardHeader className="space-y-1">
+          <div className="flex justify-center items-center text-center w-full mb-2">
             <Logo />
           </div>
+          <CardTitle className="text-2xl font-bold text-center">
+            Welcome back
+          </CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your account to continue.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {errors.server && (
               <p className="text-sm text-red-500">{errors.server}</p>
             )}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
               <div className="relative flex items-center">
-                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="email"
                   type="email"
                   name="email"
-                  placeholder="Email"
+                  placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={cn(
-                    "w-full pl-10",
-                    errors.email && "border-red-500",
-                  )}
+                  aria-invalid={!!errors.email}
+                  className="h-11 w-full pl-10"
                 />
               </div>
               {errors.email && (
                 <p className="text-sm text-red-500">{errors.email}</p>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
               <div className="relative flex items-center">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Lock className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  placeholder="Password"
+                  placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={cn(
-                    "w-full pl-10",
-                    errors.password && "border-red-500",
-                  )}
+                  aria-invalid={!!errors.password}
+                  className="h-11 w-full pl-10 pr-11"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-3 top-1/2 h-8 w-8 -translate-y-1/2"
+                  className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
+                    <EyeOff className="h-5 w-5" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
+                    <Eye className="h-5 w-5" />
                   )}
                 </Button>
               </div>
@@ -203,10 +211,14 @@ export default function SignInPage() {
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="h-11 w-full text-base"
               disabled={mutation.isPending}
             >
-              Sign in
+              {mutation.isPending ? (
+                <LoaderIcon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Sign in"
+              )}
             </Button>
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
@@ -220,16 +232,6 @@ export default function SignInPage() {
               </p>
             </div>
           </form>
-          <div className="relative mt-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground font-semibold my-3">
-                Or
-              </span>
-            </div>
-          </div>
           {/* <Button
             variant="outline"
             className="w-full mt-4"

@@ -70,8 +70,12 @@ export function ExportButton<T, F>({
   };
 
   return (
-    <Button onClick={handleExport} variant="outline" className="text-green-400">
-      <Sheet className="h-4 w-4 text-green-400" />
+    <Button
+      onClick={handleExport}
+      variant="outline"
+      className="border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+    >
+      <Sheet className="h-4 w-4 text-primary" />
       Export to Excel
     </Button>
   );

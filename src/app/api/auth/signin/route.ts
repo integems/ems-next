@@ -18,12 +18,17 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
+    const message: string = error?.message || "";
     if (
-      error.message.includes("Invalid") ||
-      error.message.includes("incorrect")
+      message.includes("Invalid") ||
+      message.includes("incorrect") ||
+      message.includes("No account")
     ) {
-      return NextResponse.json({ message: error.message }, { status: 401 });
+      return NextResponse.json({ message }, { status: 401 });
     }
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Something went wrong. Please try again." },
+      { status: 500 },
+    );
   }
 }

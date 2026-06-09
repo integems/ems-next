@@ -20,7 +20,6 @@ import {
   CheckCircle2,
   LoaderIcon,
   Mail,
-  MapPin,
   PenLine,
   Phone,
   Shield,
@@ -167,55 +166,11 @@ export default function ProfilePage() {
               </div>
               <div className="space-y-1.5 group">
                 <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2 mb-1">
-                  <MapPin className="h-3.5 w-3.5 group-hover:text-primary transition-colors" /> Location Coverage
-                </p>
-                <p className="font-medium text-foreground text-sm sm:text-base">
-                  {user.locationsCreated?.length 
-                    ? `${user.locationsCreated.length} locations associated` 
-                    : <span className="text-muted-foreground italic">No specific locations</span>}
-                </p>
-              </div>
-              <div className="space-y-1.5 group">
-                <p className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-2 mb-1">
                   <CalendarDays className="h-3.5 w-3.5 group-hover:text-primary transition-colors" /> Member Since
                 </p>
                 <p className="font-medium text-foreground text-sm sm:text-base">
                   {user.createdAt ? format(new Date(user.createdAt), "MMMM dd, yyyy") : "—"}
                 </p>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border border-border shadow-sm hover:shadow-md transition-shadow duration-300">
-            <CardHeader className="border-b border-border/50 bg-muted/20 pb-4">
-              <h3 className="text-lg font-semibold text-foreground">Activity Summary</h3>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 text-center">
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.airDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Air Data</p>
-                </div>
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.waterDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Water Data</p>
-                </div>
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.soilDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Soil Data</p>
-                </div>
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.noiseDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Noise Data</p>
-                </div>
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.biodiversityDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Bio Data</p>
-                </div>
-                <div className="space-y-1 p-3 rounded-lg bg-card border border-border">
-                  <p className="text-2xl font-bold text-primary">{user.wasteDataCreated?.length || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">Waste Data</p>
-                </div>
               </div>
             </CardContent>
           </Card>

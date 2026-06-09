@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
@@ -102,44 +102,49 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             />
           )}
 
-          {/* Scrim — bottom-weighted for text legibility, subtle on sides */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
+          {/* Scrim — bottom + left weighted for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
 
           {/* Content — anchored to bottom-left */}
           <div className="absolute inset-0 flex items-end">
-            <div className="container mx-auto px-8 md:px-16 pb-20 md:pb-24">
+            <div className="container mx-auto px-8 md:px-16 pb-20 md:pb-28">
               <div
                 className={cn(
-                  "max-w-xl transition-all duration-700",
+                  "max-w-xl transition-all duration-700 ease-out",
                   index === currentSlide
                     ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-4",
+                    : "opacity-0 translate-y-6",
                 )}
               >
                 {slide.badge && (
-                  <span className="inline-block mb-3 px-3 py-1 text-xs font-semibold tracking-widest uppercase text-white/90 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
+                  <span className="inline-flex items-center gap-2 mb-4 px-3.5 py-1.5 text-xs font-semibold tracking-widest uppercase text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     {slide.badge}
                   </span>
                 )}
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight tracking-tight">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight drop-shadow-lg">
                   {slide.title}
                 </h1>
-                <p className="mt-3 text-base md:text-lg text-white/75 leading-relaxed">
+                <p className="mt-4 max-w-lg text-base md:text-lg text-white/80 leading-relaxed drop-shadow">
                   {slide.description}
                 </p>
                 {slide.cta && (
-                  <div className="flex flex-wrap items-center gap-3 mt-6">
+                  <div className="flex flex-wrap items-center gap-3 mt-7">
                     <Button
                       onClick={onPrimaryClick}
-                      className="bg-white text-black hover:bg-white/90 font-semibold px-6 shadow-none border-0"
+                      size="lg"
+                      className="group bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-7 shadow-lg"
                     >
                       {slide.cta.primary}
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                     {slide.cta.secondary && (
                       <Button
-                        variant="ghost"
+                        variant="outline"
+                        size="lg"
                         onClick={onSecondaryClick}
-                        className="text-white hover:text-white hover:bg-white/10 font-medium px-6"
+                        className="border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm font-medium px-7"
                       >
                         {slide.cta.secondary}
                       </Button>

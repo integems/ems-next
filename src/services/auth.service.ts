@@ -47,28 +47,24 @@ export class AuthService {
    * @param params User data to check.
    */
   async checkUserConflicts(params: { email?: string; phoneNumber?: string }) {
-    try {
-      const { email, phoneNumber } = params;
+    const { email, phoneNumber } = params;
 
-      if (email) {
-        const existingEmail = await this.db.query.users.findFirst({
-          where: eq(schema.users.email, email),
-        });
-        if (existingEmail) {
-          throw new Error("Email already exists");
-        }
+    if (email) {
+      const existingEmail = await this.db.query.users.findFirst({
+        where: eq(schema.users.email, email),
+      });
+      if (existingEmail) {
+        throw new Error("An account with this email already exists");
       }
+    }
 
-      if (phoneNumber) {
-        const existingPhone = await this.db.query.users.findFirst({
-          where: eq(schema.users.phoneNumber, phoneNumber),
-        });
-        if (existingPhone) {
-          throw new Error("Phone number already exists");
-        }
+    if (phoneNumber) {
+      const existingPhone = await this.db.query.users.findFirst({
+        where: eq(schema.users.phoneNumber, phoneNumber),
+      });
+      if (existingPhone) {
+        throw new Error("An account with this phone number already exists");
       }
-    } catch (error: any) {
-      throw new Error(`Error checking user conflicts: ${error.message}`);
     }
   }
 
@@ -209,7 +205,7 @@ export class AuthService {
         };
       });
     } catch (error: any) {
-      throw new Error(`Error in signUp: ${error.message}`);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 
@@ -234,7 +230,7 @@ export class AuthService {
         });
 
         if (!user) {
-          throw new Error("Invalid email or phone number");
+          throw new Error("No account found with this email");
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -352,7 +348,7 @@ export class AuthService {
         };
       });
     } catch (error: any) {
-      throw new Error(`Error in verifyOtp: ${error.message}`);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 

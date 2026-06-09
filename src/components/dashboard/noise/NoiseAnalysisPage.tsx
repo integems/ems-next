@@ -449,6 +449,7 @@ export default function NoiseAnalysisPage() {
           </p>
         </div>
 
+        <div className="rounded-xl bg-card p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 items-end">
           <DatePicker
             value={startDateFilter}
@@ -662,6 +663,7 @@ export default function NoiseAnalysisPage() {
             </Button>
           </div>
         )}
+        </div>
       </div>
 
       {/* Map Toggle */}

@@ -18,10 +18,22 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {
-    // console.error(error);
-    if (error.message.includes("already exists")) {
-      return NextResponse.json({ message: error.message }, { status: 409 });
+    const message: string = error?.message || "";
+    if (message.includes("already exists")) {
+      return NextResponse.json({ message }, { status: 409 });
     }
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    if (message.includes("OTP") || message.includes("email")) {
+      return NextResponse.json(
+        {
+          message:
+            "We couldn't send your verification email. Please try again shortly.",
+        },
+        { status: 502 },
+      );
+    }
+    return NextResponse.json(
+      { message: "Something went wrong. Please try again." },
+      { status: 500 },
+    );
   }
 }

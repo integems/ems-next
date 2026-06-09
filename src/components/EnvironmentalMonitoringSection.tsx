@@ -18,8 +18,6 @@ const monitoringFeatures = [
     title: "Air Quality",
     description: "Monitor air pollutants like PM2.5, PM10, CO, SO2, and NO2.",
     href: "/air",
-    accent: "from-blue-500/20 to-sky-500/5",
-    iconBg: "bg-blue-500/10 text-blue-500",
     image: "images/air1.JPG",
   },
   {
@@ -28,8 +26,6 @@ const monitoringFeatures = [
     description:
       "Track water parameters such as pH, turbidity, and dissolved oxygen.",
     href: "/water",
-    accent: "from-cyan-500/20 to-cyan-500/5",
-    iconBg: "bg-cyan-500/10 text-cyan-500",
     image: "images/water1.png",
   },
   {
@@ -37,8 +33,6 @@ const monitoringFeatures = [
     title: "Soil Quality",
     description: "Analyze soil composition, moisture, and nutrient levels.",
     href: "/soil",
-    accent: "from-green-500/20 to-green-500/5",
-    iconBg: "bg-green-500/10 text-green-500",
     image: "images/soil.JPG",
   },
   {
@@ -47,8 +41,6 @@ const monitoringFeatures = [
     description:
       "Record and monitor the variety of life in a particular habitat.",
     href: "/biodiversity",
-    accent: "from-emerald-500/20 to-emerald-500/5",
-    iconBg: "bg-emerald-500/10 text-emerald-500",
     image: "images/bio1.jpeg",
   },
   {
@@ -56,8 +48,6 @@ const monitoringFeatures = [
     title: "Noise Quality",
     description: "Monitor noise pollution levels in various environments.",
     href: "/noise",
-    accent: "from-purple-500/20 to-purple-500/5",
-    iconBg: "bg-purple-500/10 text-purple-500",
     image: "images/noise1.jpg",
   },
   {
@@ -65,8 +55,6 @@ const monitoringFeatures = [
     title: "Waste Management",
     description: "Track and manage different types of waste.",
     href: "/waste",
-    accent: "from-orange-500/20 to-orange-500/5",
-    iconBg: "bg-orange-500/10 text-orange-500",
     image: "images/waste1.jpg",
   },
 ];
@@ -109,7 +97,7 @@ export default function EnvironmentalMonitoringSection() {
                 transition={{ duration: 0.5, delay: index * 0.08 }}
               >
                 <Link href={feature.href} className="block h-full group">
-                  <div className="relative h-full rounded-2xl border border-border bg-card overflow-hidden flex flex-col transition-all duration-300 hover:border-border/80 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
+                  <div className="relative h-full rounded-2xl bg-card overflow-hidden flex flex-col shadow-md shadow-black/5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/10 dark:shadow-black/20 dark:hover:shadow-black/40">
                     {/* Image */}
                     <div className="relative h-52 overflow-hidden flex-shrink-0 bg-muted">
                       <img
@@ -125,10 +113,8 @@ export default function EnvironmentalMonitoringSection() {
                     <div className="flex flex-col flex-grow p-5 gap-3">
                       {/* Icon + Title row */}
                       <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${feature.iconBg}`}
-                        >
-                          <Icon className="h-4 w-4" />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                          <Icon className="h-5 w-5" />
                         </div>
                         <h3 className="text-sm font-semibold text-foreground">
                           {feature.title}
@@ -140,7 +126,7 @@ export default function EnvironmentalMonitoringSection() {
                       </p>
 
                       {/* CTA */}
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors pt-1">
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-primary/80 group-hover:text-primary transition-colors pt-1">
                         <span>Explore</span>
                         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                       </div>

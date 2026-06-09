@@ -33,7 +33,7 @@ export default function NavComponent() {
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
       <nav
         className={cn(
-          "w-full max-w-5xl flex h-14 items-center justify-between gap-4 rounded-2xl px-4 transition-all duration-300",
+          "w-full max-w-5xl flex h-14 items-center justify-between gap-4 rounded-full px-5 transition-all duration-300",
           scrolled
             ? "bg-background/80 backdrop-blur-xl border border-border shadow-sm shadow-black/5 dark:shadow-black/20"
             : "bg-background/40 backdrop-blur-md border border-white/10 dark:border-white/5",
@@ -76,8 +76,7 @@ export default function NavComponent() {
             <Button
               asChild
               size="sm"
-              variant="ghost"
-              className="text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-foreground/5"
+              className="rounded-full px-5 text-sm font-semibold shadow-sm transition-all hover:shadow-md"
             >
               <Link href="/signin">Sign in</Link>
             </Button>

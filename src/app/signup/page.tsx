@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 import {
   Stepper,
   StepperItem,
@@ -72,7 +79,7 @@ export default function SignUpPage() {
       setStepOneCompleted(true);
     },
     onError: (error: any) => {
-      toast.error("Couldn't sign up, please try again.");
+      toast.error(error?.message || "Couldn't sign up, please try again.");
     },
   });
 
@@ -83,7 +90,7 @@ export default function SignUpPage() {
       router.push("/");
     },
     onError: (error: any) => {
-      toast.error("Couldn't verify email, please try again.");
+      toast.error(error?.message || "Couldn't verify email, please try again.");
     },
   });
 
@@ -181,8 +188,17 @@ export default function SignUpPage() {
           </StepperItem>
         </Stepper>
       </div>
-      <Card className="w-full max-w-md mt-20">
-        <CardHeader />
+      <Card className="w-full max-w-lg mt-20 shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold">
+            {activeStep === 1 ? "Create your account" : "Verify your email"}
+          </CardTitle>
+          <CardDescription>
+            {activeStep === 1
+              ? "Join EMS to start monitoring environmental data."
+              : `Enter the 6-digit code we sent to ${verifyEmailData.email || "your email"}.`}
+          </CardDescription>
+        </CardHeader>
         <CardContent>
           {activeStep === 1 && (
             <SignUpForm
@@ -205,6 +221,17 @@ export default function SignUpPage() {
               verifyEmailMutation={verifyEmailMutation}
               resendOtpMutation={resendOtpMutation}
             />
+          )}
+          {activeStep === 1 && (
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                href="/signin"
+                className="font-medium text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
           )}
         </CardContent>
       </Card>
