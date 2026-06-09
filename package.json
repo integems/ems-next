@@ -13,7 +13,14 @@
     "studio": "drizzle-kit studio",
     "setup:dev": "bash scripts/setup.sh",
     "setup:reset": "docker compose -f docker-compose.yml down -v",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "db:up": "docker compose up -d postgres",
+    "db:logs": "docker compose logs -f postgres",
+    "app:deploy": "docker compose up -d --build app",
+    "app:up": "docker compose up -d app",
+    "app:logs": "docker compose logs -f app",
+    "stack:up": "docker compose up -d --build",
+    "stack:down": "docker compose down"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.14",

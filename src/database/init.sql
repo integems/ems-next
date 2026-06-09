@@ -1,9 +1,5 @@
 
 
--- Create Role
-CREATE ROLE ems LOGIN PASSWORD 'ems';
-ALTER ROLE ems SET TIME ZONE 'UTC';
-
 -- Create schemas
 CREATE SCHEMA IF NOT EXISTS public;
 
@@ -298,8 +294,3 @@ CREATE INDEX IF NOT EXISTS idx_biodiversity_data_created_at ON public.biodiversi
 CREATE INDEX IF NOT EXISTS idx_waste_data_point_geom ON public.waste_data USING gin (point_geom);
 CREATE INDEX IF NOT EXISTS idx_waste_data_location_id ON public.waste_data USING btree (location_id ASC NULLS LAST);
 CREATE INDEX IF NOT EXISTS idx_waste_data_created_at ON public.waste_data USING btree (created_at ASC NULLS LAST);
-
--- Grant Access to role
-GRANT USAGE ON SCHEMA public TO ems;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ems;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ems;

@@ -1,0 +1,25 @@
+# Dependencies & build output (rebuilt inside the image)
+node_modules
+.next
+out
+build
+
+# Version control / tooling
+.git
+.gitignore
+.vscode
+.idea
+
+# Logs & misc
+*.log
+npm-debug.log*
+.DS_Store
+
+# Docker files themselves
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# NOTE: .env* is intentionally NOT ignored — Next.js reads it at build time
+# to inline NEXT_PUBLIC_* values. DB host/port are overridden at runtime
+# via the compose `environment:` block.
