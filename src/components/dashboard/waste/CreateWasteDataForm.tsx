@@ -30,11 +30,13 @@ import {
 } from "@/types/common.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import { ArrowLeft, LoaderIcon, MapPin, Plus } from "lucide-react";
+import React, { useCallback, useRef, useState } from "react";
 import { Spreadsheet } from "react-spreadsheet";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { readExcelRows } from "@/components/dashboard/shared/excel";
+import { ExcelDropzone } from "@/components/dashboard/shared/ExcelDropzone";
+import { ImportErrorList } from "@/components/dashboard/shared/ImportErrorList";
 import { z } from "zod";
 
 const locationService = new FrontendLocationService();
@@ -131,7 +133,8 @@ export default function CreateWasteDataForm({
     locationType: undefined,
   });
   const [errors, setErrors] = useState<any>({});
-  const [isDragging, setIsDragging] = useState(false);
+  // Carries the entries into the create-location flow so it submits the same list.
+  const pendingEntriesRef = useRef<WasteDataFormData[]>([]);
 
   const { data: locationsData, isLoading: isLoadingLocations } = useQuery({
     queryKey: ["locations", currentUser?.token],
@@ -158,7 +161,7 @@ export default function CreateWasteDataForm({
       wasteService.createWasteData(currentUser!.token || "", newWasteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["waste-data"] });
-      toast.success("Waste data updated successfully!");
+      toast.success("Waste data added successfully!");
       onClose();
     },
     onError: (error) => {
@@ -170,11 +173,10 @@ export default function CreateWasteDataForm({
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser!.token || "", newLocation),
     onSuccess: (data) => {
-      // console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
-      const wasteDataWithLocation = wasteDataFormData.map((data) => ({
+      const wasteDataWithLocation = pendingEntriesRef.current.map((data) => ({
         ...data,
         locationId: newLocationId,
         pointGeom: locationFormData.pointGeom,
@@ -299,7 +301,12 @@ export default function CreateWasteDataForm({
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error("Please correct errors in the spreadsheet data.");
+      setWasteDataFormData(validatedData);
+      toast.warning(
+        `${validatedData.length} valid row(s) kept. ${
+          Object.keys(newErrors).length
+        } row(s) had errors and were skipped.`,
+      );
     } else {
       setErrors({}); // Clear previous errors
       setWasteDataFormData(validatedData);
@@ -330,29 +337,22 @@ export default function CreateWasteDataForm({
 
   // Fixed handleFileUpload for Waste Form
   const handleFileUpload = useCallback(
-    (file: File) => {
-      if (
-        !file.name.endsWith(".xlsx") &&
-        !file.name.endsWith(".xls") &&
-        !file.name.endsWith(".csv")
-      ) {
-        toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
+    async (file: File) => {
+      let parsed;
+      try {
+        parsed = await readExcelRows(file);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Couldn't read the file.",
+        );
         return;
       }
+      if (parsed.multipleSheets) {
+        toast.info("Multiple sheets found — only the first sheet was imported.");
+      }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target!.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array", cellDates: true });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-          if (jsonData.length < 2) {
-            toast.error("Excel file is empty or has no data rows");
-            return;
-          }
+      try {
+        const jsonData = parsed.rows;
 
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
@@ -497,43 +497,27 @@ export default function CreateWasteDataForm({
             "Error reading Excel file. Please check the file format.",
           );
         }
-      };
-      reader.readAsArrayBuffer(file);
     },
     [wasteDataFormData],
   );
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) {
-        handleFileUpload(file);
-      }
-    },
-    [handleFileUpload],
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
+
+    // Require at least one entry; fall back to the current manual entry so a
+    // filled-but-not-"added" form is not submitted as an empty no-op.
+    let entries = wasteDataFormData;
+    if (entries.length === 0) {
+      const parsed = updatedWasteDto.safeParse(singleWasteData);
+      if (parsed.success) {
+        entries = [parsed.data];
+        setWasteDataFormData(entries);
+      } else {
+        setErrors(parsed.error.flatten().fieldErrors);
+        toast.error("Add at least one waste data entry before submitting.");
+        return;
+      }
+    }
 
     if (isCreatingLocation) {
       const locationResult = createLocationDto.safeParse(locationFormData);
@@ -542,6 +526,13 @@ export default function CreateWasteDataForm({
         toast.error("Please correct errors in the location data.");
         return;
       }
+      const pointGeom = locationFormData.pointGeom;
+      if (!pointGeom || (pointGeom[0] === 0 && pointGeom[1] === 0)) {
+        setErrors({ pointGeom: ["Please select the location on the map."] });
+        toast.error("Please select the location on the map.");
+        return;
+      }
+      pendingEntriesRef.current = entries;
       createLocationMutation.mutate(locationResult.data);
     } else {
       if (!selectedLocationId) {
@@ -557,7 +548,7 @@ export default function CreateWasteDataForm({
         toast.error("Selected location has no coordinates.");
         return;
       }
-      const wasteDataWithLocation = wasteDataFormData.map((data) => ({
+      const wasteDataWithLocation = entries.map((data) => ({
         ...data,
         locationId: selectedLocationId,
         pointGeom: selectedLocation.pointGeom,
@@ -735,37 +726,7 @@ export default function CreateWasteDataForm({
           <h2 className="text-xl font-semibold mb-4">Waste Data</h2>
 
           {/* File Upload Section */}
-          <div className="space-y-2">
-            <Label>Import from Excel (Optional)</Label>
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25"
-              }`}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-            >
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">
-                Drop Excel file here or click to upload
-              </p>
-              <Input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                className="hidden"
-                id="file-upload"
-                onChange={handleFileInputChange}
-              />
-              <Label
-                htmlFor="file-upload"
-                className="inline-block cursor-pointer rounded-md bg-muted px-4 py-2 text-sm font-medium hover:bg-muted/80 transition-colors"
-              >
-                Browse Files
-              </Label>
-            </div>
-          </div>
+          <ExcelDropzone onFile={handleFileUpload} />
 
           {/* Spreadsheet Section */}
           {!!spreadsheetData.length && (
@@ -795,6 +756,9 @@ export default function CreateWasteDataForm({
               </div>
             </div>
           )}
+
+          {/* Import errors (from Excel upload or spreadsheet edits) */}
+          <ImportErrorList errors={errors} />
 
           {/* Manual Entry Section */}
           <div className="space-y-6">
@@ -1059,7 +1023,14 @@ export default function CreateWasteDataForm({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+        <div className="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+          <span className="mr-auto text-xs text-muted-foreground">
+            {wasteDataFormData.length > 0
+              ? `${wasteDataFormData.length} entr${
+                  wasteDataFormData.length === 1 ? "y" : "ies"
+                } ready to submit`
+              : "Your current entry will be submitted"}
+          </span>
           <Button
             type="submit"
             size="sm"
@@ -1076,7 +1047,6 @@ export default function CreateWasteDataForm({
           </Button>
         </div>
       </form>
-      <div className="h-20"></div>
     </div>
   );
 }

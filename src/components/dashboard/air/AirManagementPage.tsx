@@ -332,7 +332,7 @@ export default function AirManagementPage({
             token={currentUser?.token || ""}
             columns={airDataColumns}
           />
-          {currentUser?.role === RoleName.Admin && (
+          {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
             <Button
               size="sm"
               onClick={() => setActiveView("create")}
@@ -575,7 +575,7 @@ export default function AirManagementPage({
                   <TableHead className="text-foreground font-semibold">
                     Updated By
                   </TableHead>
-                  {currentUser?.role === RoleName.Admin && (
+                  {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
                     <TableHead className="w-[50px] text-foreground font-semibold">
                       Action
                     </TableHead>

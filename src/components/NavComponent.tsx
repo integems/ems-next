@@ -3,7 +3,6 @@ import UserMenu from "@/components/user-menu";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Logo } from "./sidebar";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "./ui/button";
@@ -21,22 +20,13 @@ const navigationLinks = [
 
 export default function NavComponent() {
   const { currentUser } = useAuth();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-4">
       <nav
         className={cn(
           "w-full max-w-5xl flex h-14 items-center justify-between gap-4 rounded-full px-5 transition-all duration-300",
-          scrolled
-            ? "bg-background/80 backdrop-blur-xl border border-border shadow-sm shadow-black/5 dark:shadow-black/20"
-            : "bg-background/40 backdrop-blur-md border border-white/10 dark:border-white/5",
+          "border border-white/40 bg-white/5 backdrop-blur-sm shadow-lg",
         )}
       >
         {/* Left: Logo + Links */}
@@ -49,7 +39,7 @@ export default function NavComponent() {
                 <NavigationMenuItem key={index}>
                   <NavigationMenuLink
                     href={link.href}
-                    className="relative px-3 py-1.5 text-sm font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+                    className="relative px-3 py-1.5 text-base font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
                   >
                     {link.label}
                   </NavigationMenuLink>
@@ -60,7 +50,7 @@ export default function NavComponent() {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     href="/dashboard"
-                    className="relative px-3 py-1.5 text-sm font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+                    className="relative px-3 py-1.5 text-base font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
                   >
                     Dashboard
                   </NavigationMenuLink>

@@ -112,7 +112,7 @@ const BiodiversityDataTableRow: React.FC<BiodiversityDataTableRowProps> = ({
         </TableCell>
         <TableCell>{data.createdBy ?? "N/A"}</TableCell>
         <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
-        {currentUser?.role === RoleName.Admin && (
+        {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
           <TableCell className="text-right">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -340,7 +340,7 @@ export default function WaterManagementPage({
             token={currentUser?.token || ""}
             columns={waterDataColumns}
           />
-          {currentUser?.role === RoleName.Admin && (
+          {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
             <Button
               size="sm"
               onClick={() => setActiveView("create")}
@@ -611,7 +611,7 @@ export default function WaterManagementPage({
                   <TableHead className="text-foreground font-semibold">
                     Updated By
                   </TableHead>
-                  {currentUser?.role === RoleName.Admin && (
+                  {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
                     <TableHead className="w-[50px] text-foreground font-semibold">
                       Action
                     </TableHead>

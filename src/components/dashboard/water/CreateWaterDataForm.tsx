@@ -31,11 +31,13 @@ import {
 } from "@/types/common.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
+import { ArrowLeft, LoaderIcon, MapPin, Plus } from "lucide-react";
 import React, { useCallback, useRef, useState } from "react";
 import { Spreadsheet } from "react-spreadsheet";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { readExcelRows } from "@/components/dashboard/shared/excel";
+import { ExcelDropzone } from "@/components/dashboard/shared/ExcelDropzone";
+import { ImportErrorList } from "@/components/dashboard/shared/ImportErrorList";
 import { z } from "zod";
 
 const locationService = new FrontendLocationService();
@@ -149,7 +151,6 @@ export default function CreateWaterDataForm({
     locationType: undefined,
   });
   const [errors, setErrors] = useState<any>({});
-  const [isDragging, setIsDragging] = useState(false);
   // Carries the entries into the create-location flow so it submits the same list.
   const pendingEntriesRef = useRef<WaterDataFormData[]>([]);
 
@@ -373,40 +374,22 @@ export default function CreateWaterDataForm({
 
   // Fixed handleFileUpload for Water Form
   const handleFileUpload = useCallback(
-    (file: File) => {
-      if (
-        !file.name.endsWith(".xlsx") &&
-        !file.name.endsWith(".xls") &&
-        !file.name.endsWith(".csv")
-      ) {
-        toast.error("Please upload an Excel file (.xlsx, .xls, or .csv)");
+    async (file: File) => {
+      let parsed;
+      try {
+        parsed = await readExcelRows(file);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Couldn't read the file.",
+        );
         return;
       }
-
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error("File is too large. Please upload a file under 5 MB.");
-        return;
+      if (parsed.multipleSheets) {
+        toast.info("Multiple sheets found — only the first sheet was imported.");
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = new Uint8Array(e.target!.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array", cellDates: true });
-          if (workbook.SheetNames.length > 1) {
-            toast.info(
-              "Multiple sheets found — only the first sheet was imported.",
-            );
-          }
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-          if (jsonData.length < 2) {
-            toast.error("Excel file is empty or has no data rows");
-            return;
-          }
+      try {
+        const jsonData = parsed.rows;
 
           const headers = (jsonData[0] as string[]).map((header) =>
             header.toLowerCase().replace(/\s/g, ""),
@@ -569,42 +552,9 @@ export default function CreateWaterDataForm({
             "Error reading Excel file. Please check the file format.",
           );
         }
-      };
-      reader.readAsArrayBuffer(file);
     },
     [waterDataFormData],
   );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) {
-        handleFileUpload(file);
-      }
-    },
-    [handleFileUpload],
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-    // Reset so re-selecting the same file fires onChange again.
-    e.target.value = "";
-  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -832,37 +782,7 @@ export default function CreateWaterDataForm({
           <h2 className="text-xl font-semibold mb-4">Water Data</h2>
 
           {/* File Upload Section */}
-          <div className="space-y-2">
-            <Label>Import from Excel (Optional)</Label>
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragging
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/25"
-              }`}
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-            >
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">
-                Drop Excel file here or click to upload
-              </p>
-              <Input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                className="hidden"
-                id="file-upload"
-                onChange={handleFileInputChange}
-              />
-              <Label
-                htmlFor="file-upload"
-                className="inline-block cursor-pointer rounded-md bg-muted px-4 py-2 text-sm font-medium hover:bg-muted/80 transition-colors"
-              >
-                Browse Files
-              </Label>
-            </div>
-          </div>
+          <ExcelDropzone onFile={handleFileUpload} />
 
           {/* Spreadsheet Section */}
           {!!spreadsheetData.length && (
@@ -900,25 +820,7 @@ export default function CreateWaterDataForm({
           )}
 
           {/* Import errors (from Excel upload or spreadsheet edits) */}
-          {Object.keys(errors).some((k) => !isNaN(Number(k))) && (
-            <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm dark:border-red-900 dark:bg-red-950/30">
-              <p className="mb-1 font-medium text-red-600">
-                Some rows have errors and were skipped:
-              </p>
-              <ul className="list-disc space-y-0.5 pl-5 text-red-600">
-                {Object.entries(errors)
-                  .filter(([k]) => !isNaN(Number(k)))
-                  .map(([k, v]) => (
-                    <li key={k}>
-                      Row {Number(k) + 1}:{" "}
-                      {Object.values(v as Record<string, string[]>)
-                        .flat()
-                        .join(", ")}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          )}
+          <ImportErrorList errors={errors} />
 
           {/* Manual Entry Section */}
           <div className="space-y-6">

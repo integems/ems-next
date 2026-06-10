@@ -335,7 +335,7 @@ export default function WasteManagementPage({
             token={currentUser?.token || ""}
             columns={wasteDataColumns}
           />
-          {currentUser?.role === RoleName.Admin && (
+          {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
             <Button
               size="sm"
               onClick={() => setActiveView("create")}
@@ -584,7 +584,7 @@ export default function WasteManagementPage({
                   <TableHead className="text-foreground font-semibold">
                     Updated By
                   </TableHead>
-                  {currentUser?.role === RoleName.Admin && (
+                  {(currentUser?.role === RoleName.Admin || currentUser?.role === RoleName.SuperAdmin) && (
                     <TableHead className="w-[50px] text-foreground font-semibold">
                       Action
                     </TableHead>

@@ -76,7 +76,7 @@ export default function EnvironmentalMonitoringSection() {
           <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3">
             What we monitor
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             Environmental Monitoring
           </h2>
           <p className="mt-3 text-base text-muted-foreground leading-relaxed">
