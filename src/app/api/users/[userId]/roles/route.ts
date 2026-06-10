@@ -4,7 +4,8 @@
 
 import { assignRoleDto } from "@/dtos/user.dto";
 import { UserService } from "@/services/user.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 interface Params {
@@ -32,6 +33,13 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const authCheck = authorizeRoles(auth.user, [RoleName.SuperAdmin]);
+    if (authCheck) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.statusCode },
+      );
     }
     const { userId } = await params;
     const body = await request.json();

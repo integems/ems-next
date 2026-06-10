@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      { message: "Something went wrong. Please try again." },
+      { message: "Couldn't sign up. Please try again." },
       { status: 500 },
     );
   }

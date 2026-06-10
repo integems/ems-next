@@ -1,6 +1,7 @@
 "use client";
 
 import MapComponent from "@/components/MapComponent";
+import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -718,9 +719,12 @@ export default function WasteAIChatAnalysis({
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-64 text-muted-foreground">
-                  No data available for the selected filters
-                </div>
+                <EmptyState
+                  variant={
+                    locationIdsFilter.length === 0 ? "no-filter" : "no-data"
+                  }
+                  className="h-64 py-0"
+                />
               )}
             </CardContent>
           </Card>
@@ -771,9 +775,12 @@ export default function WasteAIChatAnalysis({
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-64 text-muted-foreground">
-                  No data available for the selected filters
-                </div>
+                <EmptyState
+                  variant={
+                    locationIdsFilter.length === 0 ? "no-filter" : "no-data"
+                  }
+                  className="h-64 py-0"
+                />
               )}
             </CardContent>
           </Card>

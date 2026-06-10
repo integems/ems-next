@@ -26,7 +26,7 @@ export class FrontendAuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "An error occurred during sign-up.",
+        error.response?.data?.message || "Couldn't sign up. Please try again.",
       );
     }
   }
@@ -42,7 +42,7 @@ export class FrontendAuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "An error occurred during sign-in.",
+        error.response?.data?.message || "Couldn't sign in. Please try again.",
       );
     }
   }
@@ -58,7 +58,7 @@ export class FrontendAuthService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "An error occurred during sign-in.",
+        error.response?.data?.message || "Couldn't sign in. Please try again.",
       );
     }
   }
@@ -78,7 +78,7 @@ export class FrontendAuthService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          "An error occurred during OTP verification.",
+          "Couldn't verify your email. Please try again.",
       );
     }
   }
@@ -98,7 +98,7 @@ export class FrontendAuthService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          "An error occurred while resending OTP.",
+          "Couldn't resend the code. Please try again.",
       );
     }
   }
@@ -118,7 +118,7 @@ export class FrontendAuthService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          "An error occurred during the forgot password process.",
+          "Couldn't send the reset code. Please try again.",
       );
     }
   }
@@ -138,7 +138,7 @@ export class FrontendAuthService {
     } catch (error: any) {
       throw new Error(
         error.response?.data?.message ||
-          "An error occurred during password reset.",
+          "Couldn't reset your password. Please try again.",
       );
     }
   }

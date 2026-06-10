@@ -72,7 +72,7 @@ export default function UserTableRow({
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: any) => {
-      toast.error("Failed to delete user");
+      toast.error("Couldn't delete user.");
     },
   });
 
@@ -93,7 +93,7 @@ export default function UserTableRow({
       setAssignRoleDialogOpen(false);
     },
     onError: (error: any) => {
-      toast.error("Failed to assign role");
+      toast.error("Couldn't assign role.");
     },
   });
 
@@ -155,9 +155,7 @@ export default function UserTableRow({
               <DropdownMenuLabel className="text-foreground">
                 Actions
               </DropdownMenuLabel>
-              {(currentUser?.role === RoleName.SuperAdmin ||
-                currentUser?.role === RoleName.IntegemsAdmin ||
-                currentUser?.role === RoleName.Admin) && (
+              {currentUser?.role === RoleName.SuperAdmin && (
                 <>
                   <DropdownMenuItem
                     onClick={() => onEdit(user)}

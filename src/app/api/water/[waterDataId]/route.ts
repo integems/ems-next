@@ -1,6 +1,7 @@
 import { UpdateWaterDataDto } from "@/dtos/water.dto";
 import { WaterService } from "@/services/water.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const waterService = new WaterService();
@@ -48,6 +49,14 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
+    }
+
     const { waterDataId } = await params;
     const waterDataDto: UpdateWaterDataDto = await request.json();
     const updatedWaterData = await waterService.updateWaterData(
@@ -77,6 +86,14 @@ export async function DELETE(
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
     }
 
     const { waterDataId } = await params;

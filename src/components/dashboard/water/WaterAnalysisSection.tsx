@@ -75,7 +75,7 @@ export default function WaterAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof WaterData)[]
-  >(["ph"]);
+  >(["ph", "ec", "temperature"]);
 
   const toggleParameter = (param: keyof WaterData) => {
     setSelectedParameters((prev) =>

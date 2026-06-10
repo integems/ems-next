@@ -77,8 +77,9 @@ export default function UpdateBiodiversityDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update biodiversity data");
-      setErrors({ server: "Failed to update biodiversity data" });
+      setErrors({
+        server: "Couldn't update biodiversity data. Please try again.",
+      });
     },
   });
 

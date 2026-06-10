@@ -79,8 +79,7 @@ export default function UpdateNoiseDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast.error("Failed to update noise data");
-      setErrors({ server: "Failed to update noise data" });
+      setErrors({ server: "Couldn't update noise data. Please try again." });
     },
   });
 

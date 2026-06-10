@@ -6,7 +6,8 @@ import {
   noiseDataFilterDto,
 } from "@/dtos/noise.dto";
 import { CurrentUser } from "@/types/common.types";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 
 const noiseService = new NoiseService();
 
@@ -64,7 +65,13 @@ export async function POST(request: NextRequest) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
+    }
     const noiseDataDto: CreateNoiseDataDto = await request.json();
     const newNoiseData = await noiseService.createNoiseData(
       noiseDataDto,

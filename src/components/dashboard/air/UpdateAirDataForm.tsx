@@ -76,8 +76,7 @@ export default function UpdateAirDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update air data");
-      setErrors({ server: "Failed to update air data" });
+      setErrors({ server: "Couldn't update air data. Please try again." });
     },
   });
 

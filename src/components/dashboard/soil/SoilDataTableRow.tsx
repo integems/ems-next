@@ -20,7 +20,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { SoilData } from "@/types/common.types";
+import { SoilData, RoleName } from "@/types/common.types";
 import { MoreHorizontal, Pencil, Trash2, LoaderIcon } from "lucide-react";
 import { FrontendSoilService } from "@/frontend-services/soil.service";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,7 +52,7 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
       setIsDeleteDialogOpen(false);
     },
     onError: (error: any) => {
-      toast.error("Failed to delete soil data");
+      toast.error("Couldn't delete soil data.");
     },
   });
 
@@ -86,7 +86,9 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
               })}`
             : "N/A"}
         </TableCell>
-        <TableCell className="text-wrap">{data.notes ?? "N/A"}</TableCell>
+        <TableCell className="max-w-xs whitespace-normal break-words">
+          {data.notes ?? "N/A"}
+        </TableCell>
         <TableCell>
           {data.createdAt
             ? new Date(data.createdAt).toLocaleDateString("en-GB", {
@@ -107,38 +109,40 @@ const SoilDataTableRow: React.FC<SoilDataTableRowProps> = ({ data }) => {
         </TableCell>
         <TableCell>{data.createdBy ?? "N/A"}</TableCell>
         <TableCell>{data.updatedBy ?? "N/A"}</TableCell>
-        <TableCell className="text-right">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-background border-border"
-            >
-              <DropdownMenuLabel className="text-foreground">
-                Actions
-              </DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => setIsEditDialogOpen(true)}
-                className="text-foreground hover:bg-accent"
+        {currentUser?.role === RoleName.Admin && (
+          <TableCell className="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="bg-background border-border"
               >
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setIsDeleteDialogOpen(true)}
-                className="text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
+                <DropdownMenuLabel className="text-foreground">
+                  Actions
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={() => setIsEditDialogOpen(true)}
+                  className="text-foreground hover:bg-accent"
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
+        )}
       </TableRow>
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>

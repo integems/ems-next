@@ -549,6 +549,12 @@ export default function CreateNoiseDataForm({
   return (
     <div className="flex flex-col rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <form onSubmit={handleSubmit} className="flex flex-col">
+        {/* Back navigation */}
+        <div className="mb-6">
+          <Button size="sm" type="button" variant="outline" onClick={onClose}>
+            <ArrowLeft /> Back
+          </Button>
+        </div>
         {/* Location Section */}
         <div className="mb-8">
           <div className="mb-6">
@@ -974,9 +980,6 @@ export default function CreateNoiseDataForm({
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-          <Button size="sm" type="button" variant="outline" onClick={onClose}>
-            <ArrowLeft /> Back
-          </Button>
           <Button
             type="submit"
             size="sm"

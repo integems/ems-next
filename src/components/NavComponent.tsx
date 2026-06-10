@@ -49,7 +49,7 @@ export default function NavComponent() {
                 <NavigationMenuItem key={index}>
                   <NavigationMenuLink
                     href={link.href}
-                    className="relative px-3 py-1.5 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+                    className="relative px-3 py-1.5 text-sm font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
                   >
                     {link.label}
                   </NavigationMenuLink>
@@ -60,7 +60,7 @@ export default function NavComponent() {
                 <NavigationMenuItem>
                   <NavigationMenuLink
                     href="/dashboard"
-                    className="relative px-3 py-1.5 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
+                    className="relative px-3 py-1.5 text-sm font-bold text-foreground/70 hover:text-foreground transition-colors rounded-lg hover:bg-foreground/5"
                   >
                     Dashboard
                   </NavigationMenuLink>

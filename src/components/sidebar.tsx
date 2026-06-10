@@ -22,7 +22,6 @@ import {
   Home,
   Leaf,
   LogOut,
-  Settings,
   Settings2,
   Trash2,
   User,
@@ -171,21 +170,13 @@ const sidebarLinks: NavLink[] = [
     icon: Users,
     href: "/dashboard/users",
     type: "link",
-    roles: [RoleName.SuperAdmin, RoleName.IntegemsAdmin, RoleName.Admin],
+    roles: [RoleName.SuperAdmin],
   },
   {
     label: "AI Analysis",
     icon: Bot,
     href: "/dashboard/ai-chat-analysis",
     type: "link",
-  },
-
-  {
-    href: "/dashboard/settings",
-    label: "Settings",
-    icon: Settings,
-    type: "link",
-    roles: [RoleName.SuperAdmin, RoleName.IntegemsAdmin],
   },
 ];
 
@@ -309,10 +300,9 @@ function SidebarLogout() {
 // Main AppSidebar component
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-1 font-black text-3xl">
-      <span className="text-primary">E</span>
-      <span className="text-primary">M</span>
-      <span className="text-primary">S</span>
+    <Link href="/" className="flex items-center gap-2 font-black text-3xl">
+      <img src="/logo.png" alt="INTEGEMS Logo" className="h-10 w-10 object-contain" />
+      <span className="text-[#1a7c1a] dark:text-[#1a7c1a]">EMS</span>
     </Link>
   );
 }

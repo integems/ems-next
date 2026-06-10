@@ -403,7 +403,7 @@ export class AuthService {
         return { message };
       });
     } catch (error: any) {
-      throw new Error(`Error in resendOtp: ${error.message}`);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 
@@ -458,7 +458,7 @@ export class AuthService {
         return { message };
       });
     } catch (error: any) {
-      throw new Error(`Error in forgotPassword: ${error.message}`);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 
@@ -510,7 +510,7 @@ export class AuthService {
         return { message: "Password reset successful" };
       });
     } catch (error: any) {
-      throw new Error(`Error in resetPassword: ${error.message}`);
+      throw error instanceof Error ? error : new Error(String(error));
     }
   }
 

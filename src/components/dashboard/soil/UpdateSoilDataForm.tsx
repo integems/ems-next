@@ -74,8 +74,7 @@ export default function UpdateSoilDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update soil data");
-      setErrors({ server: "Failed to update soil data" });
+      setErrors({ server: "Couldn't update soil data. Please try again." });
     },
   });
 

@@ -18,6 +18,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
-    return NextResponse.json({ message: error.message }, { status: 400 });
+    const message: string = error?.message || "";
+    // Only surface OTP-related validation messages to the user.
+    if (message.includes("OTP") || message.includes("expired")) {
+      return NextResponse.json({ message }, { status: 400 });
+    }
+    return NextResponse.json(
+      { message: "Couldn't reset your password. Please try again." },
+      { status: 500 },
+    );
   }
 }

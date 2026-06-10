@@ -64,7 +64,7 @@ export default function EnvironmentalMonitoringSection() {
   const isInView = useInView(ref, { once: true, margin: "-80px" });
 
   return (
-    <section id="features" ref={ref} className="py-16 md:py-28 bg-background">
+    <section id="features" ref={ref} className="py-16 md:py-28">
       <div className="container mx-auto px-4 md:px-6">
         {/* Header */}
         <motion.div

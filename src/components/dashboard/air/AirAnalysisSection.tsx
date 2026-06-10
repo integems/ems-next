@@ -61,7 +61,7 @@ export default function AirAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof AirData)[]
-  >(["pm25"]);
+  >(["pm25", "pm10", "no2"]);
 
   const toggleParameter = (param: keyof AirData) => {
     setSelectedParameters((prev) =>

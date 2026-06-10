@@ -3,7 +3,8 @@ import {
   CreateBiodiversityDataDto,
 } from "@/dtos/biodiversity.dto";
 import { BiodiversityService } from "@/services/biodiversity.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const biodiversityService = new BiodiversityService();
@@ -64,7 +65,13 @@ export async function POST(request: NextRequest) {
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
+    }
     const biodiversityDataDto: CreateBiodiversityDataDto = await request.json();
     const newBiodiversityData =
       await biodiversityService.createBiodiversityData(

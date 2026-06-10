@@ -60,10 +60,15 @@ export default function CreateUserForm({
       onClose();
     },
     onError: (error: any) => {
-      if (error.response?.status === 409) {
-        setErrors({ server: "Email already exists" });
+      const status = error.response?.status;
+      const message = error.response?.data?.message;
+      if (status === 409) {
+        setErrors({ server: message || "Email already exists" });
+      } else if (status === 400 && message) {
+        // Validation errors from the server are safe to show.
+        setErrors({ server: message });
       } else {
-        setErrors({ server: "Failed to create user" });
+        setErrors({ server: "Couldn't create user. Please try again." });
       }
     },
   });

@@ -52,7 +52,7 @@ export default function BiodiversityAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof BiodiversityData)[]
-  >(["speciesCount"]);
+  >(["speciesCount", "shannonIndex"]);
 
   const toggleParameter = (param: keyof BiodiversityData) => {
     setSelectedParameters((prev) =>

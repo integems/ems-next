@@ -35,7 +35,6 @@ export const userStatusEnum = pgEnum("user_status", [
 ]);
 export const roleNameEnum = pgEnum("role_name", [
   "Authenticated",
-  "IntegemsAdmin",
   "SuperAdmin",
   "Admin",
 ]);

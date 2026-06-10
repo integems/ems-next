@@ -57,7 +57,7 @@ export default function SoilAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof SoilData)[]
-  >(["ph"]);
+  >(["ph", "moisture", "nitrogen"]);
 
   const toggleParameter = (param: keyof SoilData) => {
     setSelectedParameters((prev) =>

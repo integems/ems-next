@@ -54,11 +54,7 @@ export default function SignInPage() {
   const mutation = useMutation({
     mutationFn: authService.signIn,
     onSuccess: (data) => {
-      if (rememberMe) {
-        signIn(data.token);
-      } else {
-        signIn(data.token);
-      }
+      signIn(data.token, rememberMe);
       router.push("/");
     },
     onError: (error: any) => {
@@ -82,11 +78,7 @@ export default function SignInPage() {
   const oAuthMutation = useMutation({
     mutationFn: authService.oAuthSignIn,
     onSuccess: (data) => {
-      if (rememberMe) {
-        signIn(data.token);
-      } else {
-        signIn(data.token);
-      }
+      signIn(data.token, rememberMe);
       router.push("/dashboard");
     },
     onError: (error: any) => {

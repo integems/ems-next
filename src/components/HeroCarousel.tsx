@@ -134,7 +134,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                     <Button
                       onClick={onPrimaryClick}
                       size="lg"
-                      className="group bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-7 shadow-lg"
+                      className="group rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-7 shadow-lg"
                     >
                       {slide.cta.primary}
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -144,7 +144,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={onSecondaryClick}
-                        className="border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm font-medium px-7"
+                        className="rounded-full border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm font-medium px-7"
                       >
                         {slide.cta.secondary}
                       </Button>

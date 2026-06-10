@@ -27,7 +27,7 @@ async function seedDatabase() {
     const now = new Date();
 
     // Seed roles
-    const roleNames = ["Authenticated", "IntegemsAdmin", "SuperAdmin", "Admin"];
+    const roleNames = ["Authenticated", "SuperAdmin", "Admin"];
     const roles: { [key: string]: string } = {};
 
     for (const name of roleNames) {

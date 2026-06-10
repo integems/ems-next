@@ -1,6 +1,7 @@
 import { CreateSoilDataDto, soilDataFilterDto } from "@/dtos/soil.dto";
 import { SoilService } from "@/services/soil.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const soilService = new SoilService();
@@ -61,6 +62,14 @@ export async function POST(request: NextRequest) {
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
     }
 
     const soilDataDto: CreateSoilDataDto = await request.json();

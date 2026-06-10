@@ -19,8 +19,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     if (error.message.includes("not found")) {
-      return NextResponse.json({ message: error.message }, { status: 404 });
+      return NextResponse.json(
+        { message: "No account found with this email" },
+        { status: 404 },
+      );
     }
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Couldn't resend the code. Please try again." },
+      { status: 500 },
+    );
   }
 }

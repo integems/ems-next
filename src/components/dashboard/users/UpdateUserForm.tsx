@@ -64,7 +64,13 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
       onClose();
     },
     onError: (error: any) => {
-      setErrors({ server: "Failed to update user" });
+      const status = error.response?.status;
+      const message = error.response?.data?.message;
+      if ((status === 409 || status === 400) && message?.includes("already")) {
+        setErrors({ server: message });
+      } else {
+        setErrors({ server: "Couldn't update user. Please try again." });
+      }
     },
   });
 
@@ -119,9 +125,7 @@ export default function UpdateUserForm({ onClose, user }: UpdateUserFormProps) {
           )}
         </div>
       </div>
-      {(currentUser.role === RoleName.SuperAdmin ||
-        currentUser.role === RoleName.IntegemsAdmin ||
-        currentUser.role === RoleName.Admin) && (
+      {currentUser.role === RoleName.SuperAdmin && (
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select

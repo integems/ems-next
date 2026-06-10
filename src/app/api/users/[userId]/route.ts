@@ -36,6 +36,9 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
     const { userId } = await params;
+    if (auth.user.userId !== userId && auth.user.role !== RoleName.SuperAdmin) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
     const userResponse = await userService.findUserById(userId);
     return NextResponse.json(userResponse, { status: 200 });
   } catch (error: any) {
@@ -66,8 +69,6 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     const authCheck = authorizeRoles(auth.user, [
       RoleName.SuperAdmin,
-      RoleName.IntegemsAdmin,
-      RoleName.Admin,
     ]);
     if (authCheck) {
       return NextResponse.json(
@@ -112,8 +113,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     const authCheck = authorizeRoles(auth.user, [
       RoleName.SuperAdmin,
-      RoleName.IntegemsAdmin,
-      RoleName.Admin,
     ]);
     if (authCheck) {
       return NextResponse.json(

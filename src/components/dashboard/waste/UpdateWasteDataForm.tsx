@@ -78,8 +78,7 @@ export default function UpdateWasteDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update waste data");
-      setErrors({ server: "Failed to update waste data" });
+      setErrors({ server: "Couldn't update waste data. Please try again." });
     },
   });
 

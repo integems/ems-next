@@ -90,8 +90,7 @@ export default function UpdateWaterDataForm({
       onClose();
     },
     onError: (error: any) => {
-      toast("Failed to update water data");
-      setErrors({ server: "Failed to update water data" });
+      setErrors({ server: "Couldn't update water data. Please try again." });
     },
   });
 

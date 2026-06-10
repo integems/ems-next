@@ -31,6 +31,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const authCheck = authorizeRoles(auth.user, [RoleName.SuperAdmin]);
+    if (authCheck) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.statusCode },
+      );
+    }
+
     // console.log({ currentUser: auth.user });
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
@@ -71,11 +79,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const authCheck = authorizeRoles(auth.user, [
-      RoleName.SuperAdmin,
-      RoleName.IntegemsAdmin,
-      RoleName.Admin,
-    ]);
+    const authCheck = authorizeRoles(auth.user, [RoleName.SuperAdmin]);
     if (authCheck) {
       return NextResponse.json(
         { error: authCheck.error },

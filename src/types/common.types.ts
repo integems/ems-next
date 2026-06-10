@@ -43,7 +43,6 @@ export enum UserStatus {
 
 export enum RoleName {
   Authenticated = "Authenticated",
-  IntegemsAdmin = "IntegemsAdmin",
   SuperAdmin = "SuperAdmin",
   Admin = "Admin",
   All = "All",

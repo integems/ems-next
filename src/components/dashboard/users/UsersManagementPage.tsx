@@ -38,11 +38,14 @@ import { UserFilterDto } from "@/dtos/user.dto";
 import { RoleService } from "@/frontend-services/role.service";
 import { FrontendUserService } from "@/frontend-services/user.service";
 import { useAuth } from "@/hooks/use-auth";
+import { EmptyState } from "@/components/EmptyState";
+import { ScrollableTable } from "@/components/ScrollableTable";
 import { cn } from "@/lib/utils";
 import { RoleName, User, UserStatus } from "@/types/common.types";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderIcon, Search, UserPlus } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import CreateUserForm from "./CreateUserForm";
 import UpdateUserForm from "./UpdateUserForm";
 import UserTableRow from "./UserTableRow";
@@ -61,6 +64,14 @@ const userDataColumns = [
 
 export default function UsersManagementPage() {
   const { currentUser } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (currentUser?.isAuthenticated && currentUser?.role !== RoleName.SuperAdmin) {
+      router.push("/dashboard");
+    }
+  }, [currentUser, router]);
+
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState<string | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
@@ -244,8 +255,17 @@ export default function UsersManagementPage() {
     setUserDialogOpen(true);
   };
 
+  if (!currentUser || !currentUser.isAuthenticated || currentUser.role !== RoleName.SuperAdmin) {
+    return (
+      <div className="flex items-center justify-center h-[400px] w-full">
+        <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
+    <div className="w-full space-y-6">
+      <div className="rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">User Overview</h2>
         <div className="flex gap-2">
@@ -260,9 +280,7 @@ export default function UsersManagementPage() {
             token={currentUser?.token || ""}
             columns={userDataColumns}
           />
-          {(currentUser?.role === RoleName.SuperAdmin ||
-            currentUser?.role === RoleName.IntegemsAdmin ||
-            currentUser?.role === RoleName.Admin) && (
+          {currentUser?.role === RoleName.SuperAdmin && (
             <Button
               size="icon"
               onClick={handleOpenCreateUserDialog}
@@ -273,7 +291,7 @@ export default function UsersManagementPage() {
           )}
         </div>
       </div>
-      <div className="mb-6 rounded-xl bg-card p-4">
+      <div className="mb-6">
         <div className="flex items-end gap-4 flex-wrap">
         <div className="flex-1 w-full">
           <label
@@ -286,7 +304,7 @@ export default function UsersManagementPage() {
             value={roleFilter}
             onValueChange={(value) => setRoleFilter(value as RoleName)}
           >
-            <SelectTrigger id="role" className="bg-background border-border">
+            <SelectTrigger id="role" className="bg-background border-border w-full">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
@@ -310,7 +328,7 @@ export default function UsersManagementPage() {
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as UserStatus | "")}
           >
-            <SelectTrigger id="status" className="bg-background border-border">
+            <SelectTrigger id="status" className="bg-background border-border w-full">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
@@ -324,13 +342,13 @@ export default function UsersManagementPage() {
         </div>
         <div className="flex-1 w-full">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4", searchQuery ? "text-green-600 dark:text-green-500" : "text-muted-foreground")} />
             <Input
               id="search"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-background border-border"
+              className={cn("pl-10 bg-background border-border", searchQuery ? "text-green-600 dark:text-green-500" : "")}
             />
           </div>
         </div>
@@ -343,6 +361,9 @@ export default function UsersManagementPage() {
         </Button>
         </div>
       </div>
+      </div>
+
+      <div className="rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
           <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
@@ -360,10 +381,10 @@ export default function UsersManagementPage() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border shadow-sm">
+          <ScrollableTable>
             <Table className="w-full min-w-max">
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                <TableRow className="hover:bg-transparent">
                   <TableHead className="w-[60px] text-foreground font-semibold">
                     Avatar
                   </TableHead>
@@ -400,13 +421,13 @@ export default function UsersManagementPage() {
                       colSpan={6}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      No users found.
+                      <EmptyState variant="no-data" />
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          </div>
+          </ScrollableTable>
           <div className="flex items-center justify-between mt-6">
             <p className="text-sm text-muted-foreground">
               Showing page {metadata.currentPage} of {metadata.totalPages} (
@@ -458,6 +479,7 @@ export default function UsersManagementPage() {
           </div>
         </>
       )}
+      </div>
       <Dialog open={isUserDialogOpen} onOpenChange={setUserDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>

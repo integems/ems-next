@@ -57,7 +57,7 @@ export default function NoiseAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof NoiseData)[]
-  >(["laeq"]);
+  >(["laeq", "lafMax", "frequency"]);
 
   const toggleParameter = (param: keyof NoiseData) => {
     setSelectedParameters((prev) =>

@@ -1,6 +1,7 @@
 import { UpdateAirDataDto } from "@/dtos/air.dto";
 import { AirService } from "@/services/air.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const airService = new AirService();
@@ -45,6 +46,14 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
+    }
+
     const { airDataId } = await params;
     const airDataDto: UpdateAirDataDto = await request.json();
     const updatedAirData = await airService.updateAirData(
@@ -74,6 +83,14 @@ export async function DELETE(
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
     }
 
     const { airDataId } = await params;

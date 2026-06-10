@@ -21,6 +21,7 @@ import { AirDataFilterDto } from "@/dtos/air.dto";
 import { FrontendAirService } from "@/frontend-services/air.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
+import { EmptyState } from "@/components/EmptyState";
 import {
   AirData,
   Location,
@@ -479,8 +480,9 @@ export default function AirAnalysisPage() {
   return (
     <div className="w-full">
       <div className="py-8 space-y-8">
+        <div className="rounded-xl bg-card p-4">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="mb-6 text-center space-y-2">
           <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
             <Activity className="h-10 w-10 text-primary" />
             Air Quality Analysis
@@ -491,7 +493,6 @@ export default function AirAnalysisPage() {
           </p>
         </div>
 
-        <div className="rounded-xl bg-card p-4">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 items-end">
           <DatePicker
             value={startDateFilter}
@@ -653,7 +654,7 @@ export default function AirAnalysisPage() {
           <Button
             onClick={handleApplyFilters}
             disabled={isLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 self-end"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 self-end w-full"
           >
             {isLoading ? (
               <LoaderIcon className="h-4 w-4 animate-spin mr-2" />
@@ -704,8 +705,6 @@ export default function AirAnalysisPage() {
           </div>
         )}
 
-        </div>
-
         {/* Map Toggle */}
         <Collapsible open={isMapOpen} onOpenChange={setIsMapOpen}>
           <CollapsibleTrigger asChild>
@@ -725,6 +724,31 @@ export default function AirAnalysisPage() {
           </CollapsibleContent>
         </Collapsible>
 
+        {/* Parameter Selection */}
+        <div className="w-full mt-6">
+          <label className="block text-sm font-medium mb-2">
+            Parameter Selection
+          </label>
+          <Select
+            value={selectedParameter}
+            onValueChange={(value) =>
+              setSelectedParameter(value as keyof AirData)
+            }
+          >
+            <SelectTrigger className="bg-background border-border w-full">
+              <SelectValue placeholder="Select Parameter" />
+            </SelectTrigger>
+            <SelectContent>
+              {parameterOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        </div>
+
         {/* Loading / Error / Charts */}
         {isLoading ? (
           <Card>
@@ -743,30 +767,7 @@ export default function AirAnalysisPage() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Parameter Selection */}
-            <div className="w-full ">
-              <label className="block text-sm font-medium mb-2">
-                Paramter Selection
-              </label>
-              <Select
-                value={selectedParameter}
-                onValueChange={(value) =>
-                  setSelectedParameter(value as keyof AirData)
-                }
-              >
-                <SelectTrigger className="bg-background border-border w-full">
-                  <SelectValue placeholder="Select Parameter" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parameterOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid grid-cols-1 gap-8 min-w-0">
 
 
 
@@ -853,9 +854,12 @@ export default function AirAnalysisPage() {
                     </RechartsLineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    No data available for the selected filters
-                  </div>
+                  <EmptyState
+                    variant={
+                      locationIdsFilter.length === 0 ? "no-filter" : "no-data"
+                    }
+                    className="h-64 py-0"
+                  />
                 )}
               </CardContent>
             </Card>
@@ -933,9 +937,12 @@ export default function AirAnalysisPage() {
                     </RechartsBarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    No data available for the selected filters
-                  </div>
+                  <EmptyState
+                    variant={
+                      locationIdsFilter.length === 0 ? "no-filter" : "no-data"
+                    }
+                    className="h-64 py-0"
+                  />
                 )}
               </CardContent>
             </Card>

@@ -1,6 +1,7 @@
 import { CreateWasteDataDto, wasteDataFilterDto } from "@/dtos/waste.dto";
 import { WasteService } from "@/services/waste.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const wasteService = new WasteService();
@@ -61,6 +62,14 @@ export async function POST(request: NextRequest) {
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
     }
 
     const wasteDataDto: CreateWasteDataDto = await request.json();

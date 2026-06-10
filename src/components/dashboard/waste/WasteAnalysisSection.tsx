@@ -65,7 +65,7 @@ export default function WasteAnalysisSection({
 
   const [selectedParameters, setSelectedParameters] = useState<
     (keyof WasteData)[]
-  >(["solidWasteKg"]);
+  >(["solidWasteKg", "hazardousWasteKg", "recycledWasteKg"]);
 
   const toggleParameter = (param: keyof WasteData) => {
     setSelectedParameters((prev) =>

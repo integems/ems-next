@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message }, { status: 401 });
     }
     return NextResponse.json(
-      { message: "Something went wrong. Please try again." },
+      { message: "Couldn't sign in. Please try again." },
       { status: 500 },
     );
   }

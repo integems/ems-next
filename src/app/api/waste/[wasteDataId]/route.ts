@@ -1,6 +1,7 @@
 import { UpdateWasteDataDto } from "@/dtos/waste.dto";
 import { WasteService } from "@/services/waste.service";
-import { authenticateRequest } from "@/utils/util";
+import { authenticateRequest, authorizeRoles } from "@/utils/util";
+import { RoleName } from "@/types/common.types";
 import { NextRequest, NextResponse } from "next/server";
 
 const wasteService = new WasteService();
@@ -48,6 +49,14 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
+    }
+
     const { wasteDataId } = await params;
     const wasteDataDto: UpdateWasteDataDto = await request.json();
     const updatedWasteData = await wasteService.updateWasteData(
@@ -77,6 +86,14 @@ export async function DELETE(
     }
     if (!auth.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const adminCheck = authorizeRoles(auth.user, [RoleName.Admin, RoleName.SuperAdmin]);
+    if (adminCheck) {
+      return NextResponse.json(
+        { error: adminCheck.error },
+        { status: adminCheck.statusCode },
+      );
     }
 
     const { wasteDataId } = await params;

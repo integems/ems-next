@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import {
   Pagination,
@@ -38,8 +38,10 @@ import { BiodiversityDataFilterDto } from "@/dtos/biodiversity.dto";
 import { FrontendBiodiversityService } from "@/frontend-services/biodiversity.service";
 import { FrontendLocationService } from "@/frontend-services/location.service";
 import { useAuth } from "@/hooks/use-auth";
+import { EmptyState } from "@/components/EmptyState";
+import { ScrollableTable } from "@/components/ScrollableTable";
 import { cn } from "@/lib/utils";
-import { Location, LocationType, TimeOfDay } from "@/types/common.types";
+import { Location, LocationType, TimeOfDay, RoleName } from "@/types/common.types";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -116,7 +118,7 @@ export default function BiodiversityManagementPage({
     LocationType | undefined
   >(undefined);
 
-  const limit = 5;
+  const limit = 10;
 
   const { data: locationsData } = useQuery({
     queryKey: ["locations", currentUser?.token],
@@ -305,7 +307,8 @@ export default function BiodiversityManagementPage({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
+    <div className="w-full space-y-6">
+      <div className="rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-foreground">
           Biodiversity Data Overview
@@ -325,23 +328,25 @@ export default function BiodiversityManagementPage({
             token={currentUser?.token || ""}
             columns={biodiversityDataColumns}
           />
-          <Button
-            size="sm"
-            onClick={() => setActiveView("create")}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            New <ArrowRight className="h-4 w-4" />
-          </Button>
+          {currentUser?.role === RoleName.Admin && (
+            <Button
+              size="sm"
+              onClick={() => setActiveView("create")}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              New <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
-      <div className="mb-6 space-y-4 rounded-xl bg-card p-4">
+      <div className="mb-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-        <DateTimePicker
+        <DatePicker
           value={startDateFilter}
           onChange={setStartDateFilter}
           label="Start Date"
         />
-        <DateTimePicker
+        <DatePicker
           value={endDateFilter}
           onChange={setEndDateFilter}
           label="End Date"
@@ -363,7 +368,7 @@ export default function BiodiversityManagementPage({
           >
             <SelectTrigger
               id="timeOfDay"
-              className="bg-background border-border"
+              className="bg-background border-border w-full"
             >
               <SelectValue placeholder="Select Time of Day" />
             </SelectTrigger>
@@ -392,7 +397,7 @@ export default function BiodiversityManagementPage({
           >
             <SelectTrigger
               id="locationType"
-              className="bg-background border-border"
+              className="bg-background border-border w-full"
             >
               <SelectValue placeholder="Select Location Type" />
             </SelectTrigger>
@@ -406,8 +411,8 @@ export default function BiodiversityManagementPage({
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-        <div className="flex-1 lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+        <div className="flex-1">
           <label
             htmlFor="search"
             className="block text-sm font-medium mb-2 text-foreground"
@@ -415,14 +420,14 @@ export default function BiodiversityManagementPage({
             Search
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4", searchQuery ? "text-green-600 dark:text-green-500" : "text-muted-foreground")} />
             <Input
               id="search"
               type="text"
               placeholder="Search biodiversity data..."
               value={searchQuery || ""}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-2 border border-border rounded-md bg-background text-foreground focus:ring-primary focus:border-primary"
+              className={cn("pl-9 pr-3 py-2 border border-border rounded-md bg-background focus:ring-primary focus:border-primary", searchQuery ? "text-green-600 dark:text-green-500" : "text-foreground")}
             />
           </div>
         </div>
@@ -442,8 +447,8 @@ export default function BiodiversityManagementPage({
             <SelectTrigger
               id="location"
               className={cn(
-                "bg-background border-border",
-                locationIdFilter && "text-primary",
+                "bg-background border-border w-full",
+                locationIdFilter && "text-green-600 dark:text-green-500",
               )}
             >
               <SelectValue placeholder="Select location" />
@@ -463,7 +468,7 @@ export default function BiodiversityManagementPage({
         </div>
         <Button
           onClick={handleApplyFilters}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 self-end"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 self-end w-full"
         >
           Apply Filters
         </Button>
@@ -495,7 +500,9 @@ export default function BiodiversityManagementPage({
           />
         </CollapsibleContent>
       </Collapsible>
+      </div>
 
+      <div className="rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       {isLoading ? (
         <div className="flex items-center justify-center h-32">
           <LoaderIcon className="h-8 w-8 animate-spin text-primary" />
@@ -513,10 +520,10 @@ export default function BiodiversityManagementPage({
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border shadow-sm">
+          <ScrollableTable>
             <Table className="w-full min-w-max">
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                <TableRow className="hover:bg-transparent">
                   <TableHead className="text-foreground font-semibold">
                     Location
                   </TableHead>
@@ -550,9 +557,11 @@ export default function BiodiversityManagementPage({
                   <TableHead className="text-foreground font-semibold">
                     Updated By
                   </TableHead>
-                  <TableHead className="w-[50px] text-foreground font-semibold">
-                    Action
-                  </TableHead>
+                  {currentUser?.role === RoleName.Admin && (
+                    <TableHead className="w-[50px] text-foreground font-semibold">
+                      Action
+                    </TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -569,13 +578,13 @@ export default function BiodiversityManagementPage({
                       colSpan={12}
                       className="h-24 text-center text-muted-foreground"
                     >
-                      No biodiversity data found.
+                      <EmptyState variant="no-data" />
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          </div>
+          </ScrollableTable>
           <div className="flex items-center justify-between mt-6">
             <p className="text-sm text-muted-foreground">
               Showing page {metadata.currentPage} of {metadata.totalPages} (
@@ -627,6 +636,7 @@ export default function BiodiversityManagementPage({
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

@@ -10,9 +10,9 @@ export default function DashboardLayout({
   return (
     <Protected>
       <SidebarProvider>
-        <div className="flex h-screen overflow-y-auto bg-surface">
+        <div className="flex h-screen w-full overflow-y-auto bg-surface">
           <AppSidebar />
-          <main className="w-full md:min-w-[65rem] p-4 pb-20 sm:p-6 lg:p-8">
+          <main className="flex-1 min-w-0 w-full p-4 pb-20 sm:p-6 lg:p-8">
             <SidebarTrigger />
             {children}
             <div className="h-20"></div>

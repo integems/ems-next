@@ -31,7 +31,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ArrowLeft, LoaderIcon, MapPin, Plus, Upload } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Spreadsheet } from "react-spreadsheet";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -127,6 +127,8 @@ export default function CreateAirDataForm({
   });
   const [errors, setErrors] = useState<any>({});
   const [isDragging, setIsDragging] = useState(false);
+  // Carries the entries into the create-location flow so it submits the same list.
+  const pendingEntriesRef = useRef<AirDataFormData[]>([]);
 
   const { data: locationsData, isLoading: isLoadingLocations } = useQuery({
     queryKey: ["locations", currentUser?.token],
@@ -153,11 +155,11 @@ export default function CreateAirDataForm({
       airService.createAirData(currentUser?.token || "", newAirData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["air-data"] });
-      toast.success("Air data updated successfully!");
+      toast.success("Air data added successfully!");
       onClose();
     },
     onError: (error) => {
-      toast.error(`Error updating air data: ${error.message}`);
+      toast.error("Couldn't add air data.");
     },
   });
 
@@ -165,11 +167,10 @@ export default function CreateAirDataForm({
     mutationFn: (newLocation: CreateLocationDto) =>
       locationService.createLocation(currentUser?.token || "", newLocation),
     onSuccess: (data) => {
-      // console.log({ "Created Location": data });
       queryClient.invalidateQueries({ queryKey: ["locations"] });
       toast.success("Location created successfully!");
       const newLocationId = data.data.locationId;
-      const airDataWithLocation = airDataFormData.map((data) => ({
+      const airDataWithLocation = pendingEntriesRef.current.map((data) => ({
         ...data,
         locationId: newLocationId,
         pointGeom: locationFormData.pointGeom,
@@ -285,13 +286,17 @@ export default function CreateAirDataForm({
         validatedData.push(result.data);
       } else {
         newErrors[index] = result.error.flatten().fieldErrors;
-        // console.error(result.error)
       }
     });
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error("Please correct errors in the spreadsheet data.");
+      setAirDataFormData(validatedData);
+      toast.warning(
+        `${validatedData.length} valid row(s) kept. ${
+          Object.keys(newErrors).length
+        } row(s) had errors and were skipped.`,
+      );
     } else {
       setErrors({}); // Clear previous errors
       setAirDataFormData(validatedData);
@@ -329,11 +334,22 @@ export default function CreateAirDataForm({
         return;
       }
 
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error("File is too large. Please upload a file under 5 MB.");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target!.result as ArrayBuffer);
           const workbook = XLSX.read(data, { type: "array", cellDates: true });
+          if (workbook.SheetNames.length > 1) {
+            toast.info(
+              "Multiple sheets found — only the first sheet was imported.",
+            );
+          }
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
@@ -530,11 +546,28 @@ export default function CreateAirDataForm({
     if (file) {
       handleFileUpload(file);
     }
+    // Reset so re-selecting the same file fires onChange again.
+    e.target.value = "";
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
+
+    // Require at least one entry; fall back to the current manual entry so a
+    // filled-but-not-"added" form is not submitted as an empty no-op.
+    let entries = airDataFormData;
+    if (entries.length === 0) {
+      const parsed = updatedAirDto.safeParse(singleAirData);
+      if (parsed.success) {
+        entries = [parsed.data];
+        setAirDataFormData(entries);
+      } else {
+        setErrors(parsed.error.flatten().fieldErrors);
+        toast.error("Add at least one air data entry before submitting.");
+        return;
+      }
+    }
 
     if (isCreatingLocation) {
       const locationResult = createLocationDto.safeParse(locationFormData);
@@ -543,6 +576,13 @@ export default function CreateAirDataForm({
         toast.error("Please correct errors in the location data.");
         return;
       }
+      const pointGeom = locationFormData.pointGeom;
+      if (!pointGeom || (pointGeom[0] === 0 && pointGeom[1] === 0)) {
+        setErrors({ pointGeom: ["Please select the location on the map."] });
+        toast.error("Please select the location on the map.");
+        return;
+      }
+      pendingEntriesRef.current = entries;
       createLocationMutation.mutate(locationResult.data);
     } else {
       if (!selectedLocationId) {
@@ -558,7 +598,7 @@ export default function CreateAirDataForm({
         toast.error("Selected location has no coordinates.");
         return;
       }
-      const airDataWithLocation = airDataFormData.map((data) => ({
+      const airDataWithLocation = entries.map((data) => ({
         ...data,
         locationId: selectedLocationId,
         pointGeom: selectedLocation.pointGeom,
@@ -576,6 +616,12 @@ export default function CreateAirDataForm({
   return (
     <div className="flex flex-col rounded-2xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
       <form onSubmit={handleSubmit} className="flex flex-col">
+        {/* Back navigation */}
+        <div className="mb-6">
+          <Button size="sm" type="button" variant="outline" onClick={onClose}>
+            <ArrowLeft /> Back
+          </Button>
+        </div>
         {/* Location Section */}
         <div className="mb-8">
           <div className="mb-6">
@@ -785,6 +831,27 @@ export default function CreateAirDataForm({
                   onChange={(data) => handleSpreadsheetChange(data as any)}
                 />
               </div>
+            </div>
+          )}
+
+          {/* Import errors (from Excel upload or spreadsheet edits) */}
+          {Object.keys(errors).some((k) => !isNaN(Number(k))) && (
+            <div className="rounded-md border border-red-300 bg-red-50 p-3 text-sm dark:border-red-900 dark:bg-red-950/30">
+              <p className="mb-1 font-medium text-red-600">
+                Some rows have errors and were skipped:
+              </p>
+              <ul className="list-disc space-y-0.5 pl-5 text-red-600">
+                {Object.entries(errors)
+                  .filter(([k]) => !isNaN(Number(k)))
+                  .map(([k, v]) => (
+                    <li key={k}>
+                      Row {Number(k) + 1}:{" "}
+                      {Object.values(v as Record<string, string[]>)
+                        .flat()
+                        .join(", ")}
+                    </li>
+                  ))}
+              </ul>
             </div>
           )}
 
@@ -1011,10 +1078,14 @@ export default function CreateAirDataForm({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-          <Button size="sm" type="button" variant="outline" onClick={onClose}>
-            <ArrowLeft /> Back
-          </Button>
+        <div className="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+          <span className="mr-auto text-xs text-muted-foreground">
+            {airDataFormData.length > 0
+              ? `${airDataFormData.length} entr${
+                  airDataFormData.length === 1 ? "y" : "ies"
+                } ready to submit`
+              : "Your current entry will be submitted"}
+          </span>
           <Button
             type="submit"
             size="sm"
@@ -1031,7 +1102,6 @@ export default function CreateAirDataForm({
           </Button>
         </div>
       </form>
-      <div className="h-20"></div>
     </div>
   );
 }
