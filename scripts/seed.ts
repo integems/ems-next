@@ -46,31 +46,13 @@ async function seedDatabase() {
     // Seed users
     const usersData = [
       {
-        email: "admin@example.com",
-        firstName: "Super",
-        lastName: "Admin",
-        fullName: "Super Admin",
-        phoneNumber: "+23276000001",
+        email: "mo.kamara@integems.com",
+        firstName: "Mohamed",
+        lastName: "Kamara",
+        fullName: "Mohamed Kamara",
+        phoneNumber: "+23279027241",
         role: "SuperAdmin",
-        password: "admin123",
-      },
-      {
-        email: "admin1@example.com",
-        firstName: "Admin",
-        lastName: "User",
-        fullName: "Admin User",
-        phoneNumber: "+23276000002",
-        role: "Admin",
-        password: "admin123",
-      },
-      {
-        email: "staff@example.com",
-        firstName: "Staff",
-        lastName: "User",
-        fullName: "Staff User",
-        phoneNumber: "+23276000003",
-        role: "Authenticated",
-        password: "staff123",
+        password: "change123",
       },
     ];
 
