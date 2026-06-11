@@ -1,6 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 
@@ -85,10 +86,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         >
           {/* Media */}
           {slide.type === "image" && (
-            <img
-              src={slide.media}
+            <Image
+              src={slide.media.startsWith("/") ? slide.media : `/${slide.media}`}
               alt={slide.title}
-              className="absolute inset-0 w-full h-full object-cover"
+              fill
+              priority={index === 0}
+              className="object-cover"
+              sizes="100vw"
             />
           )}
           {slide.type === "video" && (
@@ -108,7 +112,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
           {/* Content — anchored to bottom-left */}
           <div className="absolute inset-0 flex items-end">
-            <div className="container mx-auto px-8 md:px-16 pb-20 md:pb-28">
+            <div className="container mx-auto px-4 sm:px-8 md:px-16 pb-16 sm:pb-20 md:pb-28">
               <div
                 className={cn(
                   "max-w-xl transition-all duration-700 ease-out",
@@ -118,23 +122,22 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 )}
               >
                 {slide.badge && (
-                  <span className="inline-flex items-center gap-2 mb-4 px-3.5 py-1.5 text-xs font-semibold tracking-widest uppercase text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
+                  <span className="inline-flex items-center gap-2 mb-3 px-3 py-1 text-xs font-semibold tracking-widest uppercase text-white bg-white/10 backdrop-blur-sm border border-white/20 rounded-full">
                     <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                     {slide.badge}
                   </span>
                 )}
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight drop-shadow-lg">
+                <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight drop-shadow-lg">
                   {slide.title}
                 </h1>
-                <p className="mt-4 max-w-lg text-base md:text-lg text-white/80 leading-relaxed drop-shadow">
+                <p className="mt-3 max-w-lg text-sm sm:text-base md:text-lg text-white/80 leading-relaxed drop-shadow line-clamp-3 sm:line-clamp-none">
                   {slide.description}
                 </p>
                 {slide.cta && (
-                  <div className="flex flex-wrap items-center gap-3 mt-7">
+                  <div className="flex flex-wrap items-center gap-2 mt-5 sm:mt-7">
                     <Button
                       onClick={onPrimaryClick}
-                      size="lg"
-                      className="group rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-7 shadow-lg"
+                      className="group rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-10 px-6 sm:h-12 sm:px-8 sm:text-base shadow-lg transition-all duration-300"
                     >
                       {slide.cta.primary}
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -142,9 +145,8 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                     {slide.cta.secondary && (
                       <Button
                         variant="outline"
-                        size="lg"
                         onClick={onSecondaryClick}
-                        className="rounded-full border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm font-medium px-7"
+                        className="rounded-full border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white backdrop-blur-sm font-medium h-10 px-6 sm:h-12 sm:px-8 sm:text-base transition-all duration-300"
                       >
                         {slide.cta.secondary}
                       </Button>
@@ -154,6 +156,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               </div>
             </div>
           </div>
+
         </div>
       ))}
 

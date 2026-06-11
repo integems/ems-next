@@ -6,7 +6,7 @@ const NoisePage = () => {
   const noiseData = {
     title: "Noise Pollution",
     description: "Monitor noise pollution levels in various environments.",
-    image: "images/noise1.jpg",
+    image: "/images/noise1.jpg",
   };
 
   return (

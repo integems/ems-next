@@ -35,7 +35,9 @@ import {
   MapPin,
   Search,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { ReportExportButton } from "@/components/report/ReportExportButton";
+import { buildAnalysisReport } from "@/lib/report/buildAnalysisReport";
 import {
   Bar,
   BarChart,
@@ -108,11 +110,16 @@ const calculateMean = (data: number[]) =>
 
 interface WaterAIChatAnalysisProps {
   waterData: PaginationResponse<WaterData>;
+  /** Optional assistant analysis text to include in exported reports. */
+  aiText?: string;
 }
 
 export default function WaterAIChatAnalysis({
   waterData,
+  aiText,
 }: WaterAIChatAnalysisProps) {
+  const lineChartRef = useRef<HTMLDivElement>(null);
+  const barChartRef = useRef<HTMLDivElement>(null);
   const [selectedParameter, setSelectedParameter] =
     useState<keyof WaterData>("ph");
   const [chartType, setChartType] = useState<"monthly" | "daily" | "quarterly" | "biannually" | "yearly">(
@@ -371,13 +378,9 @@ export default function WaterAIChatAnalysis({
   ]);
 
   const barChartData = useMemo(() => {
-    if (!timePeriods.length || !locationIdsFilter.length) return [];
+    if (!timePeriods.length) return [];
 
-    const selectedLocations = allLocations.filter((loc) =>
-      locationIdsFilter.includes(loc.locationId),
-    );
-
-    return selectedLocations.map((location) => {
+    return displayedLocations.map((location) => {
       const locationData: any = {
         locationName: location.name,
       };
@@ -426,10 +429,9 @@ export default function WaterAIChatAnalysis({
   }, [
     timePeriods,
     groupedData,
-    allLocations,
+    displayedLocations,
     selectedParameter,
     chartType,
-    locationIdsFilter,
   ]);
 
   const parameterOptions: { value: keyof WaterData; label: string }[] = [
@@ -452,10 +454,46 @@ export default function WaterAIChatAnalysis({
 
   const currentGuidelines = PARAMETER_GUIDELINES[selectedParameter as string];
 
+  const buildReport = () =>
+    buildAnalysisReport({
+      title: "Water Quality Analysis Report",
+      subtitle:
+        "Comprehensive environmental data insights and trend analysis on water quality.",
+      fileBaseName: "water-quality-report",
+      parameterKey: selectedParameter as string,
+      parameterLabel:
+        parameterOptions.find((o) => o.value === selectedParameter)?.label ||
+        String(selectedParameter),
+      chartType,
+      startDate: startDateFilter,
+      endDate: endDateFilter,
+      locationTypeLabel:
+        locationTypeFilter && locationTypeFilter !== "All"
+          ? locationTypeFilter
+          : "All types",
+      timeOfDayLabel: timeOfDayFilter === "All" ? "All day" : timeOfDayFilter,
+      extraMeta: [
+        {
+          label: "Water Source",
+          value:
+            waterSourceFilter && waterSourceFilter !== "All"
+              ? waterSourceFilter
+              : "All sources",
+        },
+      ],
+      displayedLocations,
+      timeSeriesData,
+      groupedData,
+      filteredCount: filteredWaterData.length,
+      aiText,
+      lineChartEl: lineChartRef.current,
+      barChartEl: barChartRef.current,
+    });
+
   return (
     <div className="w-full max-w-[70rem] mx-auto">
       <div className="py-8 space-y-8">
-        <div className="text-center space-y-2">
+        <div className="relative text-center space-y-2">
           <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
             <Activity className="h-10 w-10 text-primary" />
             Water Quality Analysis
@@ -464,9 +502,12 @@ export default function WaterAIChatAnalysis({
             Comprehensive environmental data insights and trend analysis on
             Water Quality
           </p>
+          <div className="flex justify-center pt-2 md:absolute md:right-0 md:top-0 md:pt-0">
+            <ReportExportButton buildReport={buildReport} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 items-end">
           <DatePicker
             value={startDateFilter}
             onChange={setStartDateFilter}
@@ -595,8 +636,8 @@ export default function WaterAIChatAnalysis({
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-          <div className="max-w-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+          <div className="w-full">
             <label
               htmlFor="search"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -615,7 +656,7 @@ export default function WaterAIChatAnalysis({
               />
             </div>
           </div>
-          <div className="flex-1">
+          <div className="w-full">
             <label
               htmlFor="location"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -720,7 +761,7 @@ export default function WaterAIChatAnalysis({
                 setSelectedParameter(value as keyof WaterData)
               }
             >
-              <SelectTrigger className="bg-background border-border max-w-sm">
+              <SelectTrigger className="bg-background border-border w-full">
                 <SelectValue placeholder="Select Parameter" />
               </SelectTrigger>
               <SelectContent>
@@ -744,6 +785,7 @@ export default function WaterAIChatAnalysis({
             </CardHeader>
             <CardContent>
               {timeSeriesData.length > 0 ? (
+                <div ref={lineChartRef}>
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={timeSeriesData}>
                     <XAxis
@@ -801,11 +843,10 @@ export default function WaterAIChatAnalysis({
                     )}
                   </LineChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <EmptyState
-                  variant={
-                    locationIdsFilter.length === 0 ? "no-filter" : "no-data"
-                  }
+                  variant="no-data"
                   className="h-64 py-0"
                 />
               )}
@@ -823,6 +864,7 @@ export default function WaterAIChatAnalysis({
             </CardHeader>
             <CardContent>
               {barChartData.length > 0 ? (
+                <div ref={barChartRef}>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart
                     data={barChartData}
@@ -857,11 +899,10 @@ export default function WaterAIChatAnalysis({
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <EmptyState
-                  variant={
-                    locationIdsFilter.length === 0 ? "no-filter" : "no-data"
-                  }
+                  variant="no-data"
                   className="h-64 py-0"
                 />
               )}

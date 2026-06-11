@@ -34,7 +34,9 @@ import {
   MapPin,
   Search,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { ReportExportButton } from "@/components/report/ReportExportButton";
+import { buildAnalysisReport } from "@/lib/report/buildAnalysisReport";
 import {
   Bar,
   BarChart,
@@ -94,11 +96,16 @@ const calculateMean = (data: number[]) =>
 
 interface WasteAIChatAnalysisProps {
   wasteData: PaginationResponse<WasteData>;
+  /** Optional assistant analysis text to include in exported reports. */
+  aiText?: string;
 }
 
 export default function WasteAIChatAnalysis({
   wasteData,
+  aiText,
 }: WasteAIChatAnalysisProps) {
+  const lineChartRef = useRef<HTMLDivElement>(null);
+  const barChartRef = useRef<HTMLDivElement>(null);
   const [selectedParameter, setSelectedParameter] =
     useState<keyof WasteData>("solidWasteKg");
   const [chartType, setChartType] = useState<"monthly" | "daily" | "quarterly" | "biannually" | "yearly">(
@@ -349,13 +356,9 @@ export default function WasteAIChatAnalysis({
   ]);
 
   const barChartData = useMemo(() => {
-    if (!timePeriods.length || !locationIdsFilter.length) return [];
+    if (!timePeriods.length) return [];
 
-    const selectedLocations = allLocations.filter((loc) =>
-      locationIdsFilter.includes(loc.locationId),
-    );
-
-    return selectedLocations.map((location) => {
+    return displayedLocations.map((location) => {
       const locationData: any = {
         locationName: location.name,
       };
@@ -404,10 +407,9 @@ export default function WasteAIChatAnalysis({
   }, [
     timePeriods,
     groupedData,
-    allLocations,
+    displayedLocations,
     selectedParameter,
     chartType,
-    locationIdsFilter,
   ]);
 
   const parameterOptions: { value: keyof WasteData; label: string }[] = [
@@ -425,10 +427,37 @@ export default function WasteAIChatAnalysis({
 
   const currentGuidelines = PARAMETER_GUIDELINES[selectedParameter as string];
 
+  const buildReport = () =>
+    buildAnalysisReport({
+      title: "Waste Analysis Report",
+      subtitle:
+        "Comprehensive environmental data insights and trend analysis on waste generation.",
+      fileBaseName: "waste-analysis-report",
+      parameterKey: selectedParameter as string,
+      parameterLabel:
+        parameterOptions.find((o) => o.value === selectedParameter)?.label ||
+        String(selectedParameter),
+      chartType,
+      startDate: startDateFilter,
+      endDate: endDateFilter,
+      locationTypeLabel:
+        locationTypeFilter && locationTypeFilter !== "All"
+          ? locationTypeFilter
+          : "All types",
+      timeOfDayLabel: timeOfDayFilter === "All" ? "All day" : timeOfDayFilter,
+      displayedLocations,
+      timeSeriesData,
+      groupedData,
+      filteredCount: filteredWasteData.length,
+      aiText,
+      lineChartEl: lineChartRef.current,
+      barChartEl: barChartRef.current,
+    });
+
   return (
     <div className="w-full max-w-[70rem] mx-auto">
       <div className="py-8 space-y-8">
-        <div className="text-center space-y-2">
+        <div className="relative text-center space-y-2">
           <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
             <Activity className="h-10 w-10 text-primary" />
             Waste Analysis
@@ -437,9 +466,12 @@ export default function WasteAIChatAnalysis({
             Comprehensive environmental data insights and trend analysis on
             Waste Generation
           </p>
+          <div className="flex justify-center pt-2 md:absolute md:right-0 md:top-0 md:pt-0">
+            <ReportExportButton buildReport={buildReport} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 items-end">
           <DatePicker
             value={startDateFilter}
             onChange={setStartDateFilter}
@@ -537,8 +569,8 @@ export default function WasteAIChatAnalysis({
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 items-end">
-          <div className="max-w-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 items-end">
+          <div className="w-full">
             <label
               htmlFor="search"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -557,7 +589,7 @@ export default function WasteAIChatAnalysis({
               />
             </div>
           </div>
-          <div className="flex-1">
+          <div className="w-full">
             <label
               htmlFor="location"
               className="block text-sm font-medium mb-2 text-foreground"
@@ -662,7 +694,7 @@ export default function WasteAIChatAnalysis({
                 setSelectedParameter(value as keyof WasteData)
               }
             >
-              <SelectTrigger className="bg-background border-border max-w-sm">
+              <SelectTrigger className="bg-background border-border w-full">
                 <SelectValue placeholder="Select Parameter" />
               </SelectTrigger>
               <SelectContent>
@@ -686,6 +718,7 @@ export default function WasteAIChatAnalysis({
             </CardHeader>
             <CardContent>
               {timeSeriesData.length > 0 ? (
+                <div ref={lineChartRef}>
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={timeSeriesData}>
                     <XAxis
@@ -718,6 +751,7 @@ export default function WasteAIChatAnalysis({
                     ))}
                   </LineChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <EmptyState
                   variant={
@@ -740,6 +774,7 @@ export default function WasteAIChatAnalysis({
             </CardHeader>
             <CardContent>
               {barChartData.length > 0 ? (
+                <div ref={barChartRef}>
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart
                     data={barChartData}
@@ -774,6 +809,7 @@ export default function WasteAIChatAnalysis({
                     ))}
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               ) : (
                 <EmptyState
                   variant={

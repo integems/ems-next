@@ -54,15 +54,17 @@ export default function DashboardPage() {
     <div className="w-full space-y-8">
       <div className="rounded-xl bg-card p-4 shadow-md shadow-black/5 sm:p-6 dark:shadow-black/20">
         <div className="mb-6 text-center space-y-2">
-          <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
-            <Activity className="h-10 w-10 text-primary" />
-            Analysis Overview
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold flex items-center justify-center gap-2 sm:gap-3">
+            <Activity className="h-7 w-7 sm:h-10 sm:w-10 text-primary" />
+            <span>
+              Analysis <span className="text-primary">Overview</span>
+            </span>
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 text-lg">
+          <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-lg">
             Comprehensive environmental data insights and trends
           </p>
         </div>
-        <div className="max-w-sm">
+        <div className="w-full max-w-sm sm:max-w-sm">
           <CardHeader className="px-0">
             <CardTitle className="flex items-center gap-3 text-xl">
               <MapPin className="h-6 w-6 text-primary" />

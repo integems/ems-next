@@ -1,16 +1,68 @@
 import { tools } from "@/lib/tools";
 import { google } from "@ai-sdk/google";
-import { convertToModelMessages, streamText, UIMessage } from "ai";
+import { convertToModelMessages, stepCountIs, streamText, UIMessage } from "ai";
 
 export const maxDuration = 30;
 
+const REPORT_MODE_INSTRUCTIONS = `
+
+---
+
+**REPORT MODE IS ENABLED.**
+The user wants a structured, report-ready answer that will be exported to a Word/PDF/Excel document. After retrieving the data with the appropriate tools, format your written response as a formal environmental report using GitHub-flavoured markdown, following this structure:
+
+# <Concise Report Title>
+
+## Executive Summary
+A 2–4 sentence overview of the most important findings.
+
+## Key Findings
+- Bullet points highlighting the most significant data points, per location and parameter.
+- Reference concrete values with their units.
+
+## Detailed Analysis
+Narrative analysis of trends over time, comparisons between locations, and any notable highs/lows.
+
+## Compliance & Guidelines
+Where applicable, note whether values fall within or exceed residential/industrial guideline thresholds.
+
+## Recommendations
+Actionable, data-driven recommendations.
+
+## Conclusion
+A short closing summary.
+
+Formatting rules:
+- Use markdown headings (\`##\`), **bold** for emphasis, and bullet lists.
+- Use markdown tables for side-by-side numeric comparisons where helpful.
+- Keep the tone professional and data-driven; avoid conversational filler.
+- Always call the relevant data tools first, then write the report from the retrieved data.`;
+
+const WEB_SEARCH_INSTRUCTIONS = `
+
+---
+
+**WEB SEARCH IS ENABLED.**
+You have access to the \`google_search\` tool for real-time web content. Use it to supplement the internal environmental data when the user asks about external context — e.g. regulations and guideline standards, news, weather, health implications, or background on a location or pollutant.
+
+- Prefer the internal environmental data tools for the monitoring measurements themselves; use web search for context the database does not contain.
+- When you rely on web results, briefly cite what you found and keep claims grounded in the retrieved sources.`;
+
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const {
+    messages,
+    reportMode,
+    webSearch,
+  }: { messages: UIMessage[]; reportMode?: boolean; webSearch?: boolean } =
+    await req.json();
   const result = streamText({
     model: google("gemini-2.5-flash-lite"),
     messages: convertToModelMessages(messages),
-    tools,
-    system: `You are an environmental monitoring analysis assistant. 
+    tools: webSearch
+      ? { ...tools, google_search: google.tools.googleSearch({}) }
+      : tools,
+    stopWhen: stepCountIs(5),
+    system: `You are an environmental monitoring analysis assistant.
 Your purpose is to provide environmental data and insights based on user queries that may involve one or more locations.
 
 Follow these steps to fulfill user requests:
@@ -48,8 +100,8 @@ Guidelines:
 - Focus your response only on the environmental insights, not intermediate lookup steps.
   
 This is how findAllLocations is implemented...
-
-`,
+${webSearch ? WEB_SEARCH_INSTRUCTIONS : ""}${reportMode ? REPORT_MODE_INSTRUCTIONS : ""}`,
   });
-  return result.toUIMessageStreamResponse();
+  // Forward grounding citations so the client can render web-search sources.
+  return result.toUIMessageStreamResponse({ sendSources: true });
 }

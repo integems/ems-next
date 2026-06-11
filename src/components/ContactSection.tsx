@@ -86,9 +86,9 @@ export default function ContactSection() {
   };
 
   return (
-    <section id="contact" ref={ref} className="py-16 md:py-28 bg-background">
+    <section id="contact" ref={ref} className="py-10 md:py-20 lg:py-28 bg-background">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid items-start gap-8 sm:gap-10 lg:grid-cols-2 lg:gap-16">
           {/* Left: intro + details */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -98,8 +98,8 @@ export default function ContactSection() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
               Get in touch
             </p>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Contact us
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              Contact <span className="text-primary">us</span>
             </h2>
             <p className="mt-3 max-w-md text-base leading-relaxed text-muted-foreground">
               Have a question about environmental monitoring or want to work

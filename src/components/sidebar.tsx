@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils";
 import {
   BarChart2,
-  Bot,
   ChevronRight,
   Cloud,
   Droplet,
@@ -23,12 +22,14 @@ import {
   Leaf,
   LogOut,
   Settings2,
+  Sparkles,
   Trash2,
   User,
   Users,
   Volume2,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -173,8 +174,8 @@ const sidebarLinks: NavLink[] = [
     roles: [RoleName.SuperAdmin],
   },
   {
-    label: "AI Analysis",
-    icon: Bot,
+    label: "AI Assistant",
+    icon: Sparkles,
     href: "/dashboard/ai-chat-analysis",
     type: "link",
   },
@@ -301,7 +302,7 @@ function SidebarLogout() {
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 font-black text-3xl">
-      <img src="/logo.png" alt="INTEGEMS Logo" className="h-10 w-10 object-contain" />
+      <Image src="/logo.png" alt="INTEGEMS Logo" width={40} height={40} className="object-contain" />
       <span className="text-[#1a7c1a] dark:text-[#1a7c1a]">EMS</span>
     </Link>
   );
