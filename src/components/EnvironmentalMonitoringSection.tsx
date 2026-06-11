@@ -110,18 +110,18 @@ export default function EnvironmentalMonitoringSection() {
                     </div>
 
                     {/* Body */}
-                    <div className="flex flex-col flex-grow p-5 gap-3">
-                      {/* Icon + Title row */}
-                      <div className="flex items-center gap-3">
+                    <div className="relative flex flex-col flex-grow p-5 pt-10 gap-3">
+                      {/* Floating Icon + Title row */}
+                      <div className="absolute top-0 left-5 -translate-y-1/2 flex items-center gap-3 bg-card px-4 py-2.5 rounded-xl shadow-md border border-border group-hover:border-primary/30 transition-all duration-300">
                         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
                           <Icon className="h-5 w-5" />
                         </div>
-                        <h3 className="text-sm font-semibold text-foreground">
+                        <h3 className="text-base md:text-lg font-bold text-foreground tracking-tight">
                           {feature.title}
                         </h3>
                       </div>
 
-                      <p className="text-sm text-muted-foreground leading-relaxed flex-grow">
+                      <p className="text-sm text-muted-foreground leading-relaxed flex-grow mt-2">
                         {feature.description}
                       </p>
 

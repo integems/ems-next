@@ -42,7 +42,10 @@ export function VerifyEmailForm({
       <div className="text-center text-sm text-muted-foreground">
         <p>
           Verification code is sent to the email {verifyEmailData.email}, enter
-          the verification code below
+          the verification code below.
+        </p>
+        <p className="text-xs text-muted-foreground/80 mt-1">
+          (Please check your spam or junk folder if you don't see it in your inbox)
         </p>
       </div>
       <div className="space-y-2 flex flex-col items-center">
